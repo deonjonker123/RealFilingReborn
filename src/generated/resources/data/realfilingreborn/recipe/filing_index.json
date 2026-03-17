@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": {
+      "item": "minecraft:comparator"
+    },
+    "F": {
+      "item": "realfilingreborn:filing_cabinet"
+    },
+    "I": {
+      "item": "minecraft:copper_ingot"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "X": {
+      "item": "minecraft:repeater"
+    }
+  },
+  "pattern": [
+    "IXI",
+    "RFR",
+    "ICI"
+  ],
+  "result": {
+    "count": 1,
+    "id": "realfilingreborn:filing_index"
+  }
+}
