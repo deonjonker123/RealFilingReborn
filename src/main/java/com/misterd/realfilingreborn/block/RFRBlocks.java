@@ -1,6 +1,9 @@
 package com.misterd.realfilingreborn.block;
 
 import com.misterd.realfilingreborn.RealFilingReborn;
+import com.misterd.realfilingreborn.block.custom.FilingCabinetBlock;
+import com.misterd.realfilingreborn.block.custom.FilingIndexBlock;
+import com.misterd.realfilingreborn.block.custom.FluidCabinetBlock;
 import com.misterd.realfilingreborn.item.RFRItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -17,19 +20,19 @@ public class RFRBlocks {
     public static final DeferredRegister.Blocks BLOCKS = DeferredRegister.createBlocks(RealFilingReborn.MODID);
 
     public static final DeferredBlock<Block> FILING_CABINET = registerBlock("filing_cabinet",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new FilingCabinetBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F, 5.0F)
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));
 
     public static final DeferredBlock<Block> FLUID_CABINET = registerBlock("fluid_cabinet",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new FluidCabinetBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F, 5.0F)
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));
 
     public static final DeferredBlock<Block> FILING_INDEX = registerBlock("filing_index",
-            () -> new Block(BlockBehaviour.Properties.of()
+            () -> new FilingIndexBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F, 5.0F)
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));

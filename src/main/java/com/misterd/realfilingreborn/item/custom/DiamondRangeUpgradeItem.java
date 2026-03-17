@@ -1,4 +1,19 @@
 package com.misterd.realfilingreborn.item.custom;
 
-public class DiamondRangeUpgradeItem {
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+
+import java.util.List;
+
+public class DiamondRangeUpgradeItem extends Item {
+    public DiamondRangeUpgradeItem(Properties properties) {
+        super(properties);
+    }
+
+    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+        tooltip.add(Component.translatable("item.realfilingreborn.diamond_range_upgrade.subtitle").withStyle(ChatFormatting.LIGHT_PURPLE));
+    }
 }

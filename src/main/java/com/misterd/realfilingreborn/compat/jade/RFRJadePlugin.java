@@ -1,4 +1,19 @@
 package com.misterd.realfilingreborn.compat.jade;
 
-public class RFRJadePlugin {
+import com.misterd.realfilingreborn.block.custom.FilingCabinetBlock;
+import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
+import snownee.jade.api.IWailaClientRegistration;
+import snownee.jade.api.IWailaCommonRegistration;
+import snownee.jade.api.IWailaPlugin;
+import snownee.jade.api.WailaPlugin;
+
+@WailaPlugin
+public class RFRJadePlugin implements IWailaPlugin {
+    public void register(IWailaCommonRegistration registration) {
+        registration.registerBlockDataProvider(FilingCabinetProvider.INSTANCE, FilingCabinetBlockEntity.class);
+    }
+
+    public void registerClient(IWailaClientRegistration registration) {
+        registration.registerBlockComponent(FilingCabinetProvider.INSTANCE, FilingCabinetBlock.class);
+    }
 }
