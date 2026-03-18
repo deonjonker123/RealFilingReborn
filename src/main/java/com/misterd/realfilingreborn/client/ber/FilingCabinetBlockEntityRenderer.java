@@ -71,7 +71,7 @@ public class FilingCabinetBlockEntityRenderer implements BlockEntityRenderer<Fil
 
     private void renderSlotContent(ItemStack stack, String countText, float offsetX, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         poseStack.pushPose();
-        poseStack.translate(offsetX, -0.2f, 0.0f);
+        poseStack.translate(offsetX, -0.32f, 0.0f);
 
         poseStack.pushPose();
         poseStack.scale(0.15f, 0.15f, 0.15f);
