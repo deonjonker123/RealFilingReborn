@@ -2,6 +2,7 @@ package com.misterd.realfilingreborn.gui.custom;
 
 import com.misterd.realfilingreborn.gui.RFRMenuTypes;
 import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -40,7 +41,12 @@ public class FilingFolderMenu extends AbstractContainerMenu {
 
             @Override
             public boolean isItemValid(int slot, ItemStack stack) {
-                return !FilingFolderItem.hasSignificantNBT(stack);
+                if (FilingFolderItem.hasSignificantNBT(stack)) return false;
+                ItemStack folder = getFolder();
+                if (folder.isEmpty()) return true;
+                FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
+                if (contents == null || contents.storedItemId().isEmpty()) return true;
+                return contents.storedItemId().get().equals(BuiltInRegistries.ITEM.getKey(stack.getItem()));
             }
         };
 
@@ -72,12 +78,30 @@ public class FilingFolderMenu extends AbstractContainerMenu {
         if (assignedItem.isEmpty()) return;
 
         FilingFolderItem.FolderContents currentContents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
+
         if (currentContents == null || currentContents.storedItemId().isEmpty()) {
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(assignedItem.getItem());
             folder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                     new FilingFolderItem.FolderContents(Optional.of(itemId), assignedItem.getCount()));
             assignmentInventory.setStackInSlot(0, ItemStack.EMPTY);
+        } else {
+            ResourceLocation existingId = currentContents.storedItemId().get();
+            ResourceLocation placedId = BuiltInRegistries.ITEM.getKey(assignedItem.getItem());
+            if (!existingId.equals(placedId)) return;
+
+            FilingFolderItem folder2 = (FilingFolderItem) folder.getItem();
+            int capacity = folder2.getCapacity();
+            int toAdd = Math.min(assignedItem.getCount(), capacity - currentContents.count());
+            if (toAdd <= 0) return;
+
+            folder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+                    new FilingFolderItem.FolderContents(currentContents.storedItemId(), currentContents.count() + toAdd));
+            assignedItem.shrink(toAdd);
+            assignmentInventory.setStackInSlot(0, assignedItem.isEmpty() ? ItemStack.EMPTY : assignedItem);
         }
+
+        playerInventory.setChanged();
+        broadcastChanges();
     }
 
     @Override
@@ -104,16 +128,28 @@ public class FilingFolderMenu extends AbstractContainerMenu {
         return copy;
     }
 
+    public Component getAssignedItemText() {
+        ItemStack folder = getFolder();
+        if (folder.isEmpty()) return null;
+
+        FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
+        if (contents == null || contents.storedItemId().isEmpty()) return null;
+
+        Item item = BuiltInRegistries.ITEM.get(contents.storedItemId().get());
+        return Component.translatable("gui.realfilingreborn.assigned_item",
+                item.getDescription().copy().withStyle(ChatFormatting.DARK_GRAY));
+    }
+
     public Component getCurrentCountText() {
         ItemStack folder = getFolder();
         if (folder.isEmpty()) return null;
 
         FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
-        if (contents != null && contents.storedItemId().isPresent()) {
-            return Component.translatable("gui.realfilingreborn.current_item_count",
-                    String.format("%,d", contents.count()));
-        }
-        return null;
+        if (contents == null || contents.storedItemId().isEmpty()) return null;
+
+        int capacity = ((FilingFolderItem) folder.getItem()).getCapacity();
+        return Component.translatable("gui.realfilingreborn.current_item_count",
+                String.format("%,d ", contents.count()) + "/" + String.format("%,d", capacity)).withStyle(ChatFormatting.DARK_GRAY);
     }
 
     public void extractItems() {

@@ -3,6 +3,7 @@ package com.misterd.realfilingreborn.gui.custom;
 import com.misterd.realfilingreborn.gui.RFRMenuTypes;
 import com.misterd.realfilingreborn.item.custom.FluidCanisterItem;
 import com.misterd.realfilingreborn.util.FluidHelper;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
@@ -42,9 +43,13 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
 
             @Override
             public boolean isItemValid(int slot, ItemStack stack) {
-                return stack.getItem() instanceof BucketItem bucket
-                        && bucket.content != null
-                        && FluidHelper.isValidFluid(bucket.content);
+                if (!(stack.getItem() instanceof BucketItem bucket) || bucket.content == null || !FluidHelper.isValidFluid(bucket.content)) return false;
+                ItemStack canister = getCanister();
+                if (canister.isEmpty()) return true;
+                FluidCanisterItem.CanisterContents contents = canister.get(FluidCanisterItem.CANISTER_CONTENTS.value());
+                if (contents == null || contents.storedFluidId().isEmpty()) return true;
+                ResourceLocation placedFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(bucket.content));
+                return FluidHelper.areFluidsCompatible(contents.storedFluidId().get(), placedFluidId);
             }
         };
 
@@ -79,12 +84,26 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
         if (!FluidHelper.isValidFluid(fluid)) return;
 
         FluidCanisterItem.CanisterContents contents = canister.get(FluidCanisterItem.CANISTER_CONTENTS.value());
+        ResourceLocation fluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(fluid));
+
         if (contents == null || contents.storedFluidId().isEmpty()) {
-            ResourceLocation fluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(fluid));
             canister.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
                     new FluidCanisterItem.CanisterContents(Optional.of(fluidId), 1000));
             assignmentInventory.setStackInSlot(0, new ItemStack(Items.BUCKET));
+        } else {
+            if (!FluidHelper.areFluidsCompatible(contents.storedFluidId().get(), fluidId)) return;
+
+            int capacity = FluidCanisterItem.getCapacity(canister);
+            int toAdd = Math.min(1000, capacity - contents.amount());
+            if (toAdd < 1000) return;
+
+            canister.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
+                    new FluidCanisterItem.CanisterContents(contents.storedFluidId(), contents.amount() + toAdd));
+            assignmentInventory.setStackInSlot(0, new ItemStack(Items.BUCKET));
         }
+
+        playerInventory.setChanged();
+        broadcastChanges();
     }
 
     @Override
@@ -111,6 +130,18 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
         return copy;
     }
 
+    public Component getAssignedFluidText() {
+        ItemStack canister = getCanister();
+        if (canister.isEmpty()) return null;
+
+        FluidCanisterItem.CanisterContents contents = canister.get(FluidCanisterItem.CANISTER_CONTENTS.value());
+        if (contents == null || contents.storedFluidId().isEmpty()) return null;
+
+        String fluidName = FluidHelper.getFluidDisplayName(contents.storedFluidId().get());
+        return Component.translatable("gui.realfilingreborn.assigned_fluid",
+                Component.literal(fluidName).withStyle(ChatFormatting.DARK_GRAY));
+    }
+
     public Component getCurrentCountText() {
         ItemStack canister = getCanister();
         if (canister.isEmpty()) return null;
@@ -118,12 +149,15 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
         FluidCanisterItem.CanisterContents contents = canister.get(FluidCanisterItem.CANISTER_CONTENTS.value());
         if (contents == null || contents.storedFluidId().isEmpty()) return null;
 
+        int capacity = FluidCanisterItem.getCapacity(canister);
         int buckets = contents.amount() / 1000;
         int mb = contents.amount() % 1000;
         String amountText = buckets > 0
                 ? (mb > 0 ? buckets + "." + mb / 100 + "B" : buckets + "B")
                 : mb + "mB";
-        return Component.translatable("gui.realfilingreborn.current_fluid_amount", amountText);
+        String capacityText = (capacity / 1000) + "B";
+        return Component.translatable("gui.realfilingreborn.current_fluid_amount",
+                amountText + "/" + capacityText).withStyle(ChatFormatting.DARK_GRAY);
     }
 
     public void extractFluid() {

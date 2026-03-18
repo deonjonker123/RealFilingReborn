@@ -2,6 +2,7 @@ package com.misterd.realfilingreborn.gui.custom;
 
 import com.misterd.realfilingreborn.network.ExtractionPacket;
 import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.client.renderer.GameRenderer;
@@ -87,15 +88,31 @@ public class FilingFolderScreen extends AbstractContainerScreen<FilingFolderMenu
         guiGraphics.pose().pushPose();
         guiGraphics.pose().scale(0.8F, 0.8F, 1.0F);
         int scaledX = (int)(((float) this.imageWidth - (float) this.font.width(instruction) * 0.8F) / 2.0F / 0.8F);
-        guiGraphics.drawString(this.font, instruction, scaledX, 25, 10588695, false);
+        guiGraphics.drawString(this.font, instruction, scaledX, 25, 0x555555, false);
         guiGraphics.pose().popPose();
 
+        Component assignedText = this.menu.getAssignedItemText();
         Component countText = this.menu.getCurrentCountText();
-        if (countText != null) {
+
+        if (assignedText != null && countText != null) {
+            Component combined = assignedText.copy()
+                    .append(countText);
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().scale(0.8F, 0.8F, 1.0F);
+            int scaledCombinedX = (int)(((float) this.imageWidth - (float) this.font.width(combined) * 0.8F) / 2.0F / 0.8F);
+            guiGraphics.drawString(this.font, combined, scaledCombinedX, 37, 0x555555, false);
+            guiGraphics.pose().popPose();
+        } else if (assignedText != null) {
+            guiGraphics.pose().pushPose();
+            guiGraphics.pose().scale(0.8F, 0.8F, 1.0F);
+            int scaledAssignedX = (int)(((float) this.imageWidth - (float) this.font.width(assignedText) * 0.8F) / 2.0F / 0.8F);
+            guiGraphics.drawString(this.font, assignedText, scaledAssignedX, 37, 0x555555, false);
+            guiGraphics.pose().popPose();
+        } else if (countText != null) {
             guiGraphics.pose().pushPose();
             guiGraphics.pose().scale(0.8F, 0.8F, 1.0F);
             int scaledCountX = (int)(((float) this.imageWidth - (float) this.font.width(countText) * 0.8F) / 2.0F / 0.8F);
-            guiGraphics.drawString(this.font, countText, scaledCountX, 37, 4210752, false);
+            guiGraphics.drawString(this.font, countText, scaledCountX, 37, 0x555555, false);
             guiGraphics.pose().popPose();
         }
     }
