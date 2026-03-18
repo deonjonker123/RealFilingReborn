@@ -1,6 +1,5 @@
 package com.misterd.realfilingreborn.block.custom;
 
-import com.misterd.realfilingreborn.Config;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
 import com.misterd.realfilingreborn.gui.custom.FilingCabinetMenu;
@@ -168,14 +167,14 @@ public class FilingCabinetBlock extends BaseEntityBlock {
 
         for (int i = 0; i < 5; i++) {
             ItemStack folderStack = cabinet.inventory.getStackInSlot(i);
-            if (folderStack.isEmpty() || !(folderStack.getItem() instanceof FilingFolderItem)) continue;
+            if (!(folderStack.getItem() instanceof FilingFolderItem folder)) continue;
 
             FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
             if (contents == null) continue;
 
             if (contents.storedItemId().isEmpty()) {
-                FilingFolderItem.FolderContents newContents = new FilingFolderItem.FolderContents(Optional.of(itemId), heldItem.getCount());
-                folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(), newContents);
+                folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+                        new FilingFolderItem.FolderContents(Optional.of(itemId), heldItem.getCount()));
                 heldItem.shrink(heldItem.getCount());
                 level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
                 level.sendBlockUpdated(pos, state, state, 2);
@@ -184,8 +183,7 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             }
 
             if (contents.storedItemId().get().equals(itemId)) {
-                int maxToAdd = Config.getMaxFolderStorage() - contents.count();
-                int toAdd = Math.min(heldItem.getCount(), maxToAdd);
+                int toAdd = Math.min(heldItem.getCount(), folder.getCapacity() - contents.count());
                 if (toAdd > 0) {
                     folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                             new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
@@ -214,11 +212,11 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             default    -> -1;
         };
 
-        if (faceX < 0)        return -1;
-        if (faceX < 0.2)      return 0;
-        if (faceX < 0.4)      return 1;
-        if (faceX < 0.6)      return 2;
-        if (faceX < 0.8)      return 3;
+        if (faceX < 0)   return -1;
+        if (faceX < 0.2) return 0;
+        if (faceX < 0.4) return 1;
+        if (faceX < 0.6) return 2;
+        if (faceX < 0.8) return 3;
         return 4;
     }
 

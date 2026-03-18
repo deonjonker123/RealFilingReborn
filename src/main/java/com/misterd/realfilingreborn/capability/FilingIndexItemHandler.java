@@ -1,6 +1,5 @@
 package com.misterd.realfilingreborn.capability;
 
-import com.misterd.realfilingreborn.Config;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
 import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
@@ -136,7 +135,6 @@ public class FilingIndexItemHandler implements IItemHandler {
         if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) return ItemStack.EMPTY;
 
         Item item = BuiltInRegistries.ITEM.get(contents.storedItemId().get());
-        // Return the true stored count — not capped at 64
         return new ItemStack(item, contents.count());
     }
 
@@ -198,15 +196,15 @@ public class FilingIndexItemHandler implements IItemHandler {
     private ItemStack tryInsertIntoFolder(FilingCabinetBlockEntity cabinet, int cabinetSlot, ItemStack stack, ResourceLocation itemId, boolean simulate, BlockPos cabinetPos) {
         try {
             ItemStack folderStack = cabinet.inventory.getStackInSlot(cabinetSlot);
-            if (folderStack.isEmpty() || !(folderStack.getItem() instanceof FilingFolderItem)) return stack;
+            if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return stack;
 
             FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
             if (contents == null) return stack;
             if (contents.storedItemId().isEmpty() || !contents.storedItemId().get().equals(itemId)) return stack;
             if (contents.count() > Integer.MAX_VALUE - stack.getCount()) return stack;
 
-            long newTotal = (long) contents.count() + stack.getCount();
-            int toAdd = newTotal > Integer.MAX_VALUE ? Integer.MAX_VALUE - contents.count() : stack.getCount();
+            int capacity = folder.getCapacity();
+            int toAdd = Math.min(stack.getCount(), capacity - contents.count());
             if (toAdd <= 0) return stack;
 
             if (!simulate) {
@@ -249,22 +247,23 @@ public class FilingIndexItemHandler implements IItemHandler {
         }
     }
 
-    // Returns the true stored count so external mods (RS, AE2, Tom's) report correctly
     @Override
     public int getSlotLimit(int slot) {
         List<BlockPos> cabinets = new ArrayList<>(indexEntity.getLinkedCabinets());
         int cabinetIndex = slot / 5;
         int cabinetSlot = slot % 5;
-        if (cabinetIndex >= cabinets.size()) return Config.getMaxFolderStorage();
+        if (cabinetIndex >= cabinets.size()) return FilingFolderItem.FolderTier.BASE.getCapacity();
 
         BlockPos cabinetPos = cabinets.get(cabinetIndex);
-        if (!(level.getBlockEntity(cabinetPos) instanceof FilingCabinetBlockEntity cabinet)) return Config.getMaxFolderStorage();
+        if (!(level.getBlockEntity(cabinetPos) instanceof FilingCabinetBlockEntity cabinet))
+            return FilingFolderItem.FolderTier.BASE.getCapacity();
 
         ItemStack folderStack = cabinet.inventory.getStackInSlot(cabinetSlot);
-        if (!(folderStack.getItem() instanceof FilingFolderItem)) return Config.getMaxFolderStorage();
+        if (!(folderStack.getItem() instanceof FilingFolderItem folder))
+            return FilingFolderItem.FolderTier.BASE.getCapacity();
 
         FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-        return contents != null ? Math.max(contents.count(), Config.getMaxFolderStorage()) : Config.getMaxFolderStorage();
+        return contents != null ? Math.max(contents.count(), folder.getCapacity()) : folder.getCapacity();
     }
 
     @Override

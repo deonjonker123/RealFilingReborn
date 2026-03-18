@@ -1,6 +1,5 @@
 package com.misterd.realfilingreborn.item.custom;
 
-import com.misterd.realfilingreborn.Config;
 import com.misterd.realfilingreborn.gui.custom.FilingFolderMenu;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
@@ -34,6 +33,27 @@ import java.util.Optional;
 
 public class FilingFolderItem extends Item {
 
+    public enum FolderTier {
+        BASE      (4_096),
+        COPPER    (32_768),
+        IRON      (262_144),
+        GOLD      (2_097_152),
+        DIAMOND   (16_777_216),
+        NETHERITE (134_217_728);
+
+        private final int capacity;
+
+        FolderTier(int capacity) {
+            this.capacity = capacity;
+        }
+
+        public int getCapacity() {
+            return capacity;
+        }
+    }
+
+    private final FolderTier tier;
+
     private static final Codec<FolderContents> FOLDER_CONTENTS_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     ResourceLocation.CODEC.optionalFieldOf("storedItemId").forGetter(FolderContents::storedItemId),
@@ -59,9 +79,21 @@ public class FilingFolderItem extends Item {
                             .networkSynchronized(FOLDER_CONTENTS_STREAM_CODEC)
                             .build());
 
-    public FilingFolderItem(Properties properties) {
+    public FilingFolderItem(FolderTier tier, Properties properties) {
         super(properties);
+        this.tier = tier;
         properties.component(FOLDER_CONTENTS.value(), new FolderContents(Optional.empty(), 0));
+    }
+
+    public int getCapacity() {
+        return tier.getCapacity();
+    }
+
+    public static int getCapacity(ItemStack stack) {
+        if (stack.getItem() instanceof FilingFolderItem folder) {
+            return folder.getCapacity();
+        }
+        return FolderTier.BASE.getCapacity();
     }
 
     public static boolean hasSignificantNBT(ItemStack stack) {
@@ -184,7 +216,7 @@ public class FilingFolderItem extends Item {
             }
         }
 
-        int toAdd = Math.min(itemToStore.getCount(), Config.getMaxFolderStorage() - contents.count());
+        int toAdd = Math.min(itemToStore.getCount(), getCapacity() - contents.count());
         if (toAdd <= 0) {
             player.displayClientMessage(Component.translatable("message.realfilingreborn.folder_full"), true);
             return InteractionResultHolder.fail(folderStack);
@@ -217,6 +249,9 @@ public class FilingFolderItem extends Item {
                     .withStyle(ChatFormatting.GRAY));
         }
 
+        tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_capacity",
+                        Component.literal(String.format("%,d", getCapacity())).withStyle(ChatFormatting.GREEN))
+                .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_info")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
         tooltip.add(Component.translatable("tooltip.realfilingreborn.standard_folder_info")

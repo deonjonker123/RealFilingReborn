@@ -1,6 +1,5 @@
 package com.misterd.realfilingreborn.block.custom;
 
-import com.misterd.realfilingreborn.Config;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FluidCabinetBlockEntity;
 import com.misterd.realfilingreborn.gui.custom.FluidCabinetMenu;
@@ -159,14 +158,14 @@ public class FluidCabinetBlock extends BaseEntityBlock {
 
             for (int i = 0; i < 4; i++) {
                 ItemStack canisterStack = cabinet.inventory.getStackInSlot(i);
-                if (canisterStack.isEmpty() || !(canisterStack.getItem() instanceof FluidCanisterItem)) continue;
+                if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) continue;
 
                 FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
                 if (contents == null) continue;
 
                 boolean isEmpty = contents.storedFluidId().isEmpty();
                 boolean matchesFluid = !isEmpty && contents.storedFluidId().get().equals(fluidId);
-                int canAdd = Config.getMaxCanisterStorage() - contents.amount();
+                int canAdd = canister.getCapacity() - contents.amount();
 
                 if ((isEmpty || matchesFluid) && canAdd >= 1000) {
                     ResourceLocation storedId = isEmpty ? fluidId : contents.storedFluidId().get();

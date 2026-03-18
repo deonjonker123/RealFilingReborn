@@ -97,22 +97,24 @@
   "tooltip.realfilingreborn.eraser_info": "Right-click while holding an empty folder or canister to erase its assignment",
 
   "_comment14": "=== FILING FOLDER TOOLTIPS ===",
-  "tooltip.realfilingreborn.folder_info": "Holds 4 096 items",
   "tooltip.realfilingreborn.stored_item": "Assigned to (Contents): %s",
   "tooltip.realfilingreborn.item_count": "Count: %s",
   "tooltip.realfilingreborn.empty_folder": "Folder is empty",
   "tooltip.realfilingreborn.unregistered_folder": "Folder is unassigned. Add items to assign it",
   "tooltip.realfilingreborn.standard_folder_info": "Can only store normal items (no NBT)",
+  "tooltip.realfilingreborn.folder_capacity": "Capacity: %s items",
+  "tooltip.realfilingreborn.folder_info": "Hold item in off hand to store",
 
   "_comment14_new": "=== NEW FILING FOLDER TOOLTIPS ===",
   "tooltip.realfilingreborn.folder_gui_hint": "Shift+Right-click to open assignment GUI",
 
   "_comment16": "=== FLUID CANISTER TOOLTIPS ===",
-  "tooltip.realfilingreborn.canister_info": "Holds 64 buckets",
   "tooltip.realfilingreborn.stored_fluid": "Assigned to (Contents): %s",
   "tooltip.realfilingreborn.fluid_amount": "Amount: %s",
   "tooltip.realfilingreborn.empty_canister": "Canister is empty",
   "tooltip.realfilingreborn.unregistered_canister": "Canister is unassigned. Add fluid to assign it",
+  "tooltip.realfilingreborn.canister_capacity": "Capacity: %s",
+  "tooltip.realfilingreborn.canister_info": "Hold filled bucket in off hand to store",
   "message.realfilingreborn.invalid_fluid": "This fluid cannot be stored in canisters",
 
   "_comment16_new": "=== NEW FLUID CANISTER TOOLTIPS ===",

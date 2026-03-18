@@ -1,6 +1,5 @@
 package com.misterd.realfilingreborn.blockentity.custom;
 
-import com.misterd.realfilingreborn.Config;
 import com.misterd.realfilingreborn.block.custom.FluidCabinetBlock;
 import com.misterd.realfilingreborn.blockentity.RFRBlockEntities;
 import com.misterd.realfilingreborn.gui.custom.FluidCabinetMenu;
@@ -68,8 +67,13 @@ public class FluidCabinetBlockEntity extends BlockEntity implements MenuProvider
     @Nullable
     public IFluidHandler getFluidCapabilityHandler(@Nullable Direction side) {
         if (side != null && getBlockState().getValue(FluidCabinetBlock.FACING) == side) return null;
-        return fluidHandlers.computeIfAbsent(side != null ? side : Direction.UP,
-                s -> new FluidCabinetFluidHandler(this, s));
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            if (!inventory.getStackInSlot(i).isEmpty()) {
+                return fluidHandlers.computeIfAbsent(side != null ? side : Direction.UP,
+                        s -> new FluidCabinetFluidHandler(this, s));
+            }
+        }
+        return null;
     }
 
     public void drops() {
@@ -181,7 +185,9 @@ public class FluidCabinetBlockEntity extends BlockEntity implements MenuProvider
 
         @Override
         public int getTankCapacity(int tank) {
-            return Config.getMaxCanisterStorage();
+            if (tank < 0 || tank >= 4) return 0;
+            ItemStack canisterStack = cabinet.inventory.getStackInSlot(tank);
+            return FluidCanisterItem.getCapacity(canisterStack);
         }
 
         @Override
@@ -197,7 +203,7 @@ public class FluidCabinetBlockEntity extends BlockEntity implements MenuProvider
 
             for (int i = 0; i < 4; i++) {
                 ItemStack canisterStack = cabinet.inventory.getStackInSlot(i);
-                if (canisterStack.isEmpty() || !(canisterStack.getItem() instanceof FluidCanisterItem)) continue;
+                if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) continue;
 
                 FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
                 if (contents == null) continue;
@@ -206,7 +212,7 @@ public class FluidCabinetBlockEntity extends BlockEntity implements MenuProvider
                 boolean compatible = !isEmpty && FluidHelper.areFluidsCompatible(contents.storedFluidId().get(), fluidId);
                 if (!isEmpty && !compatible) continue;
 
-                int toAdd = Math.min(resource.getAmount(), Config.getMaxCanisterStorage() - contents.amount());
+                int toAdd = Math.min(resource.getAmount(), canister.getCapacity() - contents.amount());
                 if (toAdd <= 0) continue;
 
                 if (action.execute()) {

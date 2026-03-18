@@ -91,7 +91,7 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(recipeOutput);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.COPPER_FLUID_CANISTER.get(), 4)
-                .pattern("III")
+                .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
                 .define('G', Tags.Items.GLASS_BLOCKS)
@@ -101,7 +101,7 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(recipeOutput);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.IRON_FLUID_CANISTER.get(), 4)
-                .pattern("III")
+                .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
                 .define('G', Tags.Items.GLASS_BLOCKS)
@@ -111,7 +111,7 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(recipeOutput);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.GOLD_FLUID_CANISTER.get(), 4)
-                .pattern("III")
+                .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
                 .define('G', Tags.Items.GLASS_BLOCKS)
@@ -121,7 +121,7 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(recipeOutput);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FLUID_CANISTER.get(), 4)
-                .pattern("III")
+                .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
                 .define('G', Tags.Items.GLASS_BLOCKS)
@@ -131,7 +131,7 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(recipeOutput);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FLUID_CANISTER.get(), 4)
-                .pattern("III")
+                .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
                 .define('G', Tags.Items.GLASS_BLOCKS)

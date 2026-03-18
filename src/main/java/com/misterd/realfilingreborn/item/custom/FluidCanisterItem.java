@@ -1,6 +1,5 @@
 package com.misterd.realfilingreborn.item.custom;
 
-import com.misterd.realfilingreborn.Config;
 import com.misterd.realfilingreborn.gui.custom.FluidCanisterMenu;
 import com.misterd.realfilingreborn.util.FluidHelper;
 import com.mojang.serialization.Codec;
@@ -29,6 +28,27 @@ import java.util.Optional;
 
 public class FluidCanisterItem extends Item {
 
+    public enum CanisterTier {
+        BASE      (64_000),
+        COPPER    (512_000),
+        IRON      (4_096_000),
+        GOLD      (32_768_000),
+        DIAMOND   (262_144_000),
+        NETHERITE (2_097_152_000);
+
+        private final int capacity;
+
+        CanisterTier(int capacity) {
+            this.capacity = capacity;
+        }
+
+        public int getCapacity() {
+            return capacity;
+        }
+    }
+
+    private final CanisterTier tier;
+
     private static final Codec<CanisterContents> CANISTER_CONTENTS_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
                     ResourceLocation.CODEC.optionalFieldOf("storedFluidId").forGetter(CanisterContents::storedFluidId),
@@ -54,9 +74,21 @@ public class FluidCanisterItem extends Item {
                             .networkSynchronized(CANISTER_CONTENTS_STREAM_CODEC)
                             .build());
 
-    public FluidCanisterItem(Properties properties) {
+    public FluidCanisterItem(CanisterTier tier, Properties properties) {
         super(properties);
+        this.tier = tier;
         properties.component(CANISTER_CONTENTS.value(), new CanisterContents(Optional.empty(), 0));
+    }
+
+    public int getCapacity() {
+        return tier.getCapacity();
+    }
+
+    public static int getCapacity(ItemStack stack) {
+        if (stack.getItem() instanceof FluidCanisterItem canister) {
+            return canister.getCapacity();
+        }
+        return CanisterTier.BASE.getCapacity();
     }
 
     @Override
@@ -127,7 +159,6 @@ public class FluidCanisterItem extends Item {
             return InteractionResultHolder.fail(canisterStack);
         }
 
-        // Find and consume an empty bucket
         boolean bucketRemoved = false;
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
@@ -169,7 +200,7 @@ public class FluidCanisterItem extends Item {
             }
         }
 
-        int toAdd = Math.min(1000, Config.getMaxCanisterStorage() - contents.amount());
+        int toAdd = Math.min(1000, getCapacity() - contents.amount());
         if (toAdd <= 0) {
             player.displayClientMessage(Component.translatable("message.realfilingreborn.canister_full"), true);
             return InteractionResultHolder.fail(canisterStack);
@@ -209,6 +240,9 @@ public class FluidCanisterItem extends Item {
                     .withStyle(ChatFormatting.GRAY));
         }
 
+        tooltip.add(Component.translatable("tooltip.realfilingreborn.canister_capacity",
+                        Component.literal(String.format("%,d", getCapacity() / 1000) + "B").withStyle(ChatFormatting.BLUE))
+                .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.realfilingreborn.canister_info")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
         tooltip.add(Component.translatable("tooltip.realfilingreborn.canister_gui_hint")

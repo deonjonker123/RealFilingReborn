@@ -171,15 +171,15 @@ public class FilingIndexFluidHandler implements IFluidHandler {
                 if (!(level.getBlockEntity(tankInfo.cabinetPos) instanceof FluidCabinetBlockEntity fluidCabinet)) continue;
 
                 ItemStack canisterStack = fluidCabinet.inventory.getStackInSlot(tankInfo.slotIndex);
-                if (!(canisterStack.getItem() instanceof FluidCanisterItem)) continue;
+                if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) continue;
 
                 FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
                 if (contents == null) continue;
-                if (contents.amount() > Integer.MAX_VALUE - resource.getAmount()) return 0;
 
-                long newAmount = (long) contents.amount() + resource.getAmount();
-                int toAdd = newAmount > Integer.MAX_VALUE ? Integer.MAX_VALUE - contents.amount() : resource.getAmount();
-                if (toAdd > 0 && action.execute()) {
+                int toAdd = Math.min(resource.getAmount(), canister.getCapacity() - contents.amount());
+                if (toAdd <= 0) continue;
+
+                if (action.execute()) {
                     canisterStack.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
                             new FluidCanisterItem.CanisterContents(Optional.of(resourceFluidId), contents.amount() + toAdd));
                     fluidCabinet.setChanged();
@@ -196,13 +196,15 @@ public class FilingIndexFluidHandler implements IFluidHandler {
 
                 for (int slot = 0; slot < 4; slot++) {
                     ItemStack canisterStack = fluidCabinet.inventory.getStackInSlot(slot);
-                    if (!(canisterStack.getItem() instanceof FluidCanisterItem)) continue;
+                    if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) continue;
 
                     FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
                     if (contents == null || !contents.storedFluidId().isEmpty()) continue;
 
-                    int toAdd = resource.getAmount();
-                    if (toAdd > 0 && action.execute()) {
+                    int toAdd = Math.min(resource.getAmount(), canister.getCapacity());
+                    if (toAdd <= 0) continue;
+
+                    if (action.execute()) {
                         canisterStack.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
                                 new FluidCanisterItem.CanisterContents(Optional.of(resourceFluidId), toAdd));
                         fluidCabinet.setChanged();

@@ -1,6 +1,5 @@
 package com.misterd.realfilingreborn.blockentity.custom;
 
-import com.misterd.realfilingreborn.Config;
 import com.misterd.realfilingreborn.block.custom.FilingCabinetBlock;
 import com.misterd.realfilingreborn.blockentity.RFRBlockEntities;
 import com.misterd.realfilingreborn.gui.custom.FilingCabinetMenu;
@@ -182,13 +181,13 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
                 // Automation: search all slots for a matching folder
                 for (int i = 0; i < 5; i++) {
                     ItemStack folderStack = cabinet.inventory.getStackInSlot(i);
-                    if (folderStack.isEmpty() || !(folderStack.getItem() instanceof FilingFolderItem)) continue;
+                    if (!(folderStack.getItem() instanceof FilingFolderItem folder)) continue;
 
                     FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
                     if (contents == null || contents.storedItemId().isEmpty()) continue;
                     if (!contents.storedItemId().get().equals(stackItemId)) continue;
 
-                    int toAdd = Math.min(stack.getCount(), Config.getMaxFolderStorage() - contents.count());
+                    int toAdd = Math.min(stack.getCount(), folder.getCapacity() - contents.count());
                     if (toAdd <= 0) continue;
 
                     if (!simulate) {
@@ -205,13 +204,13 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
             } else {
                 // Direct slot insertion
                 ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
-                if (folderStack.isEmpty() || !(folderStack.getItem() instanceof FilingFolderItem)) return stack;
+                if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return stack;
 
                 FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
                 if (contents == null) contents = new FilingFolderItem.FolderContents(Optional.empty(), 0);
 
                 if (contents.storedItemId().isEmpty()) {
-                    int toAdd = Math.min(stack.getCount(), Config.getMaxFolderStorage());
+                    int toAdd = Math.min(stack.getCount(), folder.getCapacity());
                     if (!simulate) {
                         folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                                 new FilingFolderItem.FolderContents(Optional.of(stackItemId), toAdd));
@@ -224,8 +223,7 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
 
                 if (!contents.storedItemId().get().equals(stackItemId)) return stack;
 
-                int availableSpace = Config.getMaxFolderStorage() - contents.count();
-                int toAdd = Math.min(stack.getCount(), availableSpace);
+                int toAdd = Math.min(stack.getCount(), folder.getCapacity() - contents.count());
                 if (toAdd <= 0) return stack;
 
                 if (!simulate) {

@@ -1,6 +1,5 @@
 package com.misterd.realfilingreborn.compat.jade;
 
-import com.misterd.realfilingreborn.Config;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
 import net.minecraft.ChatFormatting;
@@ -43,8 +42,9 @@ public enum FilingCabinetProvider implements IBlockComponentProvider, IServerDat
             int slot = folderTag.getInt("slot");
             String itemName = folderTag.getString("item_name");
             int count = folderTag.getInt("count");
+            int capacity = folderTag.getInt("capacity");
             String formattedCount = NumberFormat.getNumberInstance(Locale.US).format((long) count);
-            double fillPct = (double) count / Config.getMaxFolderStorage() * 100.0;
+            double fillPct = capacity > 0 ? (double) count / capacity * 100.0 : 0.0;
             String pctText = String.format("%.2f%%", fillPct);
             tooltip.add(Component.literal("Folder " + (slot + 1) + ": " + itemName +
                     " (" + formattedCount + ", " + pctText + ")").withStyle(ChatFormatting.WHITE));
@@ -61,13 +61,14 @@ public enum FilingCabinetProvider implements IBlockComponentProvider, IServerDat
             CompoundTag folderTag = new CompoundTag();
             folderTag.putInt("slot", i);
 
-            if (!stack.isEmpty() && stack.getItem() instanceof FilingFolderItem) {
+            if (!stack.isEmpty() && stack.getItem() instanceof FilingFolderItem folder) {
                 FilingFolderItem.FolderContents contents = stack.get(FilingFolderItem.FOLDER_CONTENTS.value());
                 if (contents != null && contents.storedItemId().isPresent()) {
                     ResourceLocation itemId = contents.storedItemId().get();
                     folderTag.putString("item_id", itemId.toString());
                     folderTag.putString("item_name", BuiltInRegistries.ITEM.get(itemId).getDescription().getString());
                     folderTag.putInt("count", contents.count());
+                    folderTag.putInt("capacity", folder.getCapacity());
                 }
             }
 

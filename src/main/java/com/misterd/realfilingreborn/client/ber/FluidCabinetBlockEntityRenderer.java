@@ -4,7 +4,6 @@ import com.misterd.realfilingreborn.block.custom.FluidCabinetBlock;
 import com.misterd.realfilingreborn.blockentity.custom.FluidCabinetBlockEntity;
 import com.misterd.realfilingreborn.item.custom.FluidCanisterItem;
 import com.misterd.realfilingreborn.util.FluidHelper;
-import com.misterd.realfilingreborn.util.FormattingCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.math.Axis;
@@ -35,7 +34,6 @@ public class FluidCabinetBlockEntityRenderer implements BlockEntityRenderer<Flui
     private static final Map<ResourceLocation, TextureAtlasSprite> SPRITE_CACHE = new ConcurrentHashMap<>();
     private static final Minecraft MC = Minecraft.getInstance();
     private static final Font FONT = MC.font;
-    private static final float MAX_VISUAL_AMOUNT = 1.0e8f;
 
     private static final float[][] POSITIONS = {
             {-0.188f,  0.188f},
@@ -78,7 +76,7 @@ public class FluidCabinetBlockEntityRenderer implements BlockEntityRenderer<Flui
         int slots = Math.min(4, blockEntity.inventory.getSlots());
         for (int slot = 0; slot < slots; slot++) {
             ItemStack canisterStack = blockEntity.inventory.getStackInSlot(slot);
-            if (canisterStack.isEmpty() || !(canisterStack.getItem() instanceof FluidCanisterItem)) continue;
+            if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) continue;
 
             FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
             if (contents == null || contents.storedFluidId().isEmpty() || contents.amount() <= 0) continue;
@@ -89,13 +87,25 @@ public class FluidCabinetBlockEntityRenderer implements BlockEntityRenderer<Flui
             float offsetX = POSITIONS[slot][0];
             float offsetY = POSITIONS[slot][1];
 
-            renderFluidQuad(fluid, contents.amount(), offsetX, offsetY, 0.25f, 0.25f, poseStack, bufferSource, light);
-            renderFluidText(FormattingCache.getFormattedFluidAmount(contents.amount()),
-                    offsetX, offsetY - 0.15f, poseStack, bufferSource, light);
+            renderFluidQuad(fluid, contents.amount(), canister.getCapacity(), offsetX, offsetY, 0.25f, 0.25f, poseStack, bufferSource, light);
+            renderFluidText(formatFluidAmount(contents.amount()), offsetX, offsetY - 0.15f, poseStack, bufferSource, light);
         }
     }
 
-    private void renderFluidQuad(Fluid fluid, int amount, float offsetX, float offsetY, float width, float height, PoseStack poseStack, MultiBufferSource bufferSource, int light) {
+    private static String formatFluidAmount(int amount) {
+        int buckets = amount / 1000;
+        if (buckets >= 1_000_000) {
+            return (buckets / 1_000_000) + "MB";
+        } else if (buckets >= 1_000) {
+            return (buckets / 1_000) + "KB";
+        } else if (buckets > 0) {
+            return buckets + "B";
+        } else {
+            return (amount % 1000) + "mB";
+        }
+    }
+
+    private void renderFluidQuad(Fluid fluid, int amount, int capacity, float offsetX, float offsetY, float width, float height, PoseStack poseStack, MultiBufferSource bufferSource, int light) {
         try {
             IClientFluidTypeExtensions ext = FLUID_EXTENSIONS_CACHE.computeIfAbsent(fluid, IClientFluidTypeExtensions::of);
             ResourceLocation stillTexture = ext.getStillTexture();
@@ -111,7 +121,7 @@ public class FluidCabinetBlockEntityRenderer implements BlockEntityRenderer<Flui
             float a = (color >> 24 & 0xFF) / 255.0f;
             if (a == 0.0f) a = 1.0f;
 
-            float fillPct = Math.min(amount / MAX_VISUAL_AMOUNT, 1.0f);
+            float fillPct = capacity > 0 ? Math.min((float) amount / capacity, 1.0f) : 0.0f;
             if (fillPct <= 0.0f) return;
 
             float halfW = width / 2.0f;
@@ -133,12 +143,12 @@ public class FluidCabinetBlockEntityRenderer implements BlockEntityRenderer<Flui
             vc.addVertex(m, left,  top,    0.001f).setColor(r, g, b, a).setUv(minU, adjMinV).setLight(light).setNormal(0, 0, 1);
 
         } catch (Exception e) {
-            renderSolidQuad(0.2f, 0.5f, 1.0f, 0.8f, amount, offsetX, offsetY, width, height, poseStack, bufferSource, light);
+            renderSolidQuad(0.2f, 0.5f, 1.0f, 0.8f, amount, capacity, offsetX, offsetY, width, height, poseStack, bufferSource, light);
         }
     }
 
-    private void renderSolidQuad(float r, float g, float b, float a, int amount, float offsetX, float offsetY, float width, float height, PoseStack poseStack, MultiBufferSource bufferSource, int light) {
-        float fillPct = Math.min(amount / MAX_VISUAL_AMOUNT, 1.0f);
+    private void renderSolidQuad(float r, float g, float b, float a, int amount, int capacity, float offsetX, float offsetY, float width, float height, PoseStack poseStack, MultiBufferSource bufferSource, int light) {
+        float fillPct = capacity > 0 ? Math.min((float) amount / capacity, 1.0f) : 0.0f;
         if (fillPct <= 0.0f) return;
 
         float halfW = width / 2.0f;
