@@ -20,7 +20,6 @@ import java.util.Optional;
 public class FilingFolderMenu extends AbstractContainerMenu {
 
     private final ItemStackHandler assignmentInventory;
-    private final ItemStack folderStack;
     private final int folderSlot;
     private final Inventory playerInventory;
 
@@ -32,7 +31,6 @@ public class FilingFolderMenu extends AbstractContainerMenu {
         super(RFRMenuTypes.FILING_FOLDER_MENU.get(), containerId);
         this.playerInventory = playerInventory;
         this.folderSlot = folderSlot;
-        this.folderStack = playerInventory.getItem(folderSlot);
 
         this.assignmentInventory = new ItemStackHandler(1) {
             @Override
@@ -62,16 +60,21 @@ public class FilingFolderMenu extends AbstractContainerMenu {
         });
     }
 
+    private ItemStack getFolder() {
+        return playerInventory.getItem(folderSlot);
+    }
+
     private void updateFolderAssignment() {
-        if (folderStack.isEmpty()) return;
+        ItemStack folder = getFolder();
+        if (folder.isEmpty()) return;
 
         ItemStack assignedItem = assignmentInventory.getStackInSlot(0);
         if (assignedItem.isEmpty()) return;
 
-        FilingFolderItem.FolderContents currentContents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+        FilingFolderItem.FolderContents currentContents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
         if (currentContents == null || currentContents.storedItemId().isEmpty()) {
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(assignedItem.getItem());
-            folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+            folder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                     new FilingFolderItem.FolderContents(Optional.of(itemId), assignedItem.getCount()));
             assignmentInventory.setStackInSlot(0, ItemStack.EMPTY);
         }
@@ -102,9 +105,10 @@ public class FilingFolderMenu extends AbstractContainerMenu {
     }
 
     public Component getCurrentCountText() {
-        if (folderStack.isEmpty()) return null;
+        ItemStack folder = getFolder();
+        if (folder.isEmpty()) return null;
 
-        FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+        FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
         if (contents != null && contents.storedItemId().isPresent()) {
             return Component.translatable("gui.realfilingreborn.current_item_count",
                     String.format("%,d", contents.count()));
@@ -113,9 +117,10 @@ public class FilingFolderMenu extends AbstractContainerMenu {
     }
 
     public void extractItems() {
-        if (folderStack.isEmpty()) return;
+        ItemStack folder = getFolder();
+        if (folder.isEmpty()) return;
 
-        FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+        FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
         if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) return;
 
         ResourceLocation itemId = contents.storedItemId().get();
@@ -130,14 +135,16 @@ public class FilingFolderMenu extends AbstractContainerMenu {
             player.drop(extracted, false);
         }
 
-        folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+        folder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                 new FilingFolderItem.FolderContents(contents.storedItemId(), Math.max(0, contents.count() - extractAmount)));
+        playerInventory.setChanged();
         broadcastChanges();
     }
 
     @Override
     public boolean stillValid(Player player) {
-        return !folderStack.isEmpty() && folderStack.getItem() instanceof FilingFolderItem;
+        ItemStack folder = getFolder();
+        return !folder.isEmpty() && folder.getItem() instanceof FilingFolderItem;
     }
 
     @Override

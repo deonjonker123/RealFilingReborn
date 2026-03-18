@@ -40,7 +40,7 @@ public record ExtractionPacket(ExtractionType extractionType) implements CustomP
         AbstractContainerMenu menu = serverPlayer.containerMenu;
         switch (packet.extractionType) {
             case FOLDER   -> { if (menu instanceof FilingFolderMenu m)  m.extractItems(); }
-            //case CANISTER -> { if (menu instanceof FluidCanisterMenu m) m.extractFluid(); }
+            case CANISTER -> { if (menu instanceof FluidCanisterMenu m) m.extractFluid(); }
         }
     }
 

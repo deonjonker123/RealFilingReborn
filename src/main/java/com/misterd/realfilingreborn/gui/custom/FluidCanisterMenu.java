@@ -22,7 +22,6 @@ import java.util.Optional;
 public class FluidCanisterMenu extends AbstractContainerMenu {
 
     private final ItemStackHandler assignmentInventory;
-    private final ItemStack canisterStack;
     private final int canisterSlot;
     private final Inventory playerInventory;
 
@@ -34,7 +33,6 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
         super(RFRMenuTypes.FLUID_CANISTER_MENU.get(), containerId);
         this.playerInventory = playerInventory;
         this.canisterSlot = canisterSlot;
-        this.canisterStack = playerInventory.getItem(canisterSlot);
 
         this.assignmentInventory = new ItemStackHandler(1) {
             @Override
@@ -66,8 +64,13 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
         });
     }
 
+    private ItemStack getCanister() {
+        return playerInventory.getItem(canisterSlot);
+    }
+
     private void updateCanisterAssignment() {
-        if (canisterStack.isEmpty()) return;
+        ItemStack canister = getCanister();
+        if (canister.isEmpty()) return;
 
         ItemStack assignedBucket = assignmentInventory.getStackInSlot(0);
         if (assignedBucket.isEmpty() || !(assignedBucket.getItem() instanceof BucketItem bucket)) return;
@@ -75,10 +78,10 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
         Fluid fluid = bucket.content;
         if (!FluidHelper.isValidFluid(fluid)) return;
 
-        FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
+        FluidCanisterItem.CanisterContents contents = canister.get(FluidCanisterItem.CANISTER_CONTENTS.value());
         if (contents == null || contents.storedFluidId().isEmpty()) {
             ResourceLocation fluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(fluid));
-            canisterStack.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
+            canister.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
                     new FluidCanisterItem.CanisterContents(Optional.of(fluidId), 1000));
             assignmentInventory.setStackInSlot(0, new ItemStack(Items.BUCKET));
         }
@@ -109,9 +112,10 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
     }
 
     public Component getCurrentCountText() {
-        if (canisterStack.isEmpty()) return null;
+        ItemStack canister = getCanister();
+        if (canister.isEmpty()) return null;
 
-        FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
+        FluidCanisterItem.CanisterContents contents = canister.get(FluidCanisterItem.CANISTER_CONTENTS.value());
         if (contents == null || contents.storedFluidId().isEmpty()) return null;
 
         int buckets = contents.amount() / 1000;
@@ -123,16 +127,16 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
     }
 
     public void extractFluid() {
-        if (canisterStack.isEmpty()) return;
+        ItemStack canister = getCanister();
+        if (canister.isEmpty()) return;
 
-        FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
+        FluidCanisterItem.CanisterContents contents = canister.get(FluidCanisterItem.CANISTER_CONTENTS.value());
         if (contents == null || contents.storedFluidId().isEmpty() || contents.amount() < 1000) return;
 
         Player player = playerInventory.player;
         ItemStack bucketToGive = FluidHelper.getBucketForFluid(contents.storedFluidId().get());
         if (bucketToGive.isEmpty()) return;
 
-        // Find and consume an empty bucket
         boolean bucketRemoved = false;
         for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
             ItemStack stack = player.getInventory().getItem(i);
@@ -145,15 +149,17 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
 
         if (!bucketRemoved) return;
 
-        canisterStack.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
+        canister.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
                 new FluidCanisterItem.CanisterContents(contents.storedFluidId(), Math.max(0, contents.amount() - 1000)));
         if (!player.getInventory().add(bucketToGive)) player.drop(bucketToGive, false);
+        playerInventory.setChanged();
         broadcastChanges();
     }
 
     @Override
     public boolean stillValid(Player player) {
-        return !canisterStack.isEmpty() && canisterStack.getItem() instanceof FluidCanisterItem;
+        ItemStack canister = getCanister();
+        return !canister.isEmpty() && canister.getItem() instanceof FluidCanisterItem;
     }
 
     @Override
