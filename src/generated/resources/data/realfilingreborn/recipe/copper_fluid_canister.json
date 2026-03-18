@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": {
+      "tag": "c:glass_blocks"
+    },
+    "I": {
+      "item": "minecraft:copper_ingot"
+    },
+    "P": {
+      "item": "minecraft:bucket"
+    }
+  },
+  "pattern": [
+    "III",
+    "PGP",
+    "IPI"
+  ],
+  "result": {
+    "count": 4,
+    "id": "realfilingreborn:copper_fluid_canister"
+  }
+}

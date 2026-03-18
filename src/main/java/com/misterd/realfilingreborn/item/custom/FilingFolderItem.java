@@ -217,6 +217,8 @@ public class FilingFolderItem extends Item {
                     .withStyle(ChatFormatting.GRAY));
         }
 
+        tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_info")
+                .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
         tooltip.add(Component.translatable("tooltip.realfilingreborn.standard_folder_info")
                 .withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
         tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_gui_hint")

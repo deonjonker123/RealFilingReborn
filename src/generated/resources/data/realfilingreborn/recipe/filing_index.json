@@ -9,7 +9,7 @@
       "item": "realfilingreborn:filing_cabinet"
     },
     "I": {
-      "item": "minecraft:copper_ingot"
+      "tag": "minecraft:logs"
     },
     "R": {
       "item": "minecraft:redstone"

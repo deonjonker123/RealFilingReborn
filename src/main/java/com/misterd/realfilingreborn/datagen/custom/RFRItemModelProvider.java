@@ -15,7 +15,19 @@ public class RFRItemModelProvider extends ItemModelProvider {
     @Override
     protected void registerModels() {
         this.basicItem(RFRItems.FILING_FOLDER.get());
+        this.basicItem(RFRItems.COPPER_FILING_FOLDER.get());
+        this.basicItem(RFRItems.IRON_FILING_FOLDER.get());
+        this.basicItem(RFRItems.GOLD_FILING_FOLDER.get());
+        this.basicItem(RFRItems.DIAMOND_FILING_FOLDER.get());
+        this.basicItem(RFRItems.NETHERITE_FILING_FOLDER.get());
+
         this.basicItem(RFRItems.FLUID_CANISTER.get());
+        this.basicItem(RFRItems.COPPER_FLUID_CANISTER.get());
+        this.basicItem(RFRItems.IRON_FLUID_CANISTER.get());
+        this.basicItem(RFRItems.GOLD_FLUID_CANISTER.get());
+        this.basicItem(RFRItems.DIAMOND_FLUID_CANISTER.get());
+        this.basicItem(RFRItems.NETHERITE_FLUID_CANISTER.get());
+
         this.basicItem(RFRItems.ERASER.get());
         this.basicItem(RFRItems.CABINET_CONVERSION_KIT.get());
         this.basicItem(RFRItems.LEDGER.get());

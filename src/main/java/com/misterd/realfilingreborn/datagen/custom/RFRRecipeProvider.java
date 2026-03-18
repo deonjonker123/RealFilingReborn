@@ -8,7 +8,9 @@ import net.minecraft.data.recipes.RecipeCategory;
 import net.minecraft.data.recipes.RecipeOutput;
 import net.minecraft.data.recipes.RecipeProvider;
 import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
+import net.neoforged.neoforge.common.Tags;
 import net.neoforged.neoforge.common.conditions.IConditionBuilder;
 
 import java.util.concurrent.CompletableFuture;
@@ -21,22 +23,121 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
 
     @Override
     protected void buildRecipes(RecipeOutput recipeOutput) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.FILING_FOLDER.get(), 8)
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.FILING_FOLDER.get(), 5)
                 .pattern("PPP")
                 .pattern("PG ")
                 .pattern("PPP")
                 .define('P', Items.PAPER)
-                .define('G', net.neoforged.neoforge.common.Tags.Items.GLASS_BLOCKS)
+                .define('G', Tags.Items.GLASS_BLOCKS)
                 .unlockedBy("has_paper", has(Items.PAPER))
                 .save(recipeOutput);
 
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.COPPER_FILING_FOLDER.get(), 5)
+                .pattern("IPI")
+                .pattern("IGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.COPPER_INGOT)
+                .define('P', Items.PAPER)
+                .unlockedBy("has_copper_ingot", has(Items.COPPER_INGOT))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.IRON_FILING_FOLDER.get(), 5)
+                .pattern("IPI")
+                .pattern("IGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.IRON_INGOT)
+                .define('P', Items.PAPER)
+                .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.GOLD_FILING_FOLDER.get(), 5)
+                .pattern("IPI")
+                .pattern("IGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.GOLD_INGOT)
+                .define('P', Items.PAPER)
+                .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FILING_FOLDER.get(), 5)
+                .pattern("IPI")
+                .pattern("IGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.DIAMOND)
+                .define('P', Items.PAPER)
+                .unlockedBy("has_diamond", has(Items.DIAMOND))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FILING_FOLDER.get(), 5)
+                .pattern("IPI")
+                .pattern("IGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.NETHERITE_INGOT)
+                .define('P', Items.PAPER)
+                .unlockedBy("has_netherite_ingot", has(Items.NETHERITE_INGOT))
+                .save(recipeOutput);
+
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.FLUID_CANISTER.get(), 4)
-                .pattern("   ")
                 .pattern("BGB")
                 .pattern(" B ")
                 .define('B', Items.BUCKET)
-                .define('G', net.neoforged.neoforge.common.Tags.Items.GLASS_BLOCKS)
+                .define('G', Tags.Items.GLASS_BLOCKS)
                 .unlockedBy("has_bucket", has(Items.BUCKET))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.COPPER_FLUID_CANISTER.get(), 4)
+                .pattern("III")
+                .pattern("PGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.COPPER_INGOT)
+                .define('P', Items.BUCKET)
+                .unlockedBy("has_copper_ingot", has(Items.COPPER_INGOT))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.IRON_FLUID_CANISTER.get(), 4)
+                .pattern("III")
+                .pattern("PGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.IRON_INGOT)
+                .define('P', Items.BUCKET)
+                .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.GOLD_FLUID_CANISTER.get(), 4)
+                .pattern("III")
+                .pattern("PGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.GOLD_INGOT)
+                .define('P', Items.BUCKET)
+                .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FLUID_CANISTER.get(), 4)
+                .pattern("III")
+                .pattern("PGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.DIAMOND)
+                .define('P', Items.BUCKET)
+                .unlockedBy("has_diamond", has(Items.DIAMOND))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FLUID_CANISTER.get(), 4)
+                .pattern("III")
+                .pattern("PGP")
+                .pattern("IPI")
+                .define('G', Tags.Items.GLASS_BLOCKS)
+                .define('I', Items.NETHERITE_INGOT)
+                .define('P', Items.BUCKET)
+                .unlockedBy("has_netherite_ingot", has(Items.NETHERITE_INGOT))
                 .save(recipeOutput);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.ERASER.get())
@@ -85,7 +186,7 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .pattern("DRD")
                 .define('R', Items.REDSTONE)
                 .define('G', RFRItems.IRON_RANGE_UPGRADE.get())
-                .define('D', Items.IRON_INGOT)
+                .define('D', Items.DIAMOND)
                 .unlockedBy("has_iron_upgrade", has(RFRItems.IRON_RANGE_UPGRADE.get()))
                 .save(recipeOutput);
 
@@ -100,22 +201,22 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .save(recipeOutput);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get())
-                .pattern("CFC")
-                .pattern("FIF")
-                .pattern("CFC")
-                .define('C', Items.COPPER_INGOT)
-                .define('F', RFRItems.FILING_FOLDER.get())
-                .define('I', Items.IRON_BLOCK)
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', ItemTags.LOGS)
+                .define('P', ItemTags.PLANKS)
+                .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(recipeOutput);
 
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.FLUID_CABINET.get())
-                .pattern("CFC")
-                .pattern("FIF")
-                .pattern("CFC")
-                .define('C', Items.COPPER_INGOT)
-                .define('F', RFRItems.FLUID_CANISTER.get())
-                .define('I', Items.IRON_BLOCK)
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', ItemTags.LOGS)
+                .define('P', ItemTags.PLANKS)
+                .define('B', Items.BUCKET)
                 .unlockedBy("has_fluid_canister", has(RFRItems.FLUID_CANISTER.get()))
                 .save(recipeOutput);
 
@@ -127,7 +228,7 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('F', RFRBlocks.FILING_CABINET)
                 .define('X', Items.REPEATER)
                 .define('C', Items.COMPARATOR)
-                .define('I', Items.COPPER_INGOT)
+                .define('I', ItemTags.LOGS)
                 .unlockedBy("has_cabinet", has(RFRBlocks.FILING_CABINET))
                 .save(recipeOutput);
     }

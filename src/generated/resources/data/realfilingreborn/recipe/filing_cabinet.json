@@ -2,20 +2,20 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "C": {
-      "item": "minecraft:copper_ingot"
+    "B": {
+      "item": "minecraft:barrel"
     },
-    "F": {
-      "item": "realfilingreborn:filing_folder"
+    "L": {
+      "tag": "minecraft:logs"
     },
-    "I": {
-      "item": "minecraft:iron_block"
+    "P": {
+      "tag": "minecraft:planks"
     }
   },
   "pattern": [
-    "CFC",
-    "FIF",
-    "CFC"
+    "LPL",
+    "PBP",
+    "LPL"
   ],
   "result": {
     "count": 1,

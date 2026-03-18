@@ -4,8 +4,21 @@
 
   "_comment1": "=== ITEMS ===",
   "item.realfilingreborn.filing_folder": "Folder",
+  "item.realfilingreborn.copper_filing_folder": "Copper Folder",
+  "item.realfilingreborn.iron_filing_folder": "Iron Folder",
+  "item.realfilingreborn.gold_filing_folder": "Gold Folder",
+  "item.realfilingreborn.diamond_filing_folder": "Diamond Folder",
+  "item.realfilingreborn.netherite_filing_folder": "Netherite Folder",
+
   "item.realfilingreborn.eraser": "Eraser",
-  "item.realfilingreborn.fluid_canister": "Fluid Canister",
+
+  "item.realfilingreborn.fluid_canister": "Canister",
+  "item.realfilingreborn.copper_fluid_canister": "Copper Canister",
+  "item.realfilingreborn.iron_fluid_canister": "Iron Canister",
+  "item.realfilingreborn.gold_fluid_canister": "Gold Canister",
+  "item.realfilingreborn.diamond_fluid_canister": "Diamond Canister",
+  "item.realfilingreborn.netherite_fluid_canister": "Netherite Canister",
+
   "item.realfilingreborn.cabinet_conversion_kit": "Cabinet Conversion Kit",
   "item.realfilingreborn.iron_range_upgrade": "Filing Index Iron Range Upgrade",
   "item.realfilingreborn.diamond_range_upgrade": "Filing Index Diamond Range Upgrade",
@@ -84,6 +97,7 @@
   "tooltip.realfilingreborn.eraser_info": "Right-click while holding an empty folder or canister to erase its assignment",
 
   "_comment14": "=== FILING FOLDER TOOLTIPS ===",
+  "tooltip.realfilingreborn.folder_info": "Holds 4 096 items",
   "tooltip.realfilingreborn.stored_item": "Assigned to (Contents): %s",
   "tooltip.realfilingreborn.item_count": "Count: %s",
   "tooltip.realfilingreborn.empty_folder": "Folder is empty",
@@ -94,7 +108,7 @@
   "tooltip.realfilingreborn.folder_gui_hint": "Shift+Right-click to open assignment GUI",
 
   "_comment16": "=== FLUID CANISTER TOOLTIPS ===",
-  "tooltip.realfilingreborn.canister_info": "Canister that holds near infinite amounts of a single fluid type",
+  "tooltip.realfilingreborn.canister_info": "Holds 64 buckets",
   "tooltip.realfilingreborn.stored_fluid": "Assigned to (Contents): %s",
   "tooltip.realfilingreborn.fluid_amount": "Amount: %s",
   "tooltip.realfilingreborn.empty_canister": "Canister is empty",

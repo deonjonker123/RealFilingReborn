@@ -5,17 +5,20 @@
     "G": {
       "tag": "c:glass_blocks"
     },
+    "I": {
+      "item": "minecraft:netherite_ingot"
+    },
     "P": {
       "item": "minecraft:paper"
     }
   },
   "pattern": [
-    "PPP",
-    "PG ",
-    "PPP"
+    "IPI",
+    "IGP",
+    "IPI"
   ],
   "result": {
     "count": 5,
-    "id": "realfilingreborn:filing_folder"
+    "id": "realfilingreborn:netherite_filing_folder"
   }
 }
