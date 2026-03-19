@@ -70,10 +70,6 @@ public class CanisterUpgradeRecipe extends CustomRecipe {
         return RFRRecipes.CANISTER_UPGRADE_SERIALIZER.get();
     }
 
-    // -------------------------------------------------------------------------
-    // Serializer
-    // -------------------------------------------------------------------------
-
     public static class Serializer implements RecipeSerializer<CanisterUpgradeRecipe> {
 
         private static final MapCodec<CanisterUpgradeRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->

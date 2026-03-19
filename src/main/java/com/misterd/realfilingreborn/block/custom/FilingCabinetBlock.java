@@ -109,6 +109,19 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.FAIL;
         }
 
+        Direction facing = state.getValue(FACING);
+        boolean hittingFront = hitResult.getDirection() == facing;
+        ItemStack heldItem = player.getItemInHand(hand);
+
+        if (player.isCrouching() && hittingFront) {
+            if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
+            int targetSlot = getSlotFromHitResult(hitResult, facing);
+            if (targetSlot >= 0 && targetSlot < 5) {
+                extractFromSlot(cabinet, targetSlot, 1, player, level, pos, state);
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+
         if (player.isCrouching()) {
             if (!level.isClientSide()) {
                 openFilingCabinetMenu(cabinet, (ServerPlayer) player, pos);
@@ -117,17 +130,13 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        ItemStack heldItem = player.getItemInHand(hand);
+        if (!hittingFront) return ItemInteractionResult.FAIL;
 
         if (heldItem.isEmpty()) {
-            Direction facing = state.getValue(FACING);
-            if (hitResult.getDirection() == facing) {
-                if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
-                int targetSlot = getSlotFromHitResult(hitResult, facing);
-                if (targetSlot >= 0 && targetSlot < 5) {
-                    InteractionResult result = extractFromSlot(cabinet, targetSlot, player, level, pos, state);
-                    return result == InteractionResult.SUCCESS ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
-                }
+            if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
+            int targetSlot = getSlotFromHitResult(hitResult, facing);
+            if (targetSlot >= 0 && targetSlot < 5) {
+                extractFromSlot(cabinet, targetSlot, Integer.MAX_VALUE, player, level, pos, state);
             }
             return ItemInteractionResult.SUCCESS;
         }
@@ -148,7 +157,6 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Non-folder item — attempt to store into a folder
         ItemInteractionResult storageResult = handleItemStorage(heldItem, cabinet, player, level, pos, state);
         if (storageResult == ItemInteractionResult.FAIL) {
             if (!level.isClientSide()) {
@@ -220,7 +228,7 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         return 4;
     }
 
-    private InteractionResult extractFromSlot(FilingCabinetBlockEntity blockEntity, int slot, Player player, Level level, BlockPos pos, BlockState state) {
+    private InteractionResult extractFromSlot(FilingCabinetBlockEntity blockEntity, int slot, int amount, Player player, Level level, BlockPos pos, BlockState state) {
         ItemStack folderStack = blockEntity.inventory.getStackInSlot(slot);
         if (folderStack.isEmpty() || !(folderStack.getItem() instanceof FilingFolderItem)) {
             return InteractionResult.SUCCESS;
@@ -235,7 +243,7 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         ResourceLocation itemId = contents.storedItemId().get();
         Item item = BuiltInRegistries.ITEM.get(itemId);
         ItemStack extracted = new ItemStack(item);
-        int extractAmount = Math.min(Math.min(contents.count(), item.getMaxStackSize(extracted)), 64);
+        int extractAmount = Math.min(Math.min(contents.count(), item.getMaxStackSize(extracted)), amount);
 
         if (extractAmount <= 0) {
             player.displayClientMessage(Component.translatable("message.realfilingreborn.folder_empty"), true);

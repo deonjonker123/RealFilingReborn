@@ -42,12 +42,11 @@ public class FolderResetRecipeCategory implements IRecipeCategory<RFRJeiRecipes.
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, RFRJeiRecipes.FolderResetJeiRecipe recipe, IFocusGroup focuses) {
-        // Single item centered in the grid
         builder.addSlot(RecipeIngredientRole.INPUT, 28, 28)
                 .addItemStack(new ItemStack(recipe.input()));
 
         builder.addSlot(RecipeIngredientRole.OUTPUT, 92, 28)
-                .addItemStack(new ItemStack(recipe.input())); // same tier, clean
+                .addItemStack(new ItemStack(recipe.input()));
     }
 
     @Override

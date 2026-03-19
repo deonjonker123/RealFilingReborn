@@ -163,7 +163,6 @@ public class FilingIndexFluidHandler implements IFluidHandler {
         try {
             ResourceLocation resourceFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(resource.getFluid()));
 
-            // Pass 1: fill into an existing matching canister
             for (FluidTankInfo tankInfo : getAllFluidTanks()) {
                 ResourceLocation tankFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(tankInfo.fluidStack.getFluid()));
                 if (!FluidHelper.areFluidsCompatible(resourceFluidId, tankFluidId)) continue;
@@ -188,7 +187,6 @@ public class FilingIndexFluidHandler implements IFluidHandler {
                 return toAdd;
             }
 
-            // Pass 2: fill into an empty canister
             for (BlockPos cabinetPos : new ArrayList<>(indexEntity.getLinkedCabinets())) {
                 if (!isInRangeCached(cabinetPos)) continue;
                 if (!(level.getBlockEntity(cabinetPos) instanceof FluidCabinetBlockEntity fluidCabinet)) continue;

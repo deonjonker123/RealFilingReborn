@@ -27,7 +27,7 @@ public class FolderResetRecipe extends CustomRecipe {
         for (int i = 0; i < input.size(); i++) {
             ItemStack stack = input.getItem(i);
             if (stack.isEmpty()) continue;
-            if (!found.isEmpty()) return false; // more than one item
+            if (!found.isEmpty()) return false;
             found = stack;
         }
 
@@ -62,10 +62,6 @@ public class FolderResetRecipe extends CustomRecipe {
     public RecipeSerializer<?> getSerializer() {
         return RFRRecipes.FOLDER_RESET_SERIALIZER.get();
     }
-
-    // -------------------------------------------------------------------------
-    // Serializer
-    // -------------------------------------------------------------------------
 
     public static class Serializer implements RecipeSerializer<FolderResetRecipe> {
 

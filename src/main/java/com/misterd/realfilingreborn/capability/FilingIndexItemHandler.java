@@ -147,7 +147,6 @@ public class FilingIndexItemHandler implements IItemHandler {
         List<BlockPos> cabinets = new ArrayList<>(indexEntity.getLinkedCabinets());
         ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
 
-        // Try the targeted slot first
         int cabinetIndex = slot / 5;
         int cabinetSlot = slot % 5;
         if (cabinetIndex < cabinets.size()) {
@@ -160,7 +159,6 @@ public class FilingIndexItemHandler implements IItemHandler {
             }
         }
 
-        // Fall back: search all cabinets for a matching folder
         for (BlockPos cabinetPos : cabinets) {
             if (!isInRangeCached(cabinetPos)) continue;
             if (!(level.getBlockEntity(cabinetPos) instanceof FilingCabinetBlockEntity cabinet)) continue;

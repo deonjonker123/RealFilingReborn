@@ -10,7 +10,6 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 public class RFRItems {
     public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(RealFilingReborn.MODID);
 
-    // Filing Folders
     public static final DeferredItem<Item> FILING_FOLDER = ITEMS.register("filing_folder",
             () -> new FilingFolderItem(FilingFolderItem.FolderTier.BASE, new Item.Properties()));
 
@@ -29,7 +28,6 @@ public class RFRItems {
     public static final DeferredItem<Item> NETHERITE_FILING_FOLDER = ITEMS.register("netherite_filing_folder",
             () -> new FilingFolderItem(FilingFolderItem.FolderTier.NETHERITE, new Item.Properties()));
 
-    // Fluid Canisters
     public static final DeferredItem<Item> FLUID_CANISTER = ITEMS.register("fluid_canister",
             () -> new FluidCanisterItem(FluidCanisterItem.CanisterTier.BASE, new Item.Properties()));
 
@@ -48,7 +46,6 @@ public class RFRItems {
     public static final DeferredItem<Item> NETHERITE_FLUID_CANISTER = ITEMS.register("netherite_fluid_canister",
             () -> new FluidCanisterItem(FluidCanisterItem.CanisterTier.NETHERITE, new Item.Properties()));
 
-    // Tools & Upgrades
     public static final DeferredItem<Item> LEDGER = ITEMS.register("ledger",
             () -> new LedgerItem(new Item.Properties()));
 

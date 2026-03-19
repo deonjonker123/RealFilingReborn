@@ -178,7 +178,6 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
             ResourceLocation stackItemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
 
             if (side != null) {
-                // Automation: search all slots for a matching folder
                 for (int i = 0; i < 5; i++) {
                     ItemStack folderStack = cabinet.inventory.getStackInSlot(i);
                     if (!(folderStack.getItem() instanceof FilingFolderItem folder)) continue;
@@ -202,7 +201,6 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
                 }
                 return stack;
             } else {
-                // Direct slot insertion
                 ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
                 if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return stack;
 

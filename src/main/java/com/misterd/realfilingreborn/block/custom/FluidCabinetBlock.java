@@ -122,7 +122,6 @@ public class FluidCabinetBlock extends BaseEntityBlock {
         ItemStack heldItem = player.getItemInHand(hand);
         Direction facing = state.getValue(FACING);
 
-        // Empty bucket on the front face — extract fluid
         if (hitResult.getDirection() == facing && heldItem.getItem() == Items.BUCKET) {
             if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
             int targetSlot = getQuadFromHitResult(hitResult, facing);
@@ -132,7 +131,6 @@ public class FluidCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Insert a canister into the cabinet
         if (heldItem.getItem() instanceof FluidCanisterItem) {
             if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
             for (int i = 0; i < 4; i++) {
@@ -149,7 +147,6 @@ public class FluidCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Fill a canister from a filled bucket
         if (heldItem.getItem() instanceof BucketItem bucketItem && bucketItem.content != Fluids.EMPTY) {
             if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
 
@@ -185,7 +182,6 @@ public class FluidCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Fallback — open GUI
         if (!level.isClientSide()) {
             openFluidCabinetMenu(cabinet, (ServerPlayer) player, pos);
             level.playSound(player, pos, SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.BLOCKS, 1.0F, 1.0F);

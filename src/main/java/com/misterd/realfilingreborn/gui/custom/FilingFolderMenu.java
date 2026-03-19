@@ -80,9 +80,22 @@ public class FilingFolderMenu extends AbstractContainerMenu {
         FilingFolderItem.FolderContents currentContents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
 
         if (currentContents == null || currentContents.storedItemId().isEmpty()) {
+            int remainderCount = folder.getCount() - 1;
+            ItemStack remainder = remainderCount > 0 ? folder.copyWithCount(remainderCount) : ItemStack.EMPTY;
+
+            ItemStack singleFolder = folder.copyWithCount(1);
             ResourceLocation itemId = BuiltInRegistries.ITEM.getKey(assignedItem.getItem());
-            folder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+            singleFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                     new FilingFolderItem.FolderContents(Optional.of(itemId), assignedItem.getCount()));
+
+            playerInventory.setItem(folderSlot, singleFolder);
+
+            if (!remainder.isEmpty()) {
+                if (!playerInventory.player.level().isClientSide()) {
+                    playerInventory.player.drop(remainder, false);
+                }
+            }
+
             assignmentInventory.setStackInSlot(0, ItemStack.EMPTY);
         } else {
             ResourceLocation existingId = currentContents.storedItemId().get();

@@ -42,11 +42,9 @@ public class FolderUpgradeRecipeCategory implements IRecipeCategory<RFRJeiRecipe
 
     @Override
     public void setRecipe(IRecipeLayoutBuilder builder, RFRJeiRecipes.FolderUpgradeJeiRecipe recipe, IFocusGroup focuses) {
-        // Top-left: input folder
         builder.addSlot(RecipeIngredientRole.INPUT, 10, 10)
                 .addItemStack(new ItemStack(recipe.input()));
 
-        // Top-right and bottom-left/right: material x3
         builder.addSlot(RecipeIngredientRole.INPUT, 28, 10)
                 .addItemStack(new ItemStack(recipe.material()));
         builder.addSlot(RecipeIngredientRole.INPUT, 10, 28)
@@ -54,7 +52,6 @@ public class FolderUpgradeRecipeCategory implements IRecipeCategory<RFRJeiRecipe
         builder.addSlot(RecipeIngredientRole.INPUT, 28, 28)
                 .addItemStack(new ItemStack(recipe.material()));
 
-        // Output
         builder.addSlot(RecipeIngredientRole.OUTPUT, 92, 28)
                 .addItemStack(new ItemStack(recipe.output()));
     }

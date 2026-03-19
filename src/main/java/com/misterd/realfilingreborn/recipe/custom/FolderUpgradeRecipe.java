@@ -70,10 +70,6 @@ public class FolderUpgradeRecipe extends CustomRecipe {
         return RFRRecipes.FOLDER_UPGRADE_SERIALIZER.get();
     }
 
-    // -------------------------------------------------------------------------
-    // Serializer
-    // -------------------------------------------------------------------------
-
     public static class Serializer implements RecipeSerializer<FolderUpgradeRecipe> {
 
         private static final MapCodec<FolderUpgradeRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->

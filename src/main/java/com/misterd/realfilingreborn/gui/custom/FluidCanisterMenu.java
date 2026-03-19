@@ -87,8 +87,21 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
         ResourceLocation fluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(fluid));
 
         if (contents == null || contents.storedFluidId().isEmpty()) {
-            canister.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
+            int remainderCount = canister.getCount() - 1;
+            ItemStack remainder = remainderCount > 0 ? canister.copyWithCount(remainderCount) : ItemStack.EMPTY;
+
+            ItemStack singleCanister = canister.copyWithCount(1);
+            singleCanister.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
                     new FluidCanisterItem.CanisterContents(Optional.of(fluidId), 1000));
+
+            playerInventory.setItem(canisterSlot, singleCanister);
+
+            if (!remainder.isEmpty()) {
+                if (!playerInventory.player.level().isClientSide()) {
+                    playerInventory.player.drop(remainder, false);
+                }
+            }
+
             assignmentInventory.setStackInSlot(0, new ItemStack(Items.BUCKET));
         } else {
             if (!FluidHelper.areFluidsCompatible(contents.storedFluidId().get(), fluidId)) return;

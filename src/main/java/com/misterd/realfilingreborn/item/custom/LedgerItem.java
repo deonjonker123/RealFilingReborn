@@ -202,7 +202,6 @@ public class LedgerItem extends Item {
             indexEntity = idx;
         }
 
-        // For REMOVE mode, scan nearby controllers
         Map<BlockPos, FilingIndexBlockEntity> controllerLookup = new HashMap<>();
         if (!adding) {
             int searchRadius = Math.min(64, Math.max(sizeX, Math.max(sizeY, sizeZ)) * 2);
