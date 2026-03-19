@@ -35,6 +35,10 @@ public class FolderUpgradeRecipe extends CustomRecipe {
         ItemStack bottomRight = input.getItem(1, 1);
 
         if (topLeft.getItem() != inputTier) return false;
+
+        FilingFolderItem.FolderContents contents = topLeft.get(FilingFolderItem.FOLDER_CONTENTS.value());
+        if (contents == null || contents.storedItemId().isEmpty()) return false;
+
         return material.test(topRight) && material.test(bottomLeft) && material.test(bottomRight);
     }
 

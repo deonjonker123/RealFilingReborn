@@ -56,6 +56,8 @@ Folders come in six tiers. Powerful storage requires investment — early tiers 
 -   Stores a **single item type**
 -   Cannot store items with NBT data (enchantments, custom names, damage, etc.)
 -   **Shift + Right-click** the folder to open the assignment GUI, where you can assign, deposit, and extract items directly
+- Upgrade a folder by placing it in the top-left of a 2x2 crafting grid with three of the next tier's material in the remaining slots — stored contents are preserved
+- Reset an assigned but empty folder to factory default by placing it alone in any crafting grid
 
 ### Fluid Canisters
 
@@ -75,6 +77,7 @@ Fluid Canisters also come in six tiers.
 -   Compatible with **any fluid** (water, lava, modded fluids)
 -   **Visual fluid display** on cabinet faces
 -   **Shift + Right-click** the canister to open the assignment GUI, where you can assign, deposit, and extract fluid directly (to extract fluids, an empty bucket is required to be in the player inventory)
+- Upgrade and reset follow the same crafting rules as folders
 
 ### Range Upgrades
 
@@ -83,19 +86,6 @@ Fluid Canisters also come in six tiers.
 -   **Netherite Range Upgrade**: Extends Filing Index range to 64 blocks
 
 ----------
-
-### Eraser Tool
-
--   Resets a folder or canister's assignment
--   Use: **Right-click** while holding the folder or canister in the off-hand
-
-### Cabinet Conversion Kit
-
--   Converts empty Filing Cabinets into Fluid Cabinets
--   **Right-click** on an empty Filing Cabinet to convert
-
-----------
-
 ## Compatibility
 
 Real Filing Reborn integrates with major digital storage mods.

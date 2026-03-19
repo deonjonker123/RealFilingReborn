@@ -35,6 +35,10 @@ public class CanisterUpgradeRecipe extends CustomRecipe {
         ItemStack bottomRight = input.getItem(1, 1);
 
         if (topLeft.getItem() != inputTier) return false;
+
+        FluidCanisterItem.CanisterContents contents = topLeft.get(FluidCanisterItem.CANISTER_CONTENTS.value());
+        if (contents == null || contents.storedFluidId().isEmpty()) return false;
+
         return material.test(topRight) && material.test(bottomLeft) && material.test(bottomRight);
     }
 
