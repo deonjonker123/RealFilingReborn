@@ -135,6 +135,11 @@
   "tooltip.realfilingreborn.jade.empty_folder": "Folder %d: Empty",
   "tooltip.realfilingreborn.jade.total_folders": "Total Folders: %d",
   "tooltip.realfilingreborn.jade.total_items": "Total Items: %s",
+  "tooltip.realfilingreborn.jade.index.linked": "Linked Cabinets: %s",
+  "tooltip.realfilingreborn.jade.index.range": "Range: %s (%s)",
+  "tooltip.realfilingreborn.jade.index.connected": "Connected: %s",
+  "tooltip.realfilingreborn.jade.index.yes": "Yes",
+  "tooltip.realfilingreborn.jade.index.no": "No",
 
   "_comment22": "=== JADE PLUGIN CONFIGURATION ===",
   "config.jade.plugin_realfilingreborn.filing_cabinet_info": "Filing Cabinet Information",
