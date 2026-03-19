@@ -1,0 +1,7 @@
+{
+  "type": "realfilingreborn:canister_upgrade",
+  "id": "realfilingreborn:iron_to_gold_canister",
+  "input_tier": "realfilingreborn:iron_fluid_canister",
+  "output_tier": "realfilingreborn:gold_fluid_canister",
+  "material": { "item": "minecraft:gold_ingot" }
+}

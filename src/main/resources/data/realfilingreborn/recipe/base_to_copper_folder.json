@@ -1,0 +1,7 @@
+{
+  "type": "realfilingreborn:folder_upgrade",
+  "id": "realfilingreborn:base_to_copper_folder",
+  "input_tier": "realfilingreborn:filing_folder",
+  "output_tier": "realfilingreborn:copper_filing_folder",
+  "material": { "item": "minecraft:copper_ingot" }
+}

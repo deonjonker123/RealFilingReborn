@@ -1,0 +1,7 @@
+{
+  "type": "realfilingreborn:canister_upgrade",
+  "id": "realfilingreborn:gold_to_diamond_canister",
+  "input_tier": "realfilingreborn:gold_fluid_canister",
+  "output_tier": "realfilingreborn:diamond_fluid_canister",
+  "material": { "item": "minecraft:diamond" }
+}

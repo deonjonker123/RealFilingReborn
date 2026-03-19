@@ -1,0 +1,7 @@
+{
+  "type": "realfilingreborn:folder_upgrade",
+  "id": "realfilingreborn:iron_to_gold_folder",
+  "input_tier": "realfilingreborn:iron_filing_folder",
+  "output_tier": "realfilingreborn:gold_filing_folder",
+  "material": { "item": "minecraft:gold_ingot" }
+}

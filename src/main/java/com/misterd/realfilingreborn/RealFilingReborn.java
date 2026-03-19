@@ -11,6 +11,7 @@ import com.misterd.realfilingreborn.item.RFRCreativeTab;
 import com.misterd.realfilingreborn.item.RFRItems;
 import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
 import com.misterd.realfilingreborn.item.custom.FluidCanisterItem;
+import com.misterd.realfilingreborn.recipe.RFRRecipes;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
@@ -42,6 +43,7 @@ public class RealFilingReborn {
         RFRBlockEntities.register(modEventBus);
         RFRMenuTypes.register(modEventBus);
         RFRDataComponents.register(modEventBus);
+        RFRRecipes.register(modEventBus);
 
         FilingFolderItem.DATA_COMPONENTS.register(modEventBus);
         FluidCanisterItem.DATA_COMPONENTS.register(modEventBus);
