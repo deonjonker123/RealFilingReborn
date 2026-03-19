@@ -28,7 +28,6 @@ public class RFRItemModelProvider extends ItemModelProvider {
         this.basicItem(RFRItems.DIAMOND_FLUID_CANISTER.get());
         this.basicItem(RFRItems.NETHERITE_FLUID_CANISTER.get());
 
-        this.basicItem(RFRItems.CABINET_CONVERSION_KIT.get());
         this.basicItem(RFRItems.LEDGER.get());
         this.basicItem(RFRItems.IRON_RANGE_UPGRADE.get());
         this.basicItem(RFRItems.DIAMOND_RANGE_UPGRADE.get());

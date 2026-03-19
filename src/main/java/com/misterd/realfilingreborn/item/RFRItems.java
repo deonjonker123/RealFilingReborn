@@ -52,9 +52,6 @@ public class RFRItems {
     public static final DeferredItem<Item> LEDGER = ITEMS.register("ledger",
             () -> new LedgerItem(new Item.Properties()));
 
-    public static final DeferredItem<Item> CABINET_CONVERSION_KIT = ITEMS.register("cabinet_conversion_kit",
-            () -> new CabinetConversionKitItem(new Item.Properties()));
-
     public static final DeferredItem<Item> IRON_RANGE_UPGRADE = ITEMS.register("iron_range_upgrade",
             () -> new IronRangeUpgradeItem(new Item.Properties()));
 
