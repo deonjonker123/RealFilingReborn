@@ -49,9 +49,6 @@ public class RFRItems {
             () -> new FluidCanisterItem(FluidCanisterItem.CanisterTier.NETHERITE, new Item.Properties()));
 
     // Tools & Upgrades
-    public static final DeferredItem<Item> ERASER = ITEMS.register("eraser",
-            () -> new EraserItem(new Item.Properties()));
-
     public static final DeferredItem<Item> LEDGER = ITEMS.register("ledger",
             () -> new LedgerItem(new Item.Properties()));
 

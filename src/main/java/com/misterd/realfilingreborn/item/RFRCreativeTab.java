@@ -37,7 +37,6 @@ public class RFRCreativeTab {
                         output.accept(RFRItems.NETHERITE_FLUID_CANISTER);
 
                         output.accept(RFRItems.LEDGER);
-                        output.accept(RFRItems.ERASER);
                         output.accept(RFRItems.CABINET_CONVERSION_KIT);
                         output.accept(RFRItems.IRON_RANGE_UPGRADE);
                         output.accept(RFRItems.DIAMOND_RANGE_UPGRADE);

@@ -140,15 +140,6 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .unlockedBy("has_netherite_ingot", has(Items.NETHERITE_INGOT))
                 .save(recipeOutput);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.ERASER.get())
-                .pattern("  Q")
-                .pattern("QR ")
-                .pattern("QQ ")
-                .define('Q', Items.QUARTZ)
-                .define('R', Items.REDSTONE)
-                .unlockedBy("has_redstone", has(Items.REDSTONE))
-                .save(recipeOutput);
-
         ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.CABINET_CONVERSION_KIT.get(), 3)
                 .pattern("C C")
                 .pattern("BIB")

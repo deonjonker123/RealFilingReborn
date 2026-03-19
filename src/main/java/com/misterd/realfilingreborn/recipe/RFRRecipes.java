@@ -1,7 +1,9 @@
 package com.misterd.realfilingreborn.recipe;
 
 
+import com.misterd.realfilingreborn.recipe.custom.CanisterResetRecipe;
 import com.misterd.realfilingreborn.recipe.custom.CanisterUpgradeRecipe;
+import com.misterd.realfilingreborn.recipe.custom.FolderResetRecipe;
 import com.misterd.realfilingreborn.recipe.custom.FolderUpgradeRecipe;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.world.item.crafting.RecipeSerializer;
@@ -19,6 +21,12 @@ public class RFRRecipes {
 
     public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<CanisterUpgradeRecipe>> CANISTER_UPGRADE_SERIALIZER =
             RECIPE_SERIALIZERS.register("canister_upgrade", CanisterUpgradeRecipe.Serializer::new);
+
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<FolderResetRecipe>> FOLDER_RESET_SERIALIZER =
+            RECIPE_SERIALIZERS.register("folder_reset", FolderResetRecipe.Serializer::new);
+
+    public static final DeferredHolder<RecipeSerializer<?>, RecipeSerializer<CanisterResetRecipe>> CANISTER_RESET_SERIALIZER =
+            RECIPE_SERIALIZERS.register("canister_reset", CanisterResetRecipe.Serializer::new);
 
     public static void register(IEventBus eventBus) {
         RECIPE_SERIALIZERS.register(eventBus);
