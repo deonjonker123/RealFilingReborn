@@ -18,7 +18,7 @@ public class RFRBlockTagProvider extends BlockTagsProvider {
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
+        this.tag(BlockTags.MINEABLE_WITH_AXE)
                 .add(RFRBlocks.FILING_CABINET.get())
                 .add(RFRBlocks.FLUID_CABINET.get())
                 .add(RFRBlocks.FILING_INDEX.get());
