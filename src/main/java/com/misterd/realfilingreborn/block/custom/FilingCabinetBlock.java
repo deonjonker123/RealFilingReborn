@@ -113,7 +113,6 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         boolean hittingFront = hitResult.getDirection() == facing;
         ItemStack heldItem = player.getItemInHand(hand);
 
-        // Shift+right-click on front face: extract a stack from targeted slot
         if (player.isCrouching() && hittingFront) {
             if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
             int targetSlot = getSlotFromHitResult(hitResult, facing);
@@ -123,7 +122,6 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Shift+right-click not on front: open GUI
         if (player.isCrouching()) {
             if (!level.isClientSide()) {
                 openFilingCabinetMenu(cabinet, (ServerPlayer) player, pos);
@@ -132,7 +130,6 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Right-click with empty hand on front face: open GUI
         if (heldItem.isEmpty()) {
             if (!level.isClientSide()) {
                 openFilingCabinetMenu(cabinet, (ServerPlayer) player, pos);
@@ -141,7 +138,6 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Right-click on any non-front face: open GUI
         if (!hittingFront) {
             if (!level.isClientSide()) {
                 openFilingCabinetMenu(cabinet, (ServerPlayer) player, pos);
@@ -150,7 +146,6 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Right-click with folder: insert folder into cabinet
         if (heldItem.getItem() instanceof FilingFolderItem) {
             if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
             for (int i = 0; i < 5; i++) {
@@ -167,7 +162,6 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
-        // Right-click with item: attempt to store into a matching/empty folder, else open GUI
         ItemInteractionResult storageResult = handleItemStorage(heldItem, cabinet, player, level, pos, state);
         if (storageResult == ItemInteractionResult.FAIL) {
             if (!level.isClientSide()) {
