@@ -31,19 +31,29 @@ import org.jetbrains.annotations.NotNull;
 import javax.annotation.Nullable;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 
 public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvider {
 
     @Nullable
     private BlockPos controllerPos = null;
 
+    private final boolean[] dirtySlots = new boolean[5];
+    private boolean anySlotDirty = false;
+
     public final ItemStackHandler inventory = new ItemStackHandler(5) {
         @Override
         protected void onContentsChanged(int slot) {
-            FilingCabinetBlockEntity.this.setChanged();
-            if (level != null && !level.isClientSide()) {
-                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
+            setChanged();
+            if (slot >= 0 && slot < 5) {
+                dirtySlots[slot] = true;
+                anySlotDirty = true;
+            }
+            if (controllerPos == null && level != null && !level.isClientSide()) {
+                level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
+            } else if (controllerPos != null && level != null && !level.isClientSide()) {
+                if (level.getBlockEntity(controllerPos) instanceof FilingIndexBlockEntity index) {
+                    index.scheduleFlush();
+                }
             }
         }
     };
@@ -61,45 +71,21 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
                 s -> new FilingCabinetItemHandler(this, s));
     }
 
-    public void drops() {
-        SimpleContainer inv = new SimpleContainer(inventory.getSlots());
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            inv.setItem(i, inventory.getStackInSlot(i));
-        }
-        Containers.dropContents(level, worldPosition, inv);
+    public boolean[] consumeDirtySlots() {
+        if (!anySlotDirty) return null;
+        boolean[] snapshot = dirtySlots.clone();
+        for (int i = 0; i < 5; i++) dirtySlots[i] = false;
+        anySlotDirty = false;
+        return snapshot;
     }
 
-    @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put("inventory", inventory.serializeNBT(registries));
-        if (controllerPos != null) {
-            tag.putLong("controllerPos", controllerPos.asLong());
-        }
+    public boolean hasAnyDirtySlot() {
+        return anySlotDirty;
     }
 
-    @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        inventory.deserializeNBT(registries, tag.getCompound("inventory"));
-        controllerPos = tag.contains("controllerPos") ? BlockPos.of(tag.getLong("controllerPos")) : null;
-    }
-
-    @Override
-    public Component getDisplayName() {
-        return Component.translatable("blockentity.realfilingreborn.name");
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
-        return new FilingCabinetMenu(id, playerInventory, this);
-    }
-
-    private void notifyFolderContentsChanged() {
+    public void sendUpdatePacket() {
         if (level != null && !level.isClientSide()) {
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 2);
-            setChanged();
         }
     }
 
@@ -126,6 +112,42 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
 
     public boolean isLinkedToController() {
         return controllerPos != null;
+    }
+
+    public void drops() {
+        SimpleContainer inv = new SimpleContainer(inventory.getSlots());
+        for (int i = 0; i < inventory.getSlots(); i++) {
+            inv.setItem(i, inventory.getStackInSlot(i));
+        }
+        Containers.dropContents(level, worldPosition, inv);
+    }
+
+    @Override
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("inventory", inventory.serializeNBT(registries));
+        if (controllerPos != null) {
+            tag.putLong("controllerPos", controllerPos.asLong());
+        }
+    }
+
+    @Override
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        inventory.deserializeNBT(registries, tag.getCompound("inventory"));
+        controllerPos = tag.contains("controllerPos") ?
+                BlockPos.of(tag.getLong("controllerPos")) : null;
+    }
+
+    @Override
+    public Component getDisplayName() {
+        return Component.translatable("blockentity.realfilingreborn.name");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
+        return new FilingCabinetMenu(id, playerInventory, this);
     }
 
     @Nullable
@@ -157,14 +179,11 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
         @NotNull
         @Override
         public ItemStack getStackInSlot(int slot) {
-            if (slot < 0 || slot >= getSlots()) return ItemStack.EMPTY;
-
+            if (slot < 0 || slot >= 5) return ItemStack.EMPTY;
             ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
             if (!(folderStack.getItem() instanceof FilingFolderItem)) return ItemStack.EMPTY;
-
             FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
             if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) return ItemStack.EMPTY;
-
             Item item = BuiltInRegistries.ITEM.get(contents.storedItemId().get());
             return new ItemStack(item, contents.count());
         }
@@ -172,103 +191,59 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
         @NotNull
         @Override
         public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-            if (stack.isEmpty()) return stack;
+            if (stack.isEmpty() || slot < 0 || slot >= 5) return stack;
             if (FilingFolderItem.hasSignificantNBT(stack)) return stack;
-
-            ResourceLocation stackItemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
-
-            if (side != null) {
-                for (int i = 0; i < 5; i++) {
-                    ItemStack folderStack = cabinet.inventory.getStackInSlot(i);
-                    if (!(folderStack.getItem() instanceof FilingFolderItem folder)) continue;
-
-                    FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-                    if (contents == null || contents.storedItemId().isEmpty()) continue;
-                    if (!contents.storedItemId().get().equals(stackItemId)) continue;
-
-                    int toAdd = Math.min(stack.getCount(), folder.getCapacity() - contents.count());
-                    if (toAdd <= 0) continue;
-
-                    if (!simulate) {
-                        folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
-                                new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
-                        cabinet.notifyFolderContentsChanged();
-                    }
-
-                    ItemStack remaining = stack.copy();
-                    remaining.shrink(toAdd);
-                    return remaining;
-                }
-                return stack;
-            } else {
-                ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
-                if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return stack;
-
-                FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-                if (contents == null) contents = new FilingFolderItem.FolderContents(Optional.empty(), 0);
-
-                if (contents.storedItemId().isEmpty()) {
-                    int toAdd = Math.min(stack.getCount(), folder.getCapacity());
-                    if (!simulate) {
-                        folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
-                                new FilingFolderItem.FolderContents(Optional.of(stackItemId), toAdd));
-                        cabinet.notifyFolderContentsChanged();
-                    }
-                    ItemStack remaining = stack.copy();
-                    remaining.shrink(toAdd);
-                    return remaining;
-                }
-
-                if (!contents.storedItemId().get().equals(stackItemId)) return stack;
-
-                int toAdd = Math.min(stack.getCount(), folder.getCapacity() - contents.count());
-                if (toAdd <= 0) return stack;
-
-                if (!simulate) {
-                    folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
-                            new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
-                    cabinet.notifyFolderContentsChanged();
-                }
-
-                ItemStack remaining = stack.copy();
-                remaining.shrink(toAdd);
-                return remaining;
+            ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
+            if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return stack;
+            FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+            if (contents == null) return stack;
+            ResourceLocation incomingId = BuiltInRegistries.ITEM.getKey(stack.getItem());
+            if (contents.storedItemId().isEmpty() || !contents.storedItemId().get().equals(incomingId)) return stack;
+            int toAdd = Math.min(stack.getCount(), folder.getCapacity() - contents.count());
+            if (toAdd <= 0) return stack;
+            if (!simulate) {
+                folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+                        new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
+                cabinet.inventory.setStackInSlot(slot, folderStack);
             }
+            ItemStack remaining = stack.copy();
+            remaining.shrink(toAdd);
+            return remaining;
         }
 
         @NotNull
         @Override
         public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (slot < 0 || slot >= getSlots() || amount <= 0) return ItemStack.EMPTY;
-
+            if (amount <= 0 || slot < 0 || slot >= 5) return ItemStack.EMPTY;
             ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
             if (!(folderStack.getItem() instanceof FilingFolderItem)) return ItemStack.EMPTY;
-
             FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
             if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) return ItemStack.EMPTY;
-
             Item item = BuiltInRegistries.ITEM.get(contents.storedItemId().get());
             ItemStack result = new ItemStack(item, 1);
             int actualExtract = Math.min(Math.min(contents.count(), amount), item.getMaxStackSize(result));
             if (actualExtract <= 0) return ItemStack.EMPTY;
-
             result.setCount(actualExtract);
             if (!simulate) {
                 folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                         new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() - actualExtract));
-                cabinet.notifyFolderContentsChanged();
+                cabinet.inventory.setStackInSlot(slot, folderStack);
             }
             return result;
         }
 
         @Override
         public int getSlotLimit(int slot) {
-            return 1;
+            if (slot < 0 || slot >= 5) return 0;
+            ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
+            if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return 0;
+            FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+            return contents != null ? folder.getCapacity() : 0;
         }
 
         @Override
         public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            return !(stack.getItem() instanceof FilingFolderItem);
+            return !FilingFolderItem.hasSignificantNBT(stack);
         }
     }
 }

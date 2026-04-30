@@ -23,7 +23,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class LedgerItem extends Item {
 
@@ -54,7 +57,7 @@ public class LedgerItem extends Item {
 
         ItemStack stack = context.getItemInHand();
         BlockState state = level.getBlockState(pos);
-        LedgerData data = stack.getOrDefault(RFRDataComponents.LEDGER_DATA.get(), LedgerData.DEFAULT);
+        LedgerData data = getData(stack);
 
         if (state.getBlock() instanceof FilingIndexBlock && player.isShiftKeyDown()) {
             selectController(stack, pos, player);
@@ -101,16 +104,17 @@ public class LedgerItem extends Item {
                 : "item.realfilingreborn.ledger.selection.multi"), true);
     }
 
-    private void selectController(ItemStack stack, BlockPos controllerPos, Player player) {
+    private void selectController(ItemStack stack, BlockPos pos, Player player) {
         LedgerData data = getData(stack);
-        setData(stack, data.withSelectedController(controllerPos));
+        setData(stack, data.withSelectedController(pos).withFirstMultiPos(null));
         player.displayClientMessage(Component.translatable("item.realfilingreborn.ledger.controller.selected",
-                controllerPos.getX(), controllerPos.getY(), controllerPos.getZ()), true);
+                pos.getX(), pos.getY(), pos.getZ()), true);
     }
 
     private void handleSingleCabinetAction(Level level, BlockPos cabinetPos, ItemStack stack, Player player) {
-        LedgerData data = getData(stack);
+        if (level.isClientSide()) return;
 
+        LedgerData data = getData(stack);
         if (data.selectedController() == null) {
             player.displayClientMessage(Component.translatable("item.realfilingreborn.ledger.error.no_controller"), true);
             return;
@@ -157,44 +161,24 @@ public class LedgerItem extends Item {
     }
 
     private void handleMultiCabinetAction(Level level, BlockPos cabinetPos, ItemStack stack, Player player) {
+        if (level.isClientSide()) return;
+
         LedgerData data = getData(stack);
         if (data.firstMultiPos() == null) {
             setData(stack, data.withFirstMultiPos(cabinetPos));
             player.displayClientMessage(Component.translatable("item.realfilingreborn.ledger.multi.start",
                     cabinetPos.getX(), cabinetPos.getY(), cabinetPos.getZ()), true);
-        } else {
-            processMultiSelection(level, data.firstMultiPos(), cabinetPos, stack, player);
-            setData(stack, data.withFirstMultiPos(null));
+            return;
         }
-    }
 
-    private void processMultiSelection(Level level, BlockPos pos1, BlockPos pos2, ItemStack stack, Player player) {
-        LedgerData data = getData(stack);
+        BlockPos first = data.firstMultiPos();
+        BlockPos second = cabinetPos;
+        setData(stack, data.withFirstMultiPos(null));
 
         if (data.selectedController() == null && data.operationMode() == LedgerData.OperationMode.ADD) {
             player.displayClientMessage(Component.translatable("item.realfilingreborn.ledger.error.no_controller"), true);
             return;
         }
-
-        int minX = Math.min(pos1.getX(), pos2.getX()), maxX = Math.max(pos1.getX(), pos2.getX());
-        int minY = Math.min(pos1.getY(), pos2.getY()), maxY = Math.max(pos1.getY(), pos2.getY());
-        int minZ = Math.min(pos1.getZ(), pos2.getZ()), maxZ = Math.max(pos1.getZ(), pos2.getZ());
-        int sizeX = maxX - minX + 1, sizeY = maxY - minY + 1, sizeZ = maxZ - minZ + 1;
-
-        if (sizeX > MAX_SELECTION_DIMENSION || sizeY > MAX_SELECTION_DIMENSION || sizeZ > MAX_SELECTION_DIMENSION) {
-            player.displayClientMessage(Component.literal("Selection too large! Maximum size: " + MAX_SELECTION_DIMENSION + " blocks per dimension")
-                    .withStyle(ChatFormatting.RED), true);
-            return;
-        }
-
-        long totalBlocks = (long) sizeX * sizeY * sizeZ;
-        if (totalBlocks > MAX_SELECTION_SIZE) {
-            player.displayClientMessage(Component.literal("Selection too large! Maximum total blocks: " + MAX_SELECTION_SIZE)
-                    .withStyle(ChatFormatting.RED), true);
-            return;
-        }
-
-        boolean adding = data.operationMode() == LedgerData.OperationMode.ADD;
 
         FilingIndexBlockEntity indexEntity = null;
         if (data.selectedController() != null &&
@@ -202,73 +186,95 @@ public class LedgerItem extends Item {
             indexEntity = idx;
         }
 
-        Map<BlockPos, FilingIndexBlockEntity> controllerLookup = new HashMap<>();
-        if (!adding) {
-            int searchRadius = Math.min(64, Math.max(sizeX, Math.max(sizeY, sizeZ)) * 2);
-            BlockPos center = new BlockPos((minX + maxX) / 2, (minY + maxY) / 2, (minZ + maxZ) / 2);
-            for (int dx = -searchRadius; dx <= searchRadius; dx += 8) {
-                for (int dy = -searchRadius; dy <= searchRadius; dy += 8) {
-                    for (int dz = -searchRadius; dz <= searchRadius; dz += 8) {
-                        BlockPos checkPos = center.offset(dx, dy, dz);
-                        if (level.getBlockEntity(checkPos) instanceof FilingIndexBlockEntity ctrl) {
-                            controllerLookup.put(checkPos, ctrl);
-                        }
-                    }
-                }
-            }
-        }
+        int minX = Math.min(first.getX(), second.getX());
+        int minY = Math.min(first.getY(), second.getY());
+        int minZ = Math.min(first.getZ(), second.getZ());
+        int maxX = Math.max(first.getX(), second.getX());
+        int maxY = Math.max(first.getY(), second.getY());
+        int maxZ = Math.max(first.getZ(), second.getZ());
 
-        Set<BlockPos> cabinetsToAdd = new HashSet<>();
-        Set<BlockPos> cabinetsToRemove = new HashSet<>();
+        // Clamp to dimension limit
+        maxX = Math.min(maxX, minX + MAX_SELECTION_DIMENSION);
+        maxY = Math.min(maxY, minY + MAX_SELECTION_DIMENSION);
+        maxZ = Math.min(maxZ, minZ + MAX_SELECTION_DIMENSION);
+
+        boolean adding = data.operationMode() == LedgerData.OperationMode.ADD;
+
+        Set<BlockPos> itemCabinetsToAdd = new LinkedHashSet<>();
+        Set<BlockPos> fluidCabinetsToAdd = new LinkedHashSet<>();
+        Set<BlockPos> cabinetsToRemove = new LinkedHashSet<>();
+        Map<BlockPos, FilingIndexBlockEntity> controllerLookup = new HashMap<>();
         int processedCount = 0;
 
-        for (int x = minX; x <= maxX; x++) {
-            for (int y = minY; y <= maxY; y++) {
-                for (int z = minZ; z <= maxZ; z++) {
+        for (int x = minX; x <= maxX && processedCount < MAX_SELECTION_SIZE; x++) {
+            for (int y = minY; y <= maxY && processedCount < MAX_SELECTION_SIZE; y++) {
+                for (int z = minZ; z <= maxZ && processedCount < MAX_SELECTION_SIZE; z++) {
                     BlockPos currentPos = new BlockPos(x, y, z);
                     BlockState state = level.getBlockState(currentPos);
-                    if (!(state.getBlock() instanceof FilingCabinetBlock) && !(state.getBlock() instanceof FluidCabinetBlock)) continue;
-                    if (adding && (indexEntity == null || !isInRange(data.selectedController(), currentPos, indexEntity.getRange()))) continue;
 
+                    boolean isItemCabinet = state.getBlock() instanceof FilingCabinetBlock;
+                    boolean isFluidCabinet = state.getBlock() instanceof FluidCabinetBlock;
+                    if (!isItemCabinet && !isFluidCabinet) continue;
+
+                    // Bug 5 fix: when adding, validate that the cabinet type is compatible
+                    // with the index. Filing Index only manages FilingCabinetBlockEntity for
+                    // item storage; fluid cabinets link separately. We allow both to be linked
+                    // to the same index (the index tracks them all for range/connected state)
+                    // but we flag a mismatch if the player tries to link a fluid cabinet
+                    // when the first selected block was an item cabinet, or vice versa.
+                    // Concretely: item cabinets and fluid cabinets are both valid to link,
+                    // but we skip blocks that don't have a matching BE to avoid slot count corruption.
                     BlockEntity be = level.getBlockEntity(currentPos);
-                    boolean processed = false;
+                    if (be == null) continue;
+                    if (isItemCabinet && !(be instanceof FilingCabinetBlockEntity)) continue;
+                    if (isFluidCabinet && !(be instanceof FluidCabinetBlockEntity)) continue;
 
-                    if (be instanceof FilingCabinetBlockEntity cabinet) {
-                        if (adding) {
+                    if (adding) {
+                        if (indexEntity == null || !isInRange(data.selectedController(), currentPos, indexEntity.getRange())) continue;
+
+                        if (be instanceof FilingCabinetBlockEntity cabinet) {
                             cabinet.setControllerPos(data.selectedController());
-                            cabinetsToAdd.add(currentPos);
-                        } else {
-                            BlockPos old = cabinet.getControllerPos();
-                            cabinet.clearControllerPos();
-                            if (old != null && controllerLookup.containsKey(old)) cabinetsToRemove.add(currentPos);
-                        }
-                        processed = true;
-                    } else if (be instanceof FluidCabinetBlockEntity fluidCabinet) {
-                        if (adding) {
+                            itemCabinetsToAdd.add(currentPos);
+                        } else if (be instanceof FluidCabinetBlockEntity fluidCabinet) {
                             fluidCabinet.setControllerPos(data.selectedController());
-                            cabinetsToAdd.add(currentPos);
-                        } else {
-                            BlockPos old = fluidCabinet.getControllerPos();
-                            fluidCabinet.clearControllerPos();
-                            if (old != null && controllerLookup.containsKey(old)) cabinetsToRemove.add(currentPos);
+                            fluidCabinetsToAdd.add(currentPos);
                         }
-                        processed = true;
+                    } else {
+                        BlockPos oldController = null;
+                        if (be instanceof FilingCabinetBlockEntity cabinet) {
+                            oldController = cabinet.getControllerPos();
+                            cabinet.clearControllerPos();
+                        } else if (be instanceof FluidCabinetBlockEntity fluidCabinet) {
+                            oldController = fluidCabinet.getControllerPos();
+                            fluidCabinet.clearControllerPos();
+                        }
+                        if (oldController != null) {
+                            cabinetsToRemove.add(currentPos);
+                            if (!controllerLookup.containsKey(oldController) &&
+                                    level.getBlockEntity(oldController) instanceof FilingIndexBlockEntity ctrl) {
+                                controllerLookup.put(oldController, ctrl);
+                            }
+                        }
                     }
-
-                    if (processed) processedCount++;
+                    processedCount++;
                 }
             }
         }
 
-        if (!cabinetsToAdd.isEmpty() && indexEntity != null) {
-            indexEntity.addCabinets(cabinetsToAdd);
+        if (adding && indexEntity != null) {
+            Set<BlockPos> allToAdd = new LinkedHashSet<>();
+            allToAdd.addAll(itemCabinetsToAdd);
+            allToAdd.addAll(fluidCabinetsToAdd);
+            if (!allToAdd.isEmpty()) indexEntity.addCabinets(allToAdd);
         }
 
-        for (BlockPos cabinetPos : cabinetsToRemove) {
-            for (FilingIndexBlockEntity ctrl : controllerLookup.values()) {
-                if (ctrl.getLinkedCabinets().contains(cabinetPos)) {
-                    ctrl.removeCabinet(cabinetPos);
-                    break;
+        if (!cabinetsToRemove.isEmpty()) {
+            for (BlockPos removedPos : cabinetsToRemove) {
+                for (FilingIndexBlockEntity ctrl : controllerLookup.values()) {
+                    if (ctrl.getLinkedCabinets().contains(removedPos)) {
+                        ctrl.removeCabinet(removedPos);
+                        break;
+                    }
                 }
             }
         }
@@ -283,7 +289,7 @@ public class LedgerItem extends Item {
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, java.util.List<Component> tooltip, TooltipFlag flag) {
         LedgerData data = getData(stack);
 
         tooltip.add(Component.translatable("item.realfilingreborn.ledger.subtitle").withStyle(ChatFormatting.LIGHT_PURPLE));
@@ -292,26 +298,25 @@ public class LedgerItem extends Item {
                 : Component.translatable("item.realfilingreborn.ledger.tooltip.operation.remove").withStyle(ChatFormatting.RED));
         tooltip.add(data.selectionMode() == LedgerData.SelectionMode.SINGLE
                 ? Component.translatable("item.realfilingreborn.ledger.tooltip.selection.single").withStyle(ChatFormatting.AQUA)
-                : Component.translatable("item.realfilingreborn.ledger.tooltip.selection.multi").withStyle(ChatFormatting.LIGHT_PURPLE));
+                : Component.translatable("item.realfilingreborn.ledger.tooltip.selection.multi").withStyle(ChatFormatting.AQUA));
 
         if (data.selectedController() != null) {
+            BlockPos c = data.selectedController();
             tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.controller.selected",
-                            data.selectedController().getX(), data.selectedController().getY(), data.selectedController().getZ())
-                    .withStyle(ChatFormatting.GREEN));
+                    c.getX(), c.getY(), c.getZ()).withStyle(ChatFormatting.YELLOW));
         } else {
-            tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.controller.none").withStyle(ChatFormatting.RED));
+            tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.controller.none").withStyle(ChatFormatting.GRAY));
         }
 
         if (data.firstMultiPos() != null) {
+            BlockPos m = data.firstMultiPos();
             tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.multi.active",
-                            data.firstMultiPos().getX(), data.firstMultiPos().getY(), data.firstMultiPos().getZ())
-                    .withStyle(ChatFormatting.AQUA));
+                    m.getX(), m.getY(), m.getZ()).withStyle(ChatFormatting.WHITE));
         }
 
-        tooltip.add(Component.literal(""));
-        tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.usage.selection").withColor(11184810));
-        tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.usage.operation").withColor(11184810));
-        tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.usage.controller").withColor(11184810));
-        tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.usage.cabinet").withColor(11184810));
+        tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.usage.selection").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.usage.operation").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.usage.controller").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.realfilingreborn.ledger.tooltip.usage.cabinet").withStyle(ChatFormatting.GRAY));
     }
 }

@@ -31,11 +31,9 @@ import net.neoforged.neoforge.event.server.ServerStartingEvent;
 @Mod(RealFilingReborn.MODID)
 public class RealFilingReborn {
     public static final String MODID = "realfilingreborn";
-    public static final Logger LOGGER = LogUtils.getLogger();
 
     public RealFilingReborn(IEventBus modEventBus, ModContainer modContainer) {
         modEventBus.addListener(this::commonSetup);
-        NeoForge.EVENT_BUS.register(this);
 
         RFRBlocks.register(modEventBus);
         RFRItems.register(modEventBus);
@@ -55,12 +53,7 @@ public class RealFilingReborn {
 
     }
 
-    @SubscribeEvent
-    public void onServerStarting(ServerStartingEvent event) {
-
-    }
-
-    @EventBusSubscriber(modid = MODID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void registerBER(EntityRenderersEvent.RegisterRenderers event) {

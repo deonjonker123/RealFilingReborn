@@ -20,7 +20,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
-@EventBusSubscriber(modid = RealFilingReborn.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(modid = RealFilingReborn.MODID)
 public class DataGenerators {
     @SubscribeEvent
     public static void gatherData(GatherDataEvent event) {
