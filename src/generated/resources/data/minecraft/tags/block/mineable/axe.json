@@ -1,7 +1,14 @@
 {
   "values": [
     "realfilingreborn:filing_cabinet",
-    "realfilingreborn:fluid_cabinet",
-    "realfilingreborn:filing_index"
+    "realfilingreborn:acacia_filing_cabinet",
+    "realfilingreborn:birch_filing_cabinet",
+    "realfilingreborn:cherry_filing_cabinet",
+    "realfilingreborn:crimson_filing_cabinet",
+    "realfilingreborn:darkoak_filing_cabinet",
+    "realfilingreborn:jungle_filing_cabinet",
+    "realfilingreborn:mangrove_filing_cabinet",
+    "realfilingreborn:oak_filing_cabinet",
+    "realfilingreborn:warped_filing_cabinet"
   ]
 }

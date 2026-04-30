@@ -1,9 +1,7 @@
 package com.misterd.realfilingreborn.block;
 
 import com.misterd.realfilingreborn.RealFilingReborn;
-import com.misterd.realfilingreborn.block.custom.FilingCabinetBlock;
-import com.misterd.realfilingreborn.block.custom.FilingIndexBlock;
-import com.misterd.realfilingreborn.block.custom.FluidCabinetBlock;
+import com.misterd.realfilingreborn.block.custom.*;
 import com.misterd.realfilingreborn.item.RFRItems;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -21,6 +19,60 @@ public class RFRBlocks {
 
     public static final DeferredBlock<Block> FILING_CABINET = registerBlock("filing_cabinet",
             () -> new FilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> ACACIA_FILING_CABINET = registerBlock("acacia_filing_cabinet",
+            () -> new AcaciaFilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> BIRCH_FILING_CABINET = registerBlock("birch_filing_cabinet",
+            () -> new BirchFilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> CHERRY_FILING_CABINET = registerBlock("cherry_filing_cabinet",
+            () -> new CherryFilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> CRIMSON_FILING_CABINET = registerBlock("crimson_filing_cabinet",
+            () -> new CrimsonFilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> DARKOAK_FILING_CABINET = registerBlock("darkoak_filing_cabinet",
+            () -> new DarkOakFilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> JUNGLE_FILING_CABINET = registerBlock("jungle_filing_cabinet",
+            () -> new JungleFilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> MANGROVE_FILING_CABINET = registerBlock("mangrove_filing_cabinet",
+            () -> new MangroveFilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> OAK_FILING_CABINET = registerBlock("oak_filing_cabinet",
+            () -> new OakFilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
+    public static final DeferredBlock<Block> WARPED_FILING_CABINET = registerBlock("warped_filing_cabinet",
+            () -> new WarpedFilingCabinetBlock(BlockBehaviour.Properties.of()
                     .strength(3.0F, 5.0F)
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));

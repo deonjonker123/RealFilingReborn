@@ -60,10 +60,10 @@ public class FilingCabinetBlockEntityRenderer implements BlockEntityRenderer<Fil
         poseStack.translate(0.5, 0.5, 0.5);
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));
         switch (facing) {
-            case NORTH -> poseStack.translate(0.0, 0.025, 0.475);
-            case EAST  -> { poseStack.translate(-0.475, 0.025, 0.0); poseStack.mulPose(Axis.YP.rotationDegrees(-90.0f)); }
-            case SOUTH -> { poseStack.translate(0.0, 0.025, -0.475); poseStack.mulPose(Axis.YP.rotationDegrees(180.0f)); }
-            case WEST  -> { poseStack.translate(0.475, 0.025, 0.0); poseStack.mulPose(Axis.YP.rotationDegrees(90.0f)); }
+            case NORTH -> poseStack.translate(0.0, 0.10, 0.5);
+            case EAST  -> { poseStack.translate(-0.5, 0.10, 0.0); poseStack.mulPose(Axis.YP.rotationDegrees(-90.0f)); }
+            case SOUTH -> { poseStack.translate(0.0, 0.10, -0.5); poseStack.mulPose(Axis.YP.rotationDegrees(180.0f)); }
+            case WEST  -> { poseStack.translate(0.5, 0.10, 0.0); poseStack.mulPose(Axis.YP.rotationDegrees(90.0f)); }
             default    -> {}
         }
         poseStack.translate(0.0, 0.0, -0.03125);
@@ -88,7 +88,7 @@ public class FilingCabinetBlockEntityRenderer implements BlockEntityRenderer<Fil
     private void renderText(String text, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
         poseStack.pushPose();
         poseStack.translate(0.0f, -0.08f, 0.001f);
-        poseStack.scale(0.004f, 0.0045f, 0.004f);
+        poseStack.scale(0.004f, 0.005f, 0.004f);
         poseStack.mulPose(Axis.XP.rotationDegrees(180.0f));
         float xOffset = -FONT.width(text) / 2.0f;
         FONT.drawInBatch(text, xOffset, 0.0f, 0xFFFFFF, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, packedLight);

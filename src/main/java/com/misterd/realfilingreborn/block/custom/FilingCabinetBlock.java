@@ -113,26 +113,8 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         boolean hittingFront = hitResult.getDirection() == facing;
         ItemStack heldItem = player.getItemInHand(hand);
 
+        // Shift+right-click on front face: extract a stack from targeted slot
         if (player.isCrouching() && hittingFront) {
-            if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
-            int targetSlot = getSlotFromHitResult(hitResult, facing);
-            if (targetSlot >= 0 && targetSlot < 5) {
-                extractFromSlot(cabinet, targetSlot, 1, player, level, pos, state);
-            }
-            return ItemInteractionResult.SUCCESS;
-        }
-
-        if (player.isCrouching()) {
-            if (!level.isClientSide()) {
-                openFilingCabinetMenu(cabinet, (ServerPlayer) player, pos);
-                level.playSound(player, pos, SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.BLOCKS, 1.0F, 1.0F);
-            }
-            return ItemInteractionResult.SUCCESS;
-        }
-
-        if (!hittingFront) return ItemInteractionResult.FAIL;
-
-        if (heldItem.isEmpty()) {
             if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
             int targetSlot = getSlotFromHitResult(hitResult, facing);
             if (targetSlot >= 0 && targetSlot < 5) {
@@ -141,6 +123,34 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
+        // Shift+right-click not on front: open GUI
+        if (player.isCrouching()) {
+            if (!level.isClientSide()) {
+                openFilingCabinetMenu(cabinet, (ServerPlayer) player, pos);
+                level.playSound(player, pos, SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+
+        // Right-click with empty hand on front face: open GUI
+        if (heldItem.isEmpty()) {
+            if (!level.isClientSide()) {
+                openFilingCabinetMenu(cabinet, (ServerPlayer) player, pos);
+                level.playSound(player, pos, SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+
+        // Right-click on any non-front face: open GUI
+        if (!hittingFront) {
+            if (!level.isClientSide()) {
+                openFilingCabinetMenu(cabinet, (ServerPlayer) player, pos);
+                level.playSound(player, pos, SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.BLOCKS, 1.0F, 1.0F);
+            }
+            return ItemInteractionResult.SUCCESS;
+        }
+
+        // Right-click with folder: insert folder into cabinet
         if (heldItem.getItem() instanceof FilingFolderItem) {
             if (level.isClientSide()) return ItemInteractionResult.SUCCESS;
             for (int i = 0; i < 5; i++) {
@@ -157,6 +167,7 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return ItemInteractionResult.SUCCESS;
         }
 
+        // Right-click with item: attempt to store into a matching/empty folder, else open GUI
         ItemInteractionResult storageResult = handleItemStorage(heldItem, cabinet, player, level, pos, state);
         if (storageResult == ItemInteractionResult.FAIL) {
             if (!level.isClientSide()) {
@@ -183,9 +194,9 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             if (contents.storedItemId().isEmpty()) {
                 folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                         new FilingFolderItem.FolderContents(Optional.of(itemId), heldItem.getCount()));
+                cabinet.inventory.setStackInSlot(i, folderStack);
                 heldItem.shrink(heldItem.getCount());
                 level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
-                level.sendBlockUpdated(pos, state, state, 2);
                 cabinet.setChanged();
                 return ItemInteractionResult.SUCCESS;
             }
@@ -195,9 +206,9 @@ public class FilingCabinetBlock extends BaseEntityBlock {
                 if (toAdd > 0) {
                     folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                             new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
+                    cabinet.inventory.setStackInSlot(i, folderStack);
                     heldItem.shrink(toAdd);
                     level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
-                    level.sendBlockUpdated(pos, state, state, 2);
                     cabinet.setChanged();
                     return ItemInteractionResult.SUCCESS;
                 }
@@ -253,13 +264,13 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         ItemStack extractedStack = new ItemStack(item, extractAmount);
         folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                 new FilingFolderItem.FolderContents(contents.storedItemId(), Math.max(0, contents.count() - extractAmount)));
+        blockEntity.inventory.setStackInSlot(slot, folderStack);
 
         if (!player.getInventory().add(extractedStack)) {
             player.drop(extractedStack, false);
         }
 
         level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.0F);
-        level.sendBlockUpdated(pos, state, state, 2);
         blockEntity.setChanged();
         return InteractionResult.SUCCESS;
     }

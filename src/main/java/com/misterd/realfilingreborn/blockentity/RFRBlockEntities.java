@@ -20,7 +20,18 @@ public class RFRBlockEntities {
 
     public static final Supplier<BlockEntityType<FilingCabinetBlockEntity>> FILING_CABINET_BE =
             BLOCK_ENTITIES.register("filing_cabinet_be", () -> BlockEntityType.Builder.of(
-                    FilingCabinetBlockEntity::new, RFRBlocks.FILING_CABINET.get()).build(null));
+                    FilingCabinetBlockEntity::new,
+                    RFRBlocks.FILING_CABINET.get(),
+                    RFRBlocks.ACACIA_FILING_CABINET.get(),
+                    RFRBlocks.BIRCH_FILING_CABINET.get(),
+                    RFRBlocks.CHERRY_FILING_CABINET.get(),
+                    RFRBlocks.CRIMSON_FILING_CABINET.get(),
+                    RFRBlocks.DARKOAK_FILING_CABINET.get(),
+                    RFRBlocks.JUNGLE_FILING_CABINET.get(),
+                    RFRBlocks.MANGROVE_FILING_CABINET.get(),
+                    RFRBlocks.OAK_FILING_CABINET.get(),
+                    RFRBlocks.WARPED_FILING_CABINET.get()
+            ).build(null));
 
     public static final Supplier<BlockEntityType<FluidCabinetBlockEntity>> FLUID_CABINET_BE =
             BLOCK_ENTITIES.register("fluid_cabinet_be", () -> BlockEntityType.Builder.of(

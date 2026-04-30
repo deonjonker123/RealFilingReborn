@@ -184,8 +184,108 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
+                .define('L', Items.STRIPPED_SPRUCE_LOG)
+                .define('P', Items.SPRUCE_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
                 .define('L', ItemTags.LOGS)
                 .define('P', ItemTags.PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput, "realfilingreborn:filing_cabinet_from_wood");
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.ACACIA_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_ACACIA_LOG)
+                .define('P', Items.ACACIA_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.BIRCH_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_BIRCH_LOG)
+                .define('P', Items.BIRCH_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.CHERRY_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_CHERRY_LOG)
+                .define('P', Items.CHERRY_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.CRIMSON_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_CRIMSON_STEM)
+                .define('P', Items.CRIMSON_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.DARKOAK_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_DARK_OAK_LOG)
+                .define('P', Items.DARK_OAK_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.JUNGLE_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_JUNGLE_LOG)
+                .define('P', Items.JUNGLE_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.MANGROVE_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_MANGROVE_LOG)
+                .define('P', Items.MANGROVE_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.OAK_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_OAK_LOG)
+                .define('P', Items.OAK_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(recipeOutput);
+
+        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.WARPED_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_WARPED_STEM)
+                .define('P', Items.WARPED_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(recipeOutput);

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:barrel"
+    },
+    "L": {
+      "item": "minecraft:stripped_acacia_log"
+    },
+    "P": {
+      "item": "minecraft:acacia_planks"
+    }
+  },
+  "pattern": [
+    "LPL",
+    "PBP",
+    "LPL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "realfilingreborn:acacia_filing_cabinet"
+  }
+}

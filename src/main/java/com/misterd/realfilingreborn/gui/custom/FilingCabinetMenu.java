@@ -85,7 +85,8 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
 
     @Override
     public boolean stillValid(Player player) {
-        return stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), player, RFRBlocks.FILING_CABINET.get());
+        return blockEntity.getLevel() != null
+                && AbstractContainerMenu.stillValid(ContainerLevelAccess.create(level, blockEntity.getBlockPos()), player, blockEntity.getBlockState().getBlock());
     }
 
     private void addPlayerInventory(Inventory playerInventory) {

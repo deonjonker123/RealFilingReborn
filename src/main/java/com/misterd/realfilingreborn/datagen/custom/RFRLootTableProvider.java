@@ -19,6 +19,16 @@ public class RFRLootTableProvider extends BlockLootSubProvider {
     @Override
     protected void generate() {
         this.dropSelf(RFRBlocks.FILING_CABINET.get());
+        this.dropSelf(RFRBlocks.ACACIA_FILING_CABINET.get());
+        this.dropSelf(RFRBlocks.BIRCH_FILING_CABINET.get());
+        this.dropSelf(RFRBlocks.CHERRY_FILING_CABINET.get());
+        this.dropSelf(RFRBlocks.CRIMSON_FILING_CABINET.get());
+        this.dropSelf(RFRBlocks.DARKOAK_FILING_CABINET.get());
+        this.dropSelf(RFRBlocks.JUNGLE_FILING_CABINET.get());
+        this.dropSelf(RFRBlocks.MANGROVE_FILING_CABINET.get());
+        this.dropSelf(RFRBlocks.OAK_FILING_CABINET.get());
+        this.dropSelf(RFRBlocks.WARPED_FILING_CABINET.get());
+
         this.dropSelf(RFRBlocks.FLUID_CABINET.get());
         this.dropSelf(RFRBlocks.FILING_INDEX.get());
     }

@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:barrel"
+    },
+    "L": {
+      "item": "minecraft:stripped_crimson_stem"
+    },
+    "P": {
+      "item": "minecraft:crimson_planks"
+    }
+  },
+  "pattern": [
+    "LPL",
+    "PBP",
+    "LPL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "realfilingreborn:crimson_filing_cabinet"
+  }
+}

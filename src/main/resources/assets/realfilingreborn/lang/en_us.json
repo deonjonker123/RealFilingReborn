@@ -26,7 +26,17 @@
   "item.realfilingreborn.ledger": "Ledger",
 
   "_comment2": "=== BLOCKS ===",
-  "block.realfilingreborn.filing_cabinet": "Filing Cabinet",
+  "block.realfilingreborn.acacia_filing_cabinet": "Acacia Filing Cabinet",
+  "block.realfilingreborn.birch_filing_cabinet": "Birch Filing Cabinet",
+  "block.realfilingreborn.cherry_filing_cabinet": "Cherry Filing Cabinet",
+  "block.realfilingreborn.crimson_filing_cabinet": "Crimson Filing Cabinet",
+  "block.realfilingreborn.darkoak_filing_cabinet": "Dark Oak Filing Cabinet",
+  "block.realfilingreborn.jungle_filing_cabinet": "Jungle Filing Cabinet",
+  "block.realfilingreborn.mangrove_filing_cabinet": "Mangrove Filing Cabinet",
+  "block.realfilingreborn.oak_filing_cabinet": "Oak Filing Cabinet",
+  "block.realfilingreborn.filing_cabinet": "Spruce Filing Cabinet",
+  "block.realfilingreborn.warped_filing_cabinet": "Warped Filing Cabinet",
+
   "block.realfilingreborn.fluid_cabinet": "Fluid Cabinet",
   "block.realfilingreborn.filing_index": "Filing Index",
 

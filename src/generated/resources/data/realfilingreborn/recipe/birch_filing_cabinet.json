@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:barrel"
+    },
+    "L": {
+      "item": "minecraft:stripped_birch_log"
+    },
+    "P": {
+      "item": "minecraft:birch_planks"
+    }
+  },
+  "pattern": [
+    "LPL",
+    "PBP",
+    "LPL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "realfilingreborn:birch_filing_cabinet"
+  }
+}

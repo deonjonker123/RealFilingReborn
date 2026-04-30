@@ -1,0 +1,24 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "item": "minecraft:barrel"
+    },
+    "L": {
+      "item": "minecraft:stripped_dark_oak_log"
+    },
+    "P": {
+      "item": "minecraft:dark_oak_planks"
+    }
+  },
+  "pattern": [
+    "LPL",
+    "PBP",
+    "LPL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "realfilingreborn:darkoak_filing_cabinet"
+  }
+}
