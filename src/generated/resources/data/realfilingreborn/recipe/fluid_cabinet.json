@@ -6,10 +6,10 @@
       "item": "minecraft:bucket"
     },
     "L": {
-      "tag": "minecraft:logs"
+      "tag": "c:stones"
     },
     "P": {
-      "tag": "minecraft:planks"
+      "item": "minecraft:iron_ingot"
     }
   },
   "pattern": [

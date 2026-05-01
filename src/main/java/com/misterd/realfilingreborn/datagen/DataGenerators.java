@@ -1,10 +1,7 @@
 package com.misterd.realfilingreborn.datagen;
 
 import com.misterd.realfilingreborn.RealFilingReborn;
-import com.misterd.realfilingreborn.datagen.custom.RFRBlockTagProvider;
-import com.misterd.realfilingreborn.datagen.custom.RFRItemModelProvider;
-import com.misterd.realfilingreborn.datagen.custom.RFRLootTableProvider;
-import com.misterd.realfilingreborn.datagen.custom.RFRRecipeProvider;
+import com.misterd.realfilingreborn.datagen.custom.*;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.DataGenerator;
 import net.minecraft.data.PackOutput;
@@ -36,5 +33,6 @@ public class DataGenerators {
         generator.addProvider(event.includeServer(), blockTagsProvider);
 
         generator.addProvider(event.includeClient(), new RFRItemModelProvider(packOutput, existingFileHelper));
+        generator.addProvider(event.includeServer(), new RFRItemTagProvider(packOutput, lookupProvider, blockTagsProvider.contentsGetter(), existingFileHelper));
     }
 }

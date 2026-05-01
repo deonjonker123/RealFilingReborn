@@ -6,10 +6,10 @@
       "item": "minecraft:comparator"
     },
     "F": {
-      "item": "realfilingreborn:filing_cabinet"
+      "tag": "realfilingreborn:filing_cabinet_items"
     },
     "I": {
-      "tag": "minecraft:logs"
+      "item": "minecraft:quartz_block"
     },
     "R": {
       "item": "minecraft:redstone"

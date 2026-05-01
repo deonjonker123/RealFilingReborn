@@ -2,6 +2,7 @@ package com.misterd.realfilingreborn.datagen.custom;
 
 import com.misterd.realfilingreborn.block.RFRBlocks;
 import com.misterd.realfilingreborn.item.RFRItems;
+import com.misterd.realfilingreborn.util.RFRTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.data.recipes.RecipeCategory;
@@ -294,8 +295,8 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
-                .define('L', ItemTags.LOGS)
-                .define('P', ItemTags.PLANKS)
+                .define('L', Tags.Items.STONES)
+                .define('P', Items.IRON_INGOT)
                 .define('B', Items.BUCKET)
                 .unlockedBy("has_fluid_canister", has(RFRItems.FLUID_CANISTER.get()))
                 .save(recipeOutput);
@@ -305,10 +306,10 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .pattern("RFR")
                 .pattern("ICI")
                 .define('R', Items.REDSTONE)
-                .define('F', RFRBlocks.FILING_CABINET)
+                .define('F', RFRTags.Items.FILING_CABINET_ITEMS)
                 .define('X', Items.REPEATER)
                 .define('C', Items.COMPARATOR)
-                .define('I', ItemTags.LOGS)
+                .define('I', Items.QUARTZ_BLOCK)
                 .unlockedBy("has_cabinet", has(RFRBlocks.FILING_CABINET))
                 .save(recipeOutput);
     }

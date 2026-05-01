@@ -1,6 +1,8 @@
 package com.misterd.realfilingreborn.datagen.custom;
 
+import com.misterd.realfilingreborn.RealFilingReborn;
 import com.misterd.realfilingreborn.block.RFRBlocks;
+import com.misterd.realfilingreborn.util.RFRTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
@@ -13,12 +15,12 @@ import java.util.concurrent.CompletableFuture;
 public class RFRBlockTagProvider extends BlockTagsProvider {
 
     public RFRBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
-        super(output, lookupProvider, "realfilingreborn", existingFileHelper);
+        super(output, lookupProvider, RealFilingReborn.MODID, existingFileHelper);
     }
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        this.tag(BlockTags.MINEABLE_WITH_AXE)
+        tag(BlockTags.MINEABLE_WITH_AXE)
                 .add(RFRBlocks.FILING_CABINET.get())
                 .add(RFRBlocks.ACACIA_FILING_CABINET.get())
                 .add(RFRBlocks.BIRCH_FILING_CABINET.get())
@@ -30,7 +32,7 @@ public class RFRBlockTagProvider extends BlockTagsProvider {
                 .add(RFRBlocks.OAK_FILING_CABINET.get())
                 .add(RFRBlocks.WARPED_FILING_CABINET.get());
 
-        this.tag(BlockTags.MINEABLE_WITH_PICKAXE)
+        tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(RFRBlocks.FLUID_CABINET.get())
                 .add(RFRBlocks.FILING_INDEX.get());
     }
