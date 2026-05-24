@@ -106,7 +106,7 @@ public class FilingCabinetBlock extends BaseEntityBlock {
 
         if (player.isCrouching() && hittingFront) {
             int targetSlot = getSlotFromHitResult(hitResult, facing);
-            if (targetSlot >= 0 && targetSlot < 5) {
+            if (targetSlot >= 0 && targetSlot < 4) {
                 extractFromSlot(cabinet, targetSlot, Integer.MAX_VALUE, player, level, pos, state);
             }
             return InteractionResult.SUCCESS;
@@ -154,7 +154,7 @@ public class FilingCabinetBlock extends BaseEntityBlock {
     private InteractionResult handleItemStorage(ItemStack heldItem, FilingCabinetBlockEntity cabinet, Player player, Level level, BlockPos pos, BlockState state) {
         Identifier itemId = BuiltInRegistries.ITEM.getKey(heldItem.getItem());
 
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < 4; i++) {
             ItemStack folderStack = cabinet.getStack(i);
             if (!(folderStack.getItem() instanceof FilingFolderItem folder)) continue;
 

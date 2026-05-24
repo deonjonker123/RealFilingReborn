@@ -4,20 +4,36 @@ import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
 import com.misterd.realfilingreborn.recipe.RFRRecipes;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.crafting.CraftingBookCategory;
-import net.minecraft.world.item.crafting.CraftingInput;
-import net.minecraft.world.item.crafting.CustomRecipe;
-import net.minecraft.world.item.crafting.RecipeSerializer;
+import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
 public class FolderResetRecipe extends CustomRecipe {
 
     public FolderResetRecipe(CraftingBookCategory category) {
-        super(category);
+        super();
+    }
+
+    @Override
+    public CraftingBookCategory category() {
+        return CraftingBookCategory.MISC;
+    }
+
+    @Override
+    public String group() {
+        return "";
+    }
+
+    @Override
+    public RecipeBookCategory recipeBookCategory() {
+        return RecipeBookCategories.CRAFTING_MISC;
+    }
+
+    @Override
+    public PlacementInfo placementInfo() {
+        return PlacementInfo.NOT_PLACEABLE;
     }
 
     @Override
@@ -38,7 +54,7 @@ public class FolderResetRecipe extends CustomRecipe {
     }
 
     @Override
-    public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
+    public ItemStack assemble(CraftingInput input) {
         for (int i = 0; i < input.size(); i++) {
             ItemStack stack = input.getItem(i);
             if (!stack.isEmpty() && stack.getItem() instanceof FilingFolderItem) {
@@ -49,41 +65,23 @@ public class FolderResetRecipe extends CustomRecipe {
     }
 
     @Override
-    public boolean canCraftInDimensions(int width, int height) {
-        return width * height >= 1;
-    }
-
-    @Override
-    public ItemStack getResultItem(HolderLookup.Provider registries) {
-        return ItemStack.EMPTY;
-    }
-
-    @Override
-    public RecipeSerializer<?> getSerializer() {
+    public RecipeSerializer<FolderResetRecipe> getSerializer() {
         return RFRRecipes.FOLDER_RESET_SERIALIZER.get();
     }
 
-    public static class Serializer implements RecipeSerializer<FolderResetRecipe> {
-
-        private static final MapCodec<FolderResetRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
-                instance.group(
-                        CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC)
-                                .forGetter(CustomRecipe::category)
-                ).apply(instance, FolderResetRecipe::new));
-
-        private static final StreamCodec<RegistryFriendlyByteBuf, FolderResetRecipe> STREAM_CODEC =
-                StreamCodec.of(
-                        (buf, recipe) -> buf.writeEnum(recipe.category()),
-                        buf -> new FolderResetRecipe(buf.readEnum(CraftingBookCategory.class)));
-
-        @Override
-        public MapCodec<FolderResetRecipe> codec() {
-            return CODEC;
-        }
-
-        @Override
-        public StreamCodec<RegistryFriendlyByteBuf, FolderResetRecipe> streamCodec() {
-            return STREAM_CODEC;
-        }
+    @Override
+    public boolean isSpecial() {
+        return true;
     }
+
+    public static final MapCodec<FolderResetRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
+            instance.group(
+                    CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC)
+                            .forGetter(CustomRecipe::category)
+            ).apply(instance, FolderResetRecipe::new));
+
+    public static final StreamCodec<RegistryFriendlyByteBuf, FolderResetRecipe> STREAM_CODEC =
+            StreamCodec.of(
+                    (buf, recipe) -> buf.writeEnum(recipe.category()),
+                    buf -> new FolderResetRecipe(buf.readEnum(CraftingBookCategory.class)));
 }

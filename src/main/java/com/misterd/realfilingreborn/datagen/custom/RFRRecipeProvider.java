@@ -94,64 +94,6 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_netherite_ingot", has(Items.NETHERITE_INGOT))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRItems.FLUID_CANISTER.get(), 4)
-                .pattern("BGB")
-                .pattern(" B ")
-                .define('B', Items.BUCKET)
-                .define('G', Tags.Items.GLASS_BLOCKS)
-                .unlockedBy("has_bucket", has(Items.BUCKET))
-                .save(output);
-
-        shaped(RecipeCategory.MISC, RFRItems.COPPER_FLUID_CANISTER.get(), 4)
-                .pattern("I I")
-                .pattern("PGP")
-                .pattern("IPI")
-                .define('G', Tags.Items.GLASS_BLOCKS)
-                .define('I', Items.COPPER_INGOT)
-                .define('P', Items.BUCKET)
-                .unlockedBy("has_copper_ingot", has(Items.COPPER_INGOT))
-                .save(output);
-
-        shaped(RecipeCategory.MISC, RFRItems.IRON_FLUID_CANISTER.get(), 4)
-                .pattern("I I")
-                .pattern("PGP")
-                .pattern("IPI")
-                .define('G', Tags.Items.GLASS_BLOCKS)
-                .define('I', Items.IRON_INGOT)
-                .define('P', Items.BUCKET)
-                .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
-                .save(output);
-
-        shaped(RecipeCategory.MISC, RFRItems.GOLD_FLUID_CANISTER.get(), 4)
-                .pattern("I I")
-                .pattern("PGP")
-                .pattern("IPI")
-                .define('G', Tags.Items.GLASS_BLOCKS)
-                .define('I', Items.GOLD_INGOT)
-                .define('P', Items.BUCKET)
-                .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
-                .save(output);
-
-        shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FLUID_CANISTER.get(), 4)
-                .pattern("I I")
-                .pattern("PGP")
-                .pattern("IPI")
-                .define('G', Tags.Items.GLASS_BLOCKS)
-                .define('I', Items.DIAMOND)
-                .define('P', Items.BUCKET)
-                .unlockedBy("has_diamond", has(Items.DIAMOND))
-                .save(output);
-
-        shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FLUID_CANISTER.get(), 4)
-                .pattern("I I")
-                .pattern("PGP")
-                .pattern("IPI")
-                .define('G', Tags.Items.GLASS_BLOCKS)
-                .define('I', Items.NETHERITE_INGOT)
-                .define('P', Items.BUCKET)
-                .unlockedBy("has_netherite_ingot", has(Items.NETHERITE_INGOT))
-                .save(output);
-
         shaped(RecipeCategory.MISC, RFRItems.IRON_RANGE_UPGRADE.get())
                 .pattern("IRI")
                 .pattern("RGR")
@@ -300,16 +242,6 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .define('P', Items.WARPED_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(output);
-
-        shaped(RecipeCategory.MISC, RFRBlocks.FLUID_CABINET.get())
-                .pattern("LPL")
-                .pattern("PBP")
-                .pattern("LPL")
-                .define('L', Tags.Items.STONES)
-                .define('P', Items.IRON_INGOT)
-                .define('B', Items.BUCKET)
-                .unlockedBy("has_fluid_canister", has(RFRItems.FLUID_CANISTER.get()))
                 .save(output);
 
         shaped(RecipeCategory.MISC, RFRBlocks.FILING_INDEX.get())

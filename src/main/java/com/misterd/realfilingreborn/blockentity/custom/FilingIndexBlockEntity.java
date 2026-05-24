@@ -3,7 +3,6 @@ package com.misterd.realfilingreborn.blockentity.custom;
 import com.misterd.realfilingreborn.Config;
 import com.misterd.realfilingreborn.block.custom.FilingIndexBlock;
 import com.misterd.realfilingreborn.blockentity.RFRBlockEntities;
-import com.misterd.realfilingreborn.capability.FilingIndexFluidHandler;
 import com.misterd.realfilingreborn.capability.FilingIndexItemHandler;
 import com.misterd.realfilingreborn.gui.custom.FilingIndexMenu;
 import com.misterd.realfilingreborn.item.custom.DiamondRangeUpgradeItem;
@@ -31,10 +30,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nullable;
 import java.util.*;
@@ -44,11 +41,14 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider {
 
     public record FolderRef(BlockPos cabinetPos, int slot, int count, int capacity) {}
+
     private final LinkedHashMap<Identifier, FolderRef> itemIndex = new LinkedHashMap<>();
     private final List<Map.Entry<Identifier, FolderRef>> indexEntries = new ArrayList<>();
     private boolean itemIndexDirty = true;
+
     private final Set<BlockPos> pendingFlush = Collections.synchronizedSet(new LinkedHashSet<>());
     private boolean flushScheduled = false;
+
     private final Set<BlockPos> linkedCabinets = new LinkedHashSet<>();
     private final ReentrantReadWriteLock cabinetLock = new ReentrantReadWriteLock();
 
@@ -74,15 +74,16 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     private long lastRangeCacheTime = 0L;
     private int lastKnownRange = -1;
     private static final long RANGE_CACHE_DURATION_MS = 2000L;
-    private static final int MAX_HANDLER_CACHE_SIZE = 8;
+
     private final Map<Direction, ResourceHandler<ItemResource>> handlers = new HashMap<>();
-    private final Map<Direction, ResourceHandler<FluidResource>> fluidHandlers = new HashMap<>();
+    private static final int MAX_HANDLER_CACHE_SIZE = 8;
+
     private long lastUpdateTime = 0L;
     private static final long MIN_UPDATE_INTERVAL_MS = 100L;
     private boolean updateScheduled = false;
 
-    public FilingIndexBlockEntity(BlockPos pos, BlockState blockState) {
-        super(RFRBlockEntities.FILING_INDEX_BE.get(), pos, blockState);
+    public FilingIndexBlockEntity(BlockPos pos, BlockState state) {
+        super(RFRBlockEntities.FILING_INDEX_BE.get(), pos, state);
     }
 
     public void scheduleFlush(BlockPos cabinetPos) {
@@ -112,8 +113,8 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
                 toFlush = new LinkedHashSet<>(pendingFlush);
                 pendingFlush.clear();
             }
-            for (BlockPos cabinetPos : toFlush) {
-                patchCabinetInIndex(cabinetPos);
+            for (BlockPos pos : toFlush) {
+                patchCabinetInIndex(pos);
             }
             rebuildIndexEntries();
         }
@@ -130,18 +131,21 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
 
     private void rebuildItemIndex() {
         itemIndex.clear();
+
         cabinetLock.readLock().lock();
         try {
-            for (BlockPos cabinetPos : linkedCabinets) {
-                if (!isInRange(cabinetPos)) continue;
-                if (!(level.getBlockEntity(cabinetPos) instanceof FilingCabinetBlockEntity cabinet)) continue;
+            for (BlockPos pos : linkedCabinets) {
+                if (!isInRange(pos)) continue;
+                if (!(level.getBlockEntity(pos) instanceof FilingCabinetBlockEntity cabinet)) continue;
                 if (!cabinet.isLinkedToController()) continue;
-                readCabinetIntoIndex(cabinet, cabinetPos);
+
+                readCabinetIntoIndex(cabinet, pos);
                 cabinet.sendUpdatePacket();
             }
         } finally {
             cabinetLock.readLock().unlock();
         }
+
         pendingFlush.clear();
         itemIndexDirty = false;
         rebuildIndexEntries();
@@ -150,19 +154,27 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     private void patchCabinetInIndex(BlockPos cabinetPos) {
         if (!(level.getBlockEntity(cabinetPos) instanceof FilingCabinetBlockEntity cabinet)) return;
         if (!cabinet.isLinkedToController()) return;
+
         itemIndex.entrySet().removeIf(e -> e.getValue().cabinetPos().equals(cabinetPos));
         readCabinetIntoIndex(cabinet, cabinetPos);
         cabinet.sendUpdatePacket();
     }
 
-    private void readCabinetIntoIndex(FilingCabinetBlockEntity cabinet, BlockPos cabinetPos) {
-        for (int i = 0; i < 5; i++) {
+    private void readCabinetIntoIndex(FilingCabinetBlockEntity cabinet, BlockPos pos) {
+        for (int i = 0; i < 4; i++) {
             ItemStack folder = cabinet.getStack(i);
             if (!(folder.getItem() instanceof FilingFolderItem ff)) continue;
-            FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
-            if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) continue;
-            Identifier itemId = contents.storedItemId().get();
-            itemIndex.putIfAbsent(itemId, new FolderRef(cabinetPos, i, contents.count(), ff.getCapacity()));
+
+            FilingFolderItem.FolderContents contents =
+                    folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
+
+            if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0)
+                continue;
+
+            Identifier id = contents.storedItemId().get();
+
+            itemIndex.putIfAbsent(id,
+                    new FolderRef(pos, i, contents.count(), ff.getCapacity()));
         }
     }
 
@@ -182,23 +194,23 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     }
 
     @Nullable
-    public FolderRef getFolderRef(Identifier itemId) {
+    public FolderRef getFolderRef(Identifier id) {
         if (itemIndexDirty) rebuildItemIndex();
-        return itemIndex.get(itemId);
+        return itemIndex.get(id);
     }
 
-    public boolean isInRange(BlockPos cabinetPos) {
-        int currentRange = getRange();
-        long currentTime = System.currentTimeMillis();
-        if (currentRange != lastKnownRange || currentTime - lastRangeCacheTime > RANGE_CACHE_DURATION_MS) {
+    public boolean isInRange(BlockPos pos) {
+        int range = getRange();
+        long now = System.currentTimeMillis();
+
+        if (range != lastKnownRange || now - lastRangeCacheTime > RANGE_CACHE_DURATION_MS) {
             clearRangeCache();
-            lastKnownRange = currentRange;
-            lastRangeCacheTime = currentTime;
+            lastKnownRange = range;
+            lastRangeCacheTime = now;
         }
-        return rangeCache.computeIfAbsent(cabinetPos, pos -> {
-            double rangeSq = (double) currentRange * currentRange;
-            return getBlockPos().distSqr(pos) <= rangeSq;
-        });
+
+        return rangeCache.computeIfAbsent(pos,
+                p -> getBlockPos().distSqr(p) <= (long) range * range);
     }
 
     private void clearRangeCache() {
@@ -208,9 +220,14 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
 
     public int getRange() {
         ItemStack upgrade = inventory.getResource(0).toStack(inventory.getAmountAsInt(0));
-        if (upgrade.getItem() instanceof NetheriteRangeUpgradeItem) return Config.getNetheriteRangeUpgrade();
-        if (upgrade.getItem() instanceof DiamondRangeUpgradeItem) return Config.getDiamondRangeUpgrade();
-        if (upgrade.getItem() instanceof IronRangeUpgradeItem) return Config.getIronRangeUpgrade();
+
+        if (upgrade.getItem() instanceof NetheriteRangeUpgradeItem)
+            return Config.getNetheriteRangeUpgrade();
+        if (upgrade.getItem() instanceof DiamondRangeUpgradeItem)
+            return Config.getDiamondRangeUpgrade();
+        if (upgrade.getItem() instanceof IronRangeUpgradeItem)
+            return Config.getIronRangeUpgrade();
+
         return Config.getFilingIndexBaseRange();
     }
 
@@ -220,14 +237,16 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
         return res.toStack(inventory.getAmountAsInt(0));
     }
 
-    public void addCabinet(BlockPos cabinetPos) {
+    public void addCabinet(BlockPos pos) {
         cabinetLock.writeLock().lock();
         try {
             boolean wasEmpty = linkedCabinets.isEmpty();
-            if (linkedCabinets.add(cabinetPos)) {
+
+            if (linkedCabinets.add(pos)) {
                 clearRangeCache();
                 itemIndexDirty = true;
                 setChanged();
+
                 if (level != null && !level.isClientSide()) {
                     scheduleBlockUpdate();
                     if (wasEmpty) scheduleConnectedStateUpdate();
@@ -238,13 +257,14 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
         }
     }
 
-    public void removeCabinet(BlockPos cabinetPos) {
+    public void removeCabinet(BlockPos pos) {
         cabinetLock.writeLock().lock();
         try {
-            if (linkedCabinets.remove(cabinetPos)) {
+            if (linkedCabinets.remove(pos)) {
                 clearRangeCache();
                 itemIndexDirty = true;
                 setChanged();
+
                 if (level != null && !level.isClientSide()) {
                     scheduleBlockUpdate();
                     if (linkedCabinets.isEmpty()) scheduleConnectedStateUpdate();
@@ -252,94 +272,6 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
             }
         } finally {
             cabinetLock.writeLock().unlock();
-        }
-    }
-
-    public void addCabinets(Set<BlockPos> cabinets) {
-        if (cabinets.isEmpty()) return;
-        cabinetLock.writeLock().lock();
-        try {
-            boolean wasEmpty = linkedCabinets.isEmpty();
-            boolean changed = false;
-            for (BlockPos cabinet : cabinets) {
-                if (linkedCabinets.add(cabinet)) changed = true;
-            }
-            if (changed) {
-                clearRangeCache();
-                itemIndexDirty = true;
-                setChanged();
-                if (level != null && !level.isClientSide()) {
-                    scheduleBlockUpdate();
-                    if (wasEmpty && !linkedCabinets.isEmpty()) scheduleConnectedStateUpdate();
-                }
-            }
-        } finally {
-            cabinetLock.writeLock().unlock();
-        }
-    }
-
-    public void removeCabinets(Set<BlockPos> cabinets) {
-        if (cabinets.isEmpty()) return;
-        cabinetLock.writeLock().lock();
-        try {
-            boolean hadCabinets = !linkedCabinets.isEmpty();
-            if (linkedCabinets.removeAll(cabinets)) {
-                clearRangeCache();
-                itemIndexDirty = true;
-                setChanged();
-                if (level != null && !level.isClientSide()) {
-                    scheduleBlockUpdate();
-                    if (hadCabinets && linkedCabinets.isEmpty()) scheduleConnectedStateUpdate();
-                }
-            }
-        } finally {
-            cabinetLock.writeLock().unlock();
-        }
-    }
-
-    public boolean removeCabinetAt(BlockPos cabinetPos) {
-        cabinetLock.writeLock().lock();
-        try {
-            if (!linkedCabinets.remove(cabinetPos)) return false;
-            clearRangeCache();
-            itemIndexDirty = true;
-            if (level != null && !level.isClientSide()) {
-                clearControllerPos(cabinetPos);
-                scheduleBlockUpdate();
-                if (linkedCabinets.isEmpty()) scheduleConnectedStateUpdate();
-            }
-            setChanged();
-            return true;
-        } finally {
-            cabinetLock.writeLock().unlock();
-        }
-    }
-
-    public void clearAllLinkedCabinets() {
-        cabinetLock.writeLock().lock();
-        try {
-            if (level != null && !level.isClientSide()) {
-                linkedCabinets.forEach(this::clearControllerPos);
-            }
-            boolean hadCabinets = !linkedCabinets.isEmpty();
-            linkedCabinets.clear();
-            clearRangeCache();
-            itemIndexDirty = true;
-            setChanged();
-            if (hadCabinets && level != null && !level.isClientSide()) {
-                scheduleConnectedStateUpdate();
-            }
-        } finally {
-            cabinetLock.writeLock().unlock();
-        }
-    }
-
-    private void clearControllerPos(BlockPos cabinetPos) {
-        BlockEntity be = level.getBlockEntity(cabinetPos);
-        if (be instanceof FilingCabinetBlockEntity cabinet) {
-            cabinet.clearControllerPos();
-        } else if (be instanceof FluidCabinetBlockEntity fluidCabinet) {
-            fluidCabinet.clearControllerPos();
         }
     }
 
@@ -364,35 +296,34 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     @Nullable
     public ResourceHandler<ItemResource> getCapabilityHandler(@Nullable Direction side) {
         if (handlers.size() > MAX_HANDLER_CACHE_SIZE) handlers.clear();
-        return handlers.computeIfAbsent(side != null ? side : Direction.UP, s -> new FilingIndexItemHandler(this));
-    }
 
-    @Nullable
-    public ResourceHandler<FluidResource> getFluidCapabilityHandler(@Nullable Direction side) {
-        if (fluidHandlers.size() > MAX_HANDLER_CACHE_SIZE) fluidHandlers.clear();
-        return fluidHandlers.computeIfAbsent(side != null ? side : Direction.UP, s -> new FilingIndexFluidHandler(this));
+        return handlers.computeIfAbsent(
+                side != null ? side : Direction.UP,
+                s -> new FilingIndexItemHandler(this)
+        );
     }
 
     private void refreshHandlerSnapshots() {
         for (ResourceHandler<ItemResource> h : handlers.values()) {
-            if (h instanceof FilingIndexItemHandler fh) fh.refreshSnapshot();
-        }
-        for (ResourceHandler<FluidResource> h : fluidHandlers.values()) {
-            if (h instanceof FilingIndexFluidHandler fh) fh.refreshSnapshot();
+            if (h instanceof FilingIndexItemHandler fh) {
+                fh.refreshSnapshot();
+            }
         }
     }
 
     private void invalidateHandlerRangeCaches() {
-        for (ResourceHandler<FluidResource> h : fluidHandlers.values()) {
-            if (h instanceof FilingIndexFluidHandler fh) fh.invalidateRangeCache();
-        }
+        handlers.values().forEach(h -> {
+            if (h instanceof FilingIndexItemHandler fh) {
+                fh.refreshSnapshot();
+            }
+        });
     }
 
     private void scheduleBlockUpdate() {
-        long currentTime = System.currentTimeMillis();
-        if (currentTime - lastUpdateTime > MIN_UPDATE_INTERVAL_MS) {
+        long now = System.currentTimeMillis();
+        if (now - lastUpdateTime > MIN_UPDATE_INTERVAL_MS) {
             level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
-            lastUpdateTime = currentTime;
+            lastUpdateTime = now;
         }
     }
 
@@ -403,20 +334,22 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
         }
     }
 
-    public void updateConnectedState() {
-        scheduleConnectedStateUpdate();
-    }
-
     private void updateConnectedStateImmediate() {
         if (level == null || level.isClientSide()) return;
-        BlockState currentState = getBlockState();
-        if (!(currentState.getBlock() instanceof FilingIndexBlock)) return;
+
+        BlockState state = getBlockState();
+        if (!(state.getBlock() instanceof FilingIndexBlock)) return;
 
         cabinetLock.readLock().lock();
         try {
-            boolean hasConnections = !linkedCabinets.isEmpty();
-            if (hasConnections != currentState.getValue(FilingIndexBlock.CONNECTED)) {
-                level.setBlock(getBlockPos(), currentState.setValue(FilingIndexBlock.CONNECTED, hasConnections), 3);
+            boolean connected = !linkedCabinets.isEmpty();
+
+            if (connected != state.getValue(FilingIndexBlock.CONNECTED)) {
+                level.setBlock(
+                        getBlockPos(),
+                        state.setValue(FilingIndexBlock.CONNECTED, connected),
+                        3
+                );
             }
         } finally {
             cabinetLock.readLock().unlock();
@@ -424,32 +357,31 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     }
 
     public void drops() {
-        clearAllLinkedCabinets();
         SimpleContainer inv = new SimpleContainer(inventory.size());
+
         for (int i = 0; i < inventory.size(); i++) {
             ItemResource res = inventory.getResource(i);
-            if (!res.isEmpty()) inv.setItem(i, res.toStack(inventory.getAmountAsInt(i)));
+            if (!res.isEmpty()) {
+                inv.setItem(i, res.toStack(inventory.getAmountAsInt(i)));
+            }
         }
-        Containers.dropContents(level, worldPosition, inv);
-    }
 
-    @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
-        drops();
+        Containers.dropContents(level, worldPosition, inv);
     }
 
     @Override
     protected void saveAdditional(ValueOutput output) {
         super.saveAdditional(output);
+
         inventory.serialize(output);
+
         cabinetLock.readLock().lock();
         try {
-            long[] positions = new long[linkedCabinets.size()];
+            output.putInt("linkedCabinetCount", linkedCabinets.size());
             int i = 0;
-            for (BlockPos cabinetPos : linkedCabinets) {
-                positions[i++] = cabinetPos.asLong();
+            for (BlockPos pos : linkedCabinets) {
+                output.putLong("linkedCabinet_" + i++, pos.asLong());
             }
-            output.putLongArray("linkedCabinets", positions);
         } finally {
             cabinetLock.readLock().unlock();
         }
@@ -458,15 +390,20 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     @Override
     protected void loadAdditional(ValueInput input) {
         super.loadAdditional(input);
+
         inventory.deserialize(input);
+
         cabinetLock.writeLock().lock();
         try {
             linkedCabinets.clear();
             clearRangeCache();
-            long[] positions = input.getLongArrayOr("linkedCabinets", new long[0]);
-            for (long packed : positions) {
-                linkedCabinets.add(BlockPos.of(packed));
+
+            int count = input.getIntOr("linkedCabinetCount", 0);
+            for (int i = 0; i < count; i++) {
+                input.getLong("linkedCabinet_" + i)
+                        .ifPresent(l -> linkedCabinets.add(BlockPos.of(l)));
             }
+
             itemIndexDirty = true;
         } finally {
             cabinetLock.writeLock().unlock();
@@ -480,8 +417,8 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int id, Inventory playerInventory, Player player) {
-        return new FilingIndexMenu(id, playerInventory, this);
+    public AbstractContainerMenu createMenu(int id, Inventory inv, Player player) {
+        return new FilingIndexMenu(id, inv, this);
     }
 
     @Nullable

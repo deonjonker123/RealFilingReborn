@@ -151,7 +151,7 @@ public class FilingFolderItem extends Item {
         }
 
         if (hasSignificantNBT(offhand)) {
-            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt"));
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt").withStyle(ChatFormatting.RED));
             return InteractionResult.FAIL;
         }
 
@@ -174,7 +174,7 @@ public class FilingFolderItem extends Item {
 
     private void extractItems(Player player, ItemStack folderStack, FolderContents contents) {
         if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) {
-            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.folder_empty"));
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.folder_empty").withStyle(ChatFormatting.GOLD));
             return;
         }
 
@@ -197,7 +197,7 @@ public class FilingFolderItem extends Item {
             return false;
         }
         if (hasSignificantNBT(itemToStore)) {
-            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt"));
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt").withStyle(ChatFormatting.RED));
             return false;
         }
 
@@ -211,7 +211,7 @@ public class FilingFolderItem extends Item {
             if (!effectiveItemId.equals(newItemId)) {
                 Item storedItem = BuiltInRegistries.ITEM.getValue(effectiveItemId);
                 player.sendOverlayMessage(Component.translatable("message.realfilingreborn.wrong_item_type",
-                        Component.translatable(storedItem.getDescriptionId()).withStyle(ChatFormatting.YELLOW)));
+                        Component.translatable(storedItem.getDescriptionId()).withStyle(ChatFormatting.GOLD)));
                 return false;
             }
         }
@@ -234,7 +234,7 @@ public class FilingFolderItem extends Item {
         if (contents != null && contents.storedItemId().isPresent()) {
             Item item = BuiltInRegistries.ITEM.getValue(contents.storedItemId().get());
             adder.accept(Component.translatable("tooltip.realfilingreborn.stored_item",
-                            Component.translatable(item.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
+                            Component.translatable(item.getDescriptionId()).withStyle(ChatFormatting.GOLD))
                     .withStyle(ChatFormatting.GRAY));
             if (contents.count() > 0) {
                 adder.accept(Component.translatable("tooltip.realfilingreborn.item_count",

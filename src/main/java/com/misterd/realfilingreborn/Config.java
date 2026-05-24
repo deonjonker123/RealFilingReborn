@@ -56,9 +56,9 @@ public class Config {
     }
 
     public static int getFilingIndexBaseRange() { return FILING_INDEX_BASE_RANGE.get(); }
-    public static int getIronRangeUpgrade()     { return IRON_RANGE_UPGRADE.get(); }
-    public static int getDiamondRangeUpgrade()  { return DIAMOND_RANGE_UPGRADE.get(); }
-    public static int getNetheriteRangeUpgrade(){ return NETHERITE_RANGE_UPGRADE.get(); }
+    public static int getIronRangeUpgrade() { return IRON_RANGE_UPGRADE.get(); }
+    public static int getDiamondRangeUpgrade() { return DIAMOND_RANGE_UPGRADE.get(); }
+    public static int getNetheriteRangeUpgrade() { return NETHERITE_RANGE_UPGRADE.get(); }
 
     private static void validateConfig() {
         if (getIronRangeUpgrade() <= getFilingIndexBaseRange()) {
@@ -83,10 +83,10 @@ public class Config {
         if (event.getConfig().getType() == ModConfig.Type.COMMON) {
             LOGGER.info("Real Filing Reborn configuration loaded");
             LOGGER.info("Filing Index Ranges Configuration:");
-            LOGGER.info("  Base Range: {} blocks ({}x{} area)", getFilingIndexBaseRange(), getFilingIndexBaseRange() * 2, getFilingIndexBaseRange() * 2);
-            LOGGER.info("  Iron Upgrade: {} blocks ({}x{} area)", getIronRangeUpgrade(), getIronRangeUpgrade() * 2, getIronRangeUpgrade() * 2);
-            LOGGER.info("  Diamond Upgrade: {} blocks ({}x{} area)", getDiamondRangeUpgrade(), getDiamondRangeUpgrade() * 2, getDiamondRangeUpgrade() * 2);
-            LOGGER.info("  Netherite Upgrade: {} blocks ({}x{} area)", getNetheriteRangeUpgrade(), getNetheriteRangeUpgrade() * 2, getNetheriteRangeUpgrade() * 2);
+            LOGGER.info("Base Range: {} blocks ({}x{} area)", getFilingIndexBaseRange(), getFilingIndexBaseRange() * 2, getFilingIndexBaseRange() * 2);
+            LOGGER.info("Iron Upgrade: {} blocks ({}x{} area)", getIronRangeUpgrade(), getIronRangeUpgrade() * 2, getIronRangeUpgrade() * 2);
+            LOGGER.info("Diamond Upgrade: {} blocks ({}x{} area)", getDiamondRangeUpgrade(), getDiamondRangeUpgrade() * 2, getDiamondRangeUpgrade() * 2);
+            LOGGER.info("Netherite Upgrade: {} blocks ({}x{} area)", getNetheriteRangeUpgrade(), getNetheriteRangeUpgrade() * 2, getNetheriteRangeUpgrade() * 2);
 
             int netheriteArea = getNetheriteRangeUpgrade() * 2 * getNetheriteRangeUpgrade() * 2;
             if (netheriteArea > 65536) {

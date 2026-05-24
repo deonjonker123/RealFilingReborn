@@ -4,7 +4,6 @@ import com.misterd.realfilingreborn.RealFilingReborn;
 import com.misterd.realfilingreborn.block.RFRBlocks;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
-import com.misterd.realfilingreborn.blockentity.custom.FluidCabinetBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
@@ -33,10 +32,6 @@ public class RFRBlockEntities {
                     RFRBlocks.WARPED_FILING_CABINET.get()
             ));
 
-    public static final Supplier<BlockEntityType<FluidCabinetBlockEntity>> FLUID_CABINET_BE =
-            BLOCK_ENTITIES.register("fluid_cabinet_be", () -> new BlockEntityType<>(
-                    FluidCabinetBlockEntity::new, RFRBlocks.FLUID_CABINET.get()));
-
     public static final Supplier<BlockEntityType<FilingIndexBlockEntity>> FILING_INDEX_BE =
             BLOCK_ENTITIES.register("filing_index_be", () -> new BlockEntityType<>(
                     FilingIndexBlockEntity::new, RFRBlocks.FILING_INDEX.get()));
@@ -45,17 +40,8 @@ public class RFRBlockEntities {
         event.registerBlockEntity(Capabilities.Item.BLOCK, FILING_CABINET_BE.get(),
                 (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
 
-        event.registerBlockEntity(Capabilities.Item.BLOCK, FLUID_CABINET_BE.get(),
-                (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
-
         event.registerBlockEntity(Capabilities.Item.BLOCK, FILING_INDEX_BE.get(),
                 (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
-
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, FLUID_CABINET_BE.get(),
-                (blockEntity, direction) -> blockEntity.getFluidCapabilityHandler(direction));
-
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, FILING_INDEX_BE.get(),
-                (blockEntity, direction) -> blockEntity.getFluidCapabilityHandler(direction));
     }
 
     public static void register(IEventBus eventBus) {

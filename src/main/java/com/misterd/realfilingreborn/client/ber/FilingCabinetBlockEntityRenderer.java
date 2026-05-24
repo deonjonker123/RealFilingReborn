@@ -6,92 +6,111 @@ import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
 import com.misterd.realfilingreborn.util.FormattingCache;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.item.ItemModelResolver;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.client.renderer.texture.OverlayTexture;
-import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
+import org.jspecify.annotations.Nullable;
 
-public class FilingCabinetBlockEntityRenderer implements BlockEntityRenderer<FilingCabinetBlockEntity> {
+public class FilingCabinetBlockEntityRenderer implements BlockEntityRenderer<FilingCabinetBlockEntity, FilingCabinetBlockEntityRenderState> {
 
-    private static final Minecraft MC = Minecraft.getInstance();
-    private static final Font FONT = MC.font;
+    private final ItemModelResolver itemModelResolver;
+    private final Font font;
 
-    public FilingCabinetBlockEntityRenderer(BlockEntityRendererProvider.Context context) {}
+    public FilingCabinetBlockEntityRenderer(BlockEntityRendererProvider.Context context) {
+        this.itemModelResolver = context.itemModelResolver();
+        this.font = context.font();
+    }
 
     @Override
-    public void render(FilingCabinetBlockEntity blockEntity, float partialTick, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight, int packedOverlay) {
-        if (blockEntity.getLevel() == null) return;
+    public FilingCabinetBlockEntityRenderState createRenderState() {
+        return new FilingCabinetBlockEntityRenderState();
+    }
 
-        BlockState state = blockEntity.getBlockState();
-        Direction facing = state.getValue(FilingCabinetBlock.FACING);
+    @Override
+    public void extractRenderState(FilingCabinetBlockEntity be, FilingCabinetBlockEntityRenderState state, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.@Nullable CrumblingOverlay crumbling) {
+        BlockEntityRenderer.super.extractRenderState(be, state, partialTick, cameraPos, crumbling);
+        state.facing = be.getBlockState().getValue(FilingCabinetBlock.FACING);
+        state.light = 0xF000F0;
 
-        BlockPos renderPos = blockEntity.getBlockPos().relative(facing);
-        int light = net.minecraft.client.renderer.LevelRenderer.getLightColor(blockEntity.getLevel(), renderPos);
+        for (int slot = 0; slot < 4; slot++) {
+            FilingCabinetBlockEntityRenderState.SlotData sd = state.slots[slot];
+            sd.active = false;
+            sd.countText = "";
+            sd.itemState.clear();
 
-        poseStack.pushPose();
-        setupFaceTransform(poseStack, facing);
-
-        for (int slot = 0; slot < blockEntity.inventory.getSlots(); slot++) {
-            ItemStack folderStack = blockEntity.inventory.getStackInSlot(slot);
+            ItemStack folderStack = be.getStack(slot);
             if (folderStack.isEmpty() || !(folderStack.getItem() instanceof FilingFolderItem)) continue;
 
             FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
             if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) continue;
 
-            ItemStack storedItem = new ItemStack(BuiltInRegistries.ITEM.get(contents.storedItemId().get()));
-            String countText = FormattingCache.getFormattedItemCount(contents.count());
-            float offsetX = (slot - 2) * 0.15f;
+            ItemStack storedItem = new ItemStack(BuiltInRegistries.ITEM.getValue(contents.storedItemId().get()));
+            itemModelResolver.updateForTopItem(sd.itemState, storedItem, ItemDisplayContext.GUI, be.getLevel(), null, 0);
+            sd.countText = FormattingCache.getFormattedItemCount(contents.count());
+            int col = slot % 2;
+            int row = slot / 2;
 
-            renderSlotContent(storedItem, countText, offsetX, poseStack, bufferSource, light);
+            sd.offsetX = col == 0 ? -0.25f : 0.25f;
+            sd.offsetY = row == 0 ? 0.47f : -0.03f;
+            sd.active = true;
+        }
+    }
+
+    @Override
+    public void submit(FilingCabinetBlockEntityRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState camera) {
+        poseStack.pushPose();
+        setupFaceTransform(poseStack, state.facing);
+
+        for (FilingCabinetBlockEntityRenderState.SlotData sd : state.slots) {
+            if (!sd.active) continue;
+
+            poseStack.pushPose();
+            poseStack.translate(sd.offsetX, -0.32f + sd.offsetY, 0.01f);
+
+            poseStack.pushPose();
+            poseStack.scale(0.26f, 0.26f, 0.01f);
+            sd.itemState.submit(poseStack, collector, state.light, OverlayTexture.NO_OVERLAY, 0);
+            poseStack.popPose();
+
+            if (!sd.countText.isEmpty()) {
+                poseStack.pushPose();
+                poseStack.translate(0.0f, -0.14f, 0.001f);
+                poseStack.scale(0.005f, 0.005f, 0.005f);
+                poseStack.mulPose(Axis.XP.rotationDegrees(180.0f));
+                float xOffset = -font.width(sd.countText) / 2.0f;
+                collector.submitText(poseStack, xOffset, 0f,
+                        Component.literal(sd.countText).getVisualOrderText(),
+                        false, Font.DisplayMode.NORMAL, state.light, 0xFFFFFFFF, 0, 0);
+                poseStack.popPose();
+            }
+
+            poseStack.popPose();
         }
 
         poseStack.popPose();
     }
 
-    private void setupFaceTransform(PoseStack poseStack, Direction facing) {
+    private static void setupFaceTransform(PoseStack poseStack, Direction facing) {
         poseStack.translate(0.5, 0.5, 0.5);
         poseStack.mulPose(Axis.YP.rotationDegrees(180.0f));
         switch (facing) {
             case NORTH -> poseStack.translate(0.0, 0.10, 0.5);
-            case EAST  -> { poseStack.translate(-0.5, 0.10, 0.0); poseStack.mulPose(Axis.YP.rotationDegrees(-90.0f)); }
+            case EAST -> { poseStack.translate(-0.5, 0.10, 0.0); poseStack.mulPose(Axis.YP.rotationDegrees(-90.0f)); }
             case SOUTH -> { poseStack.translate(0.0, 0.10, -0.5); poseStack.mulPose(Axis.YP.rotationDegrees(180.0f)); }
-            case WEST  -> { poseStack.translate(0.5, 0.10, 0.0); poseStack.mulPose(Axis.YP.rotationDegrees(90.0f)); }
-            default    -> {}
+            case WEST -> { poseStack.translate(0.5, 0.10, 0.0); poseStack.mulPose(Axis.YP.rotationDegrees(90.0f)); }
+            default -> {}
         }
         poseStack.translate(0.0, 0.0, -0.03125);
-    }
-
-    private void renderSlotContent(ItemStack stack, String countText, float offsetX, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
-        poseStack.pushPose();
-        poseStack.translate(offsetX, -0.32f, 0.0f);
-
-        poseStack.pushPose();
-        poseStack.scale(0.15f, 0.15f, 0.15f);
-        MC.getItemRenderer().renderStatic(stack, ItemDisplayContext.FIXED, packedLight, OverlayTexture.NO_OVERLAY, poseStack, bufferSource, null, 0);
-        poseStack.popPose();
-
-        if (!countText.isEmpty()) {
-            renderText(countText, poseStack, bufferSource, packedLight);
-        }
-
-        poseStack.popPose();
-    }
-
-    private void renderText(String text, PoseStack poseStack, MultiBufferSource bufferSource, int packedLight) {
-        poseStack.pushPose();
-        poseStack.translate(0.0f, -0.08f, 0.001f);
-        poseStack.scale(0.004f, 0.005f, 0.004f);
-        poseStack.mulPose(Axis.XP.rotationDegrees(180.0f));
-        float xOffset = -FONT.width(text) / 2.0f;
-        FONT.drawInBatch(text, xOffset, 0.0f, 0xFFFFFF, false, poseStack.last().pose(), bufferSource, Font.DisplayMode.NORMAL, 0, packedLight);
-        poseStack.popPose();
     }
 }

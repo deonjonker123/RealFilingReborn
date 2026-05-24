@@ -29,7 +29,6 @@ public class RFRLootTableProvider extends BlockLootSubProvider {
         dropSelf(RFRBlocks.OAK_FILING_CABINET.get());
         dropSelf(RFRBlocks.WARPED_FILING_CABINET.get());
 
-        dropSelf(RFRBlocks.FLUID_CABINET.get());
         dropSelf(RFRBlocks.FILING_INDEX.get());
     }
 

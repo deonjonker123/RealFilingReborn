@@ -98,7 +98,6 @@ public class FilingIndexBlock extends BaseEntityBlock {
     @Override
     protected void affectNeighborsAfterRemoval(BlockState state, ServerLevel level, BlockPos pos, boolean movedByPiston) {
         if (level.getBlockEntity(pos) instanceof FilingIndexBlockEntity index) {
-            index.clearAllLinkedCabinets();
             clearControllerFromNearbyLedgers(level, pos);
             level.updateNeighbourForOutputSignal(pos, this);
         }

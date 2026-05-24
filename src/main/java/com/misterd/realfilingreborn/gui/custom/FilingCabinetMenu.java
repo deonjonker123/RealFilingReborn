@@ -27,7 +27,7 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
     private static final int VANILLA_SLOT_COUNT = 36;
     private static final int VANILLA_FIRST_SLOT_INDEX = 0;
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = 36;
-    private static final int TE_INVENTORY_SLOT_COUNT = 5;
+    private static final int TE_INVENTORY_SLOT_COUNT = 4;
 
     public FilingCabinetMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
@@ -40,8 +40,8 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
 
-        for (int i = 0; i < 5; i++) {
-            addSlot(new CabinetSlot(this.blockEntity, i, 44 + i * 18, 23));
+        for (int i = 0; i < 4; i++) {
+            addSlot(new CabinetSlot(this.blockEntity, i, 53 + i * 18, 23));
         }
     }
 

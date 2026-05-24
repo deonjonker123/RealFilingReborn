@@ -18,18 +18,11 @@ public class RFRMenuTypes {
     public static final DeferredHolder<MenuType<?>, MenuType<FilingCabinetMenu>> FILING_CABINET_MENU =
             registerMenuType("filing_cabinet_menu", FilingCabinetMenu::new);
 
-
-    public static final DeferredHolder<MenuType<?>, MenuType<FluidCabinetMenu>> FLUID_CABINET_MENU =
-            registerMenuType("fluid_cabinet_menu", FluidCabinetMenu::new);
-
     public static final DeferredHolder<MenuType<?>, MenuType<FilingIndexMenu>> FILING_INDEX_MENU =
             registerMenuType("filing_index_menu", FilingIndexMenu::new);
 
     public static final DeferredHolder<MenuType<?>, MenuType<FilingFolderMenu>> FILING_FOLDER_MENU =
             registerMenuType("filing_folder_menu", FilingFolderMenu::new);
-
-    public static final DeferredHolder<MenuType<?>, MenuType<FluidCanisterMenu>> FLUID_CANISTER_MENU =
-            registerMenuType("fluid_canister_menu", FluidCanisterMenu::new);
 
     private static <T extends AbstractContainerMenu> DeferredHolder<MenuType<?>, MenuType<T>> registerMenuType(String name, IContainerFactory<T> factory) {
         return MENUS.register(name, () -> IMenuTypeExtension.create(factory));

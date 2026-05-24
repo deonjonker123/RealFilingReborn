@@ -1,30 +1,29 @@
 package com.misterd.realfilingreborn.gui.custom;
 
 import com.misterd.realfilingreborn.network.ExtractionPacket;
-import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.ChatFormatting;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
-import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.client.network.ClientPacketDistributor;
+
+import java.util.List;
 
 public class FilingFolderScreen extends AbstractContainerScreen<FilingFolderMenu> {
 
-    private static final ResourceLocation GUI_TEXTURE =
-            ResourceLocation.fromNamespaceAndPath("realfilingreborn", "textures/gui/assignment_gui.png");
+    private static final Identifier GUI_TEXTURE =
+            Identifier.fromNamespaceAndPath("realfilingreborn", "textures/gui/assignment_gui.png");
 
     private static final int EXTRACT_BUTTON_X = 154;
     private static final int EXTRACT_BUTTON_Y = 45;
     private static final int EXTRACT_BUTTON_SIZE = 12;
 
     public FilingFolderScreen(FilingFolderMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        this.imageHeight = 154;
-        this.inventoryLabelY = this.imageHeight - 94;
+        super(menu, playerInventory, title, 176, 154);
+        this.inventoryLabelY = 154 - 94;
     }
 
     @Override
@@ -34,86 +33,64 @@ public class FilingFolderScreen extends AbstractContainerScreen<FilingFolderMenu
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        RenderSystem.setShader(GameRenderer::getPositionTexShader);
-        RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, GUI_TEXTURE);
-        int x = (this.width - this.imageWidth) / 2;
-        int y = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(GUI_TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight);
-        boolean hover = isMouseOverButton(mouseX, mouseY, x + EXTRACT_BUTTON_X, y + EXTRACT_BUTTON_Y, EXTRACT_BUTTON_SIZE, EXTRACT_BUTTON_SIZE);
-        renderExtractButton(guiGraphics, x + EXTRACT_BUTTON_X, y + EXTRACT_BUTTON_Y, hover);
-    }
+    public void extractContents(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float partialTick) {
+        graphics.blit(RenderPipelines.GUI_TEXTURED, GUI_TEXTURE,
+                this.leftPos, this.topPos, 0.0F, 0.0F,
+                this.imageWidth, this.imageHeight, 256, 256);
 
-    private void renderExtractButton(GuiGraphics guiGraphics, int x, int y, boolean hover) {
-        guiGraphics.blit(GUI_TEXTURE, x, y, hover ? 188 : 176, 0, EXTRACT_BUTTON_SIZE, EXTRACT_BUTTON_SIZE);
-    }
+        boolean hover = isOver(mouseX, mouseY, this.leftPos + EXTRACT_BUTTON_X, this.topPos + EXTRACT_BUTTON_Y);
+        graphics.blit(RenderPipelines.GUI_TEXTURED, GUI_TEXTURE,
+                this.leftPos + EXTRACT_BUTTON_X, this.topPos + EXTRACT_BUTTON_Y,
+                hover ? 188.0F : 176.0F, 0.0F,
+                EXTRACT_BUTTON_SIZE, EXTRACT_BUTTON_SIZE, 256, 256);
 
-    private boolean isMouseOverButton(double mouseX, double mouseY, int buttonX, int buttonY, int width, int height) {
-        return mouseX >= buttonX && mouseX < buttonX + width && mouseY >= buttonY && mouseY < buttonY + height;
-    }
-
-    @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        int x = (this.width - this.imageWidth) / 2;
-        int y = (this.height - this.imageHeight) / 2;
-        if (isMouseOverButton(mouseX, mouseY, x + EXTRACT_BUTTON_X, y + EXTRACT_BUTTON_Y, EXTRACT_BUTTON_SIZE, EXTRACT_BUTTON_SIZE)) {
-            PacketDistributor.sendToServer(new ExtractionPacket(ExtractionPacket.ExtractionType.FOLDER), new CustomPacketPayload[0]);
-            return true;
-        }
-        return super.mouseClicked(mouseX, mouseY, button);
-    }
-
-    @Override
-    protected void renderTooltip(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        super.renderTooltip(guiGraphics, mouseX, mouseY);
-        int x = (this.width - this.imageWidth) / 2;
-        int y = (this.height - this.imageHeight) / 2;
-        if (isMouseOverButton(mouseX, mouseY, x + EXTRACT_BUTTON_X, y + EXTRACT_BUTTON_Y, EXTRACT_BUTTON_SIZE, EXTRACT_BUTTON_SIZE)) {
-            guiGraphics.renderTooltip(this.font, Component.translatable("gui.realfilingreborn.extract_items"), mouseX, mouseY);
-        }
-    }
-
-    @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        renderTooltip(guiGraphics, mouseX, mouseY);
-    }
-
-    @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        super.renderLabels(guiGraphics, mouseX, mouseY);
-
+        float scale = 0.8F;
         Component instruction = Component.translatable("gui.realfilingreborn.folder.instruction");
-        guiGraphics.pose().pushPose();
-        guiGraphics.pose().scale(0.8F, 0.8F, 1.0F);
-        int scaledX = (int)(((float) this.imageWidth - (float) this.font.width(instruction) * 0.8F) / 2.0F / 0.8F);
-        guiGraphics.drawString(this.font, instruction, scaledX, 25, 0x555555, false);
-        guiGraphics.pose().popPose();
+        graphics.pose().pushMatrix();
+        graphics.pose().scale(scale, scale);
+        graphics.text(this.font, instruction,
+                (int) ((this.leftPos + (this.imageWidth - this.font.width(instruction) * scale) / 2) / scale),
+                (int) ((this.topPos + 23) / scale), 0xFF555555, false);
+        graphics.pose().popMatrix();
 
         Component assignedText = this.menu.getAssignedItemText();
         Component countText = this.menu.getCurrentCountText();
 
-        if (assignedText != null && countText != null) {
-            Component combined = assignedText.copy()
-                    .append(countText);
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().scale(0.8F, 0.8F, 1.0F);
-            int scaledCombinedX = (int)(((float) this.imageWidth - (float) this.font.width(combined) * 0.8F) / 2.0F / 0.8F);
-            guiGraphics.drawString(this.font, combined, scaledCombinedX, 37, 0x555555, false);
-            guiGraphics.pose().popPose();
-        } else if (assignedText != null) {
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().scale(0.8F, 0.8F, 1.0F);
-            int scaledAssignedX = (int)(((float) this.imageWidth - (float) this.font.width(assignedText) * 0.8F) / 2.0F / 0.8F);
-            guiGraphics.drawString(this.font, assignedText, scaledAssignedX, 37, 0x555555, false);
-            guiGraphics.pose().popPose();
-        } else if (countText != null) {
-            guiGraphics.pose().pushPose();
-            guiGraphics.pose().scale(0.8F, 0.8F, 1.0F);
-            int scaledCountX = (int)(((float) this.imageWidth - (float) this.font.width(countText) * 0.8F) / 2.0F / 0.8F);
-            guiGraphics.drawString(this.font, countText, scaledCountX, 37, 0x555555, false);
-            guiGraphics.pose().popPose();
+        if (assignedText != null || countText != null) {
+            Component line = assignedText != null && countText != null
+                    ? assignedText.copy().append(countText)
+                    : assignedText != null ? assignedText : countText;
+            graphics.pose().pushMatrix();
+            graphics.pose().scale(scale, scale);
+            graphics.text(this.font, line,
+                    (int) ((this.leftPos + (this.imageWidth - this.font.width(line) * scale) / 2) / scale),
+                    (int) ((this.topPos + 33) / scale), 0xFF555555, false);
+            graphics.pose().popMatrix();
         }
+
+        super.extractContents(graphics, mouseX, mouseY, partialTick);
+    }
+
+    @Override
+    protected void extractTooltip(GuiGraphicsExtractor graphics, int mouseX, int mouseY) {
+        if (isOver(mouseX, mouseY, this.leftPos + EXTRACT_BUTTON_X, this.topPos + EXTRACT_BUTTON_Y)) {
+            graphics.setComponentTooltipForNextFrame(this.font,
+                    List.of(Component.translatable("gui.realfilingreborn.extract_items")), mouseX, mouseY);
+            return;
+        }
+        super.extractTooltip(graphics, mouseX, mouseY);
+    }
+
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+        if (event.button() == 0 && isOver(event.x(), event.y(), this.leftPos + EXTRACT_BUTTON_X, this.topPos + EXTRACT_BUTTON_Y)) {
+            ClientPacketDistributor.sendToServer(new ExtractionPacket(ExtractionPacket.ExtractionType.FOLDER));
+            return true;
+        }
+        return super.mouseClicked(event, doubleClick);
+    }
+
+    private boolean isOver(double mouseX, double mouseY, int x, int y) {
+        return mouseX >= x && mouseX < x + EXTRACT_BUTTON_SIZE && mouseY >= y && mouseY < y + EXTRACT_BUTTON_SIZE;
     }
 }

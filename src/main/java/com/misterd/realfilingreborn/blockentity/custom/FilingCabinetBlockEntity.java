@@ -34,14 +34,14 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
     @Nullable
     private BlockPos controllerPos = null;
 
-    private final boolean[] dirtySlots = new boolean[5];
+    private final boolean[] dirtySlots = new boolean[4];
     private boolean anySlotDirty = false;
 
-    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(5) {
+    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(4) {
         @Override
         protected void onContentsChanged(int slot, ItemStack previous) {
             setChanged();
-            if (slot >= 0 && slot < 5) {
+            if (slot >= 0 && slot < 4) {
                 dirtySlots[slot] = true;
                 anySlotDirty = true;
             }
@@ -68,7 +68,7 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
     public boolean[] consumeDirtySlots() {
         if (!anySlotDirty) return null;
         boolean[] snapshot = dirtySlots.clone();
-        for (int i = 0; i < 5; i++) dirtySlots[i] = false;
+        for (int i = 0; i < 4; i++) dirtySlots[i] = false;
         anySlotDirty = false;
         return snapshot;
     }

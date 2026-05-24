@@ -1,11 +1,10 @@
 package com.misterd.realfilingreborn.network;
 
 import com.misterd.realfilingreborn.gui.custom.FilingFolderMenu;
-import com.misterd.realfilingreborn.gui.custom.FluidCanisterMenu;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
@@ -13,7 +12,7 @@ import net.neoforged.neoforge.network.handling.IPayloadContext;
 public record ExtractionPacket(ExtractionType extractionType) implements CustomPacketPayload {
 
     public static final Type<ExtractionPacket> TYPE =
-            new Type<>(ResourceLocation.fromNamespaceAndPath("realfilingreborn", "extraction"));
+            new Type<>(Identifier.fromNamespaceAndPath("realfilingreborn", "extraction"));
 
     public static final StreamCodec<FriendlyByteBuf, ExtractionPacket> STREAM_CODEC =
             StreamCodec.composite(
@@ -40,7 +39,6 @@ public record ExtractionPacket(ExtractionType extractionType) implements CustomP
         AbstractContainerMenu menu = serverPlayer.containerMenu;
         switch (packet.extractionType) {
             case FOLDER   -> { if (menu instanceof FilingFolderMenu m)  m.extractItems(); }
-            case CANISTER -> { if (menu instanceof FluidCanisterMenu m) m.extractFluid(); }
         }
     }
 

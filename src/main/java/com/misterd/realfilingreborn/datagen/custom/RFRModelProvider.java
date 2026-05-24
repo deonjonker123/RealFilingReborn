@@ -34,7 +34,6 @@ public class RFRModelProvider extends ModelProvider {
 
     @Override
     protected void registerModels(BlockModelGenerators g, ItemModelGenerators itemModels) {
-        // Filing Cabinets
         registerCabinet(g, "filing_cabinet", RFRBlocks.FILING_CABINET);
         registerCabinet(g, "acacia_filing_cabinet", RFRBlocks.ACACIA_FILING_CABINET);
         registerCabinet(g, "birch_filing_cabinet", RFRBlocks.BIRCH_FILING_CABINET);
@@ -46,28 +45,16 @@ public class RFRModelProvider extends ModelProvider {
         registerCabinet(g, "oak_filing_cabinet", RFRBlocks.OAK_FILING_CABINET);
         registerCabinet(g, "warped_filing_cabinet", RFRBlocks.WARPED_FILING_CABINET);
 
-        // Other blocks
-        g.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(RFRBlocks.FLUID_CABINET.get(),
-                        BlockModelGenerators.plainVariant(Identifier.fromNamespaceAndPath(RealFilingReborn.MODID, "block/fluid_cabinet")))
-                .with(ROTATION_HORIZONTAL_FACING));
         g.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(RFRBlocks.FILING_INDEX.get(),
                         BlockModelGenerators.plainVariant(Identifier.fromNamespaceAndPath(RealFilingReborn.MODID, "block/filing_index")))
                 .with(ROTATION_HORIZONTAL_FACING));
 
-        // Items
         itemModels.generateFlatItem(RFRItems.FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.COPPER_FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.IRON_FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.GOLD_FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.DIAMOND_FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.NETHERITE_FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
-
-        itemModels.generateFlatItem(RFRItems.FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RFRItems.COPPER_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RFRItems.IRON_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RFRItems.GOLD_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RFRItems.DIAMOND_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
-        itemModels.generateFlatItem(RFRItems.NETHERITE_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
 
         itemModels.generateFlatItem(RFRItems.LEDGER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.IRON_RANGE_UPGRADE.get(), ModelTemplates.FLAT_ITEM);

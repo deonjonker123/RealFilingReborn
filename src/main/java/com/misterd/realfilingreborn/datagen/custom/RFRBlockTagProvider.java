@@ -6,7 +6,6 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
 import java.util.concurrent.CompletableFuture;
 
@@ -31,7 +30,6 @@ public class RFRBlockTagProvider extends BlockTagsProvider {
                 .add(RFRBlocks.WARPED_FILING_CABINET.get());
 
         tag(BlockTags.MINEABLE_WITH_PICKAXE)
-                .add(RFRBlocks.FLUID_CABINET.get())
                 .add(RFRBlocks.FILING_INDEX.get());
     }
 }

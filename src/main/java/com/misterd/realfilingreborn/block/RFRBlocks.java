@@ -90,13 +90,6 @@ public class RFRBlocks {
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));
 
-    public static final DeferredBlock<Block> FLUID_CABINET = registerBlock("fluid_cabinet",
-            id -> new FluidCabinetBlock(BlockBehaviour.Properties.of()
-                    .setId(ResourceKey.create(Registries.BLOCK, id))
-                    .strength(3.0F, 5.0F)
-                    .sound(SoundType.STONE)
-                    .requiresCorrectToolForDrops()));
-
     public static final DeferredBlock<Block> FILING_INDEX = registerBlock("filing_index",
             id -> new FilingIndexBlock(BlockBehaviour.Properties.of()
                     .setId(ResourceKey.create(Registries.BLOCK, id))
