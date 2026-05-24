@@ -5,12 +5,15 @@ import com.misterd.realfilingreborn.blockentity.custom.FluidCabinetBlockEntity;
 import com.misterd.realfilingreborn.item.custom.FluidCanisterItem;
 import com.misterd.realfilingreborn.util.FluidHelper;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.level.material.Fluid;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -19,7 +22,7 @@ import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-public class FilingIndexFluidHandler implements IFluidHandler {
+public class FilingIndexFluidHandler implements ResourceHandler<FluidResource> {
 
     private final FilingIndexBlockEntity indexEntity;
     private final Level level;
@@ -54,13 +57,13 @@ public class FilingIndexFluidHandler implements IFluidHandler {
             if (!(level.getBlockEntity(cabinetPos) instanceof FluidCabinetBlockEntity fluidCabinet)) continue;
             if (!fluidCabinet.isLinkedToController()) continue;
             for (int slot = 0; slot < 4; slot++) {
-                ItemStack canisterStack = fluidCabinet.inventory.getStackInSlot(slot);
+                ItemStack canisterStack = fluidCabinet.getStack(slot);
                 if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) continue;
                 FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
                 if (contents == null || contents.storedFluidId().isEmpty() || contents.amount() <= 0) continue;
-                var fluid = FluidHelper.getFluidFromId(contents.storedFluidId().get());
+                Fluid fluid = FluidHelper.getFluidFromId(contents.storedFluidId().get());
                 if (fluid == null) continue;
-                tanks.add(new FluidTankInfo(cabinetPos, slot, new FluidStack(fluid, contents.amount()), canister.getCapacity()));
+                tanks.add(new FluidTankInfo(cabinetPos, slot, FluidResource.of(fluid), contents.amount(), canister.getCapacity()));
             }
         }
         return tanks;
@@ -82,61 +85,51 @@ public class FilingIndexFluidHandler implements IFluidHandler {
     }
 
     @Override
-    public int getTanks() {
+    public int size() {
         return snapshot().size();
     }
 
     @Override
-    @NotNull
-    public FluidStack getFluidInTank(int tank) {
+    public FluidResource getResource(int slot) {
         List<FluidTankInfo> snap = snapshot();
-        if (tank < 0 || tank >= snap.size()) return FluidStack.EMPTY;
-        return snap.get(tank).fluidStack().copy();
+        if (slot < 0 || slot >= snap.size()) return FluidResource.EMPTY;
+        return snap.get(slot).resource();
     }
 
     @Override
-    public int getTankCapacity(int tank) {
+    public long getAmountAsLong(int slot) {
         List<FluidTankInfo> snap = snapshot();
-        if (tank < 0 || tank >= snap.size()) return 0;
-        return snap.get(tank).capacity();
+        if (slot < 0 || slot >= snap.size()) return 0;
+        return snap.get(slot).amount();
     }
 
     @Override
-    public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+    public long getCapacityAsLong(int slot, FluidResource resource) {
         List<FluidTankInfo> snap = snapshot();
-        if (tank < 0 || tank >= snap.size() || stack.isEmpty()) return false;
-        return FluidHelper.areFluidsCompatible(
-                FluidHelper.getFluidId(stack.getFluid()),
-                FluidHelper.getFluidId(snap.get(tank).fluidStack().getFluid()));
+        if (slot < 0 || slot >= snap.size()) return 0;
+        return snap.get(slot).capacity();
     }
 
     @Override
-    public int fill(FluidStack resource, FluidAction action) {
-        if (resource.isEmpty() || !FluidHelper.isValidFluid(resource.getFluid())) return 0;
+    public boolean isValid(int slot, FluidResource resource) {
+        return !resource.isEmpty() && FluidHelper.isValidFluid(resource.getFluid());
+    }
+
+    @Override
+    public int insert(int slot, FluidResource resource, int amount, TransactionContext tx) {
+        if (resource.isEmpty() || amount <= 0 || !FluidHelper.isValidFluid(resource.getFluid())) return 0;
 
         try {
-            ResourceLocation resourceFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(resource.getFluid()));
+            Identifier resourceFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(resource.getFluid()));
 
-            for (FluidTankInfo tankInfo : snapshot()) {
-                ResourceLocation tankFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(tankInfo.fluidStack().getFluid()));
-                if (!FluidHelper.areFluidsCompatible(resourceFluidId, tankFluidId)) continue;
-
-                if (!(level.getBlockEntity(tankInfo.cabinetPos()) instanceof FluidCabinetBlockEntity fluidCabinet)) continue;
-                ItemStack canisterStack = fluidCabinet.inventory.getStackInSlot(tankInfo.slotIndex());
-                if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) continue;
-
-                FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
-                if (contents == null || contents.storedFluidId().isEmpty()) continue;
-
-                int toAdd = Math.min(resource.getAmount(), canister.getCapacity() - contents.amount());
-                if (toAdd <= 0) continue;
-
-                if (action.execute()) {
-                    canisterStack.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
-                            new FluidCanisterItem.CanisterContents(contents.storedFluidId(), contents.amount() + toAdd));
-                    fluidCabinet.inventory.setStackInSlot(tankInfo.slotIndex(), canisterStack);
+            List<FluidTankInfo> snap = snapshot();
+            if (slot >= 0 && slot < snap.size()) {
+                FluidTankInfo tankInfo = snap.get(slot);
+                Identifier tankFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(tankInfo.resource().getFluid()));
+                if (FluidHelper.areFluidsCompatible(resourceFluidId, tankFluidId)) {
+                    int result = insertIntoTank(tankInfo, resourceFluidId, amount, tx);
+                    if (result > 0) return result;
                 }
-                return toAdd;
             }
 
             for (BlockPos cabinetPos : new ArrayList<>(indexEntity.getLinkedCabinets())) {
@@ -144,20 +137,22 @@ public class FilingIndexFluidHandler implements IFluidHandler {
                 if (!(level.getBlockEntity(cabinetPos) instanceof FluidCabinetBlockEntity fluidCabinet)) continue;
                 if (!fluidCabinet.isLinkedToController()) continue;
 
-                for (int slot = 0; slot < 4; slot++) {
-                    ItemStack canisterStack = fluidCabinet.inventory.getStackInSlot(slot);
+                for (int s = 0; s < 4; s++) {
+                    ItemStack canisterStack = fluidCabinet.getStack(s);
                     if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) continue;
-
                     FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
                     if (contents == null || !contents.storedFluidId().isEmpty()) continue;
 
-                    int toAdd = Math.min(resource.getAmount(), canister.getCapacity());
+                    int toAdd = Math.min(amount, canister.getCapacity());
                     if (toAdd <= 0) continue;
 
-                    if (action.execute()) {
-                        canisterStack.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
-                                new FluidCanisterItem.CanisterContents(Optional.of(resourceFluidId), toAdd));
-                        fluidCabinet.inventory.setStackInSlot(slot, canisterStack);
+                    ItemStack updated = canisterStack.copy();
+                    updated.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
+                            new FluidCanisterItem.CanisterContents(Optional.of(resourceFluidId), toAdd));
+                    try (Transaction innerTx = Transaction.open(tx)) {
+                        fluidCabinet.inventory.extract(s, ItemResource.of(canisterStack), 1, innerTx);
+                        fluidCabinet.inventory.insert(s, ItemResource.of(updated), 1, innerTx);
+                        innerTx.commit();
                     }
                     return toAdd;
                 }
@@ -169,74 +164,66 @@ public class FilingIndexFluidHandler implements IFluidHandler {
         }
     }
 
-    @Override
-    @NotNull
-    public FluidStack drain(FluidStack resource, FluidAction action) {
-        if (resource.isEmpty() || !FluidHelper.isValidFluid(resource.getFluid())) return FluidStack.EMPTY;
+    private int insertIntoTank(FluidTankInfo tankInfo, Identifier fluidId, int amount, TransactionContext tx) {
+        if (!(level.getBlockEntity(tankInfo.cabinetPos()) instanceof FluidCabinetBlockEntity fluidCabinet)) return 0;
+        ItemStack canisterStack = fluidCabinet.getStack(tankInfo.slotIndex());
+        if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) return 0;
+        FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
+        if (contents == null || contents.storedFluidId().isEmpty()) return 0;
 
-        try {
-            ResourceLocation resourceFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(resource.getFluid()));
+        int toAdd = Math.min(amount, canister.getCapacity() - contents.amount());
+        if (toAdd <= 0) return 0;
 
-            for (FluidTankInfo tankInfo : snapshot()) {
-                ResourceLocation tankFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(tankInfo.fluidStack().getFluid()));
-                if (!FluidHelper.areFluidsCompatible(resourceFluidId, tankFluidId)) continue;
-
-                if (!(level.getBlockEntity(tankInfo.cabinetPos()) instanceof FluidCabinetBlockEntity fluidCabinet)) continue;
-                ItemStack canisterStack = fluidCabinet.inventory.getStackInSlot(tankInfo.slotIndex());
-                if (!(canisterStack.getItem() instanceof FluidCanisterItem)) continue;
-
-                FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
-                if (contents == null || contents.amount() <= 0) continue;
-
-                int toDrain = Math.min(resource.getAmount(), contents.amount());
-                if (toDrain <= 0) continue;
-
-                if (action.execute()) {
-                    canisterStack.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
-                            new FluidCanisterItem.CanisterContents(contents.storedFluidId(), contents.amount() - toDrain));
-                    fluidCabinet.inventory.setStackInSlot(tankInfo.slotIndex(), canisterStack);
-                }
-                return new FluidStack(resource.getFluid(), toDrain);
-            }
-
-            return FluidStack.EMPTY;
-        } catch (Exception e) {
-            return FluidStack.EMPTY;
+        ItemStack updated = canisterStack.copy();
+        updated.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
+                new FluidCanisterItem.CanisterContents(contents.storedFluidId(), contents.amount() + toAdd));
+        try (Transaction innerTx = Transaction.open(tx)) {
+            fluidCabinet.inventory.extract(tankInfo.slotIndex(), ItemResource.of(canisterStack), 1, innerTx);
+            fluidCabinet.inventory.insert(tankInfo.slotIndex(), ItemResource.of(updated), 1, innerTx);
+            innerTx.commit();
         }
+        return toAdd;
     }
 
     @Override
-    @NotNull
-    public FluidStack drain(int maxDrain, FluidAction action) {
-        if (maxDrain <= 0) return FluidStack.EMPTY;
+    public int extract(int slot, FluidResource resource, int amount, TransactionContext tx) {
+        if (resource.isEmpty() || amount <= 0) return 0;
 
         try {
-            for (FluidTankInfo tankInfo : snapshot()) {
-                if (tankInfo.fluidStack().getAmount() <= 0) continue;
+            Identifier resourceFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(resource.getFluid()));
+            List<FluidTankInfo> snap = snapshot();
 
-                if (!(level.getBlockEntity(tankInfo.cabinetPos()) instanceof FluidCabinetBlockEntity fluidCabinet)) continue;
-                ItemStack canisterStack = fluidCabinet.inventory.getStackInSlot(tankInfo.slotIndex());
-                if (!(canisterStack.getItem() instanceof FluidCanisterItem)) continue;
+            if (slot >= 0 && slot < snap.size()) {
+                FluidTankInfo tankInfo = snap.get(slot);
+                Identifier tankFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(tankInfo.resource().getFluid()));
+                if (!FluidHelper.areFluidsCompatible(resourceFluidId, tankFluidId)) return 0;
+
+                if (!(level.getBlockEntity(tankInfo.cabinetPos()) instanceof FluidCabinetBlockEntity fluidCabinet)) return 0;
+                ItemStack canisterStack = fluidCabinet.getStack(tankInfo.slotIndex());
+                if (!(canisterStack.getItem() instanceof FluidCanisterItem)) return 0;
 
                 FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
-                if (contents == null || contents.amount() <= 0) continue;
+                if (contents == null || contents.amount() <= 0) return 0;
 
-                int toDrain = Math.min(maxDrain, contents.amount());
-                if (toDrain <= 0) continue;
+                int toDrain = Math.min(amount, contents.amount());
+                if (toDrain <= 0) return 0;
 
-                if (action.execute()) {
-                    canisterStack.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
-                            new FluidCanisterItem.CanisterContents(contents.storedFluidId(), contents.amount() - toDrain));
-                    fluidCabinet.inventory.setStackInSlot(tankInfo.slotIndex(), canisterStack);
+                ItemStack updated = canisterStack.copy();
+                updated.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
+                        new FluidCanisterItem.CanisterContents(contents.storedFluidId(), contents.amount() - toDrain));
+                try (Transaction innerTx = Transaction.open(tx)) {
+                    fluidCabinet.inventory.extract(tankInfo.slotIndex(), ItemResource.of(canisterStack), 1, innerTx);
+                    fluidCabinet.inventory.insert(tankInfo.slotIndex(), ItemResource.of(updated), 1, innerTx);
+                    innerTx.commit();
                 }
-                return new FluidStack(tankInfo.fluidStack().getFluid(), toDrain);
+                return toDrain;
             }
 
-            return FluidStack.EMPTY;
+            return 0;
         } catch (Exception e) {
-            return FluidStack.EMPTY;
+            return 0;
         }
     }
 
-    private record FluidTankInfo(BlockPos cabinetPos, int slotIndex, FluidStack fluidStack, int capacity) {}
+    private record FluidTankInfo(BlockPos cabinetPos, int slotIndex, FluidResource resource, int amount, int capacity) {}
 }

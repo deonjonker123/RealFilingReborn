@@ -5,6 +5,7 @@ import com.misterd.realfilingreborn.blockentity.custom.FluidCabinetBlockEntity;
 import com.misterd.realfilingreborn.gui.RFRMenuTypes;
 import com.misterd.realfilingreborn.item.custom.FluidCanisterItem;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -13,7 +14,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public class FluidCabinetMenu extends AbstractContainerMenu {
 
@@ -23,7 +25,6 @@ public class FluidCabinetMenu extends AbstractContainerMenu {
     private static final int HOTBAR_SLOT_COUNT = 9;
     private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
     private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
-    private static final int PLAYER_INVENTORY_SLOT_COUNT = 27;
     private static final int VANILLA_SLOT_COUNT = 36;
     private static final int VANILLA_FIRST_SLOT_INDEX = 0;
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = 36;
@@ -41,13 +42,7 @@ public class FluidCabinetMenu extends AbstractContainerMenu {
         addPlayerHotbar(inv);
 
         for (int i = 0; i < TE_INVENTORY_SLOT_COUNT; i++) {
-            int x = 53 + i * 18;
-            addSlot(new SlotItemHandler(this.blockEntity.inventory, i, x, 23) {
-                @Override
-                public boolean mayPlace(ItemStack stack) {
-                    return stack.getItem() instanceof FluidCanisterItem;
-                }
-            });
+            addSlot(new FluidCabinetSlot(this.blockEntity, i, 53 + i * 18, 23));
         }
     }
 
@@ -57,7 +52,7 @@ public class FluidCabinetMenu extends AbstractContainerMenu {
         if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;
 
         ItemStack sourceStack = sourceSlot.getItem();
-        ItemStack copyOfSourceStack = sourceStack.copy();
+        ItemStack copy = sourceStack.copy();
 
         if (index < VANILLA_SLOT_COUNT) {
             if (!(sourceStack.getItem() instanceof FluidCanisterItem)) return ItemStack.EMPTY;
@@ -65,9 +60,7 @@ public class FluidCabinetMenu extends AbstractContainerMenu {
                 return ItemStack.EMPTY;
             }
         } else {
-            if (index >= TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) {
-                return ItemStack.EMPTY;
-            }
+            if (index >= TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) return ItemStack.EMPTY;
             if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_SLOT_COUNT, false)) {
                 return ItemStack.EMPTY;
             }
@@ -80,7 +73,7 @@ public class FluidCabinetMenu extends AbstractContainerMenu {
         }
 
         sourceSlot.onTake(player, sourceStack);
-        return copyOfSourceStack;
+        return copy;
     }
 
     @Override
@@ -99,6 +92,67 @@ public class FluidCabinetMenu extends AbstractContainerMenu {
     private void addPlayerHotbar(Inventory playerInventory) {
         for (int i = 0; i < HOTBAR_SLOT_COUNT; i++) {
             addSlot(new Slot(playerInventory, i, 8 + i * 18, 119));
+        }
+    }
+
+    private static class FluidCabinetSlot extends Slot {
+        private final FluidCabinetBlockEntity be;
+        private final int index;
+
+        public FluidCabinetSlot(FluidCabinetBlockEntity be, int index, int x, int y) {
+            super(new SimpleContainer(be.inventory.size()), index, x, y);
+            this.be = be;
+            this.index = index;
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return be.getStack(index);
+        }
+
+        @Override
+        public boolean hasItem() {
+            return !be.getStack(index).isEmpty();
+        }
+
+        @Override
+        public void set(ItemStack stack) {
+            try (Transaction tx = Transaction.openRoot()) {
+                ItemStack existing = be.getStack(index);
+                if (!existing.isEmpty())
+                    be.inventory.extract(index, ItemResource.of(existing), existing.getCount(), tx);
+                if (!stack.isEmpty())
+                    be.inventory.insert(index, ItemResource.of(stack), stack.getCount(), tx);
+                tx.commit();
+            }
+            setChanged();
+        }
+
+        @Override
+        public void setChanged() {
+            be.setChanged();
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return stack.getItem() instanceof FluidCanisterItem;
+        }
+
+        @Override
+        public boolean mayPickup(Player player) {
+            return !be.getStack(index).isEmpty();
+        }
+
+        @Override
+        public ItemStack remove(int amount) {
+            ItemStack existing = getItem();
+            if (existing.isEmpty()) return ItemStack.EMPTY;
+            int toExtract = Math.min(amount, existing.getCount());
+            try (Transaction tx = Transaction.openRoot()) {
+                int extracted = be.inventory.extract(index, ItemResource.of(existing), toExtract, tx);
+                tx.commit();
+                return new ItemStack(existing.getItem(), extracted);
+            }
         }
     }
 }

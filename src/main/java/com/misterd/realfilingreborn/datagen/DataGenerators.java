@@ -10,7 +10,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParamSets;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
-import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
 import java.util.Collections;
@@ -20,19 +19,25 @@ import java.util.concurrent.CompletableFuture;
 @EventBusSubscriber(modid = RealFilingReborn.MODID)
 public class DataGenerators {
     @SubscribeEvent
-    public static void gatherData(GatherDataEvent event) {
+    public static void gatherClientData(GatherDataEvent.Client event) {
         DataGenerator generator = event.getGenerator();
         PackOutput packOutput = generator.getPackOutput();
-        ExistingFileHelper existingFileHelper = event.getExistingFileHelper();
+
+        generator.addProvider(true, new RFRModelProvider(packOutput));
+    }
+
+    @SubscribeEvent
+    public static void gatherServerData(GatherDataEvent.Server event) {
+        DataGenerator generator = event.getGenerator();
+        PackOutput packOutput = generator.getPackOutput();
         CompletableFuture<HolderLookup.Provider> lookupProvider = event.getLookupProvider();
 
-        generator.addProvider(event.includeServer(), new LootTableProvider(packOutput, Collections.emptySet(), List.of(new LootTableProvider.SubProviderEntry(RFRLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
-        generator.addProvider(event.includeServer(), new RFRRecipeProvider(packOutput, lookupProvider));
+        generator.addProvider(true, new LootTableProvider(packOutput, Collections.emptySet(), List.of(new LootTableProvider.SubProviderEntry(RFRLootTableProvider::new, LootContextParamSets.BLOCK)), lookupProvider));
+        generator.addProvider(true, new RFRRecipeProvider.Runner(packOutput, lookupProvider));
 
-        BlockTagsProvider blockTagsProvider = new RFRBlockTagProvider(packOutput, lookupProvider, existingFileHelper);
-        generator.addProvider(event.includeServer(), blockTagsProvider);
+        BlockTagsProvider blockTagsProvider = new RFRBlockTagProvider(packOutput, lookupProvider);
+        generator.addProvider(true, blockTagsProvider);
 
-        generator.addProvider(event.includeClient(), new RFRItemModelProvider(packOutput, existingFileHelper));
-        generator.addProvider(event.includeServer(), new RFRItemTagProvider(packOutput, lookupProvider, blockTagsProvider.contentsGetter(), existingFileHelper));
+        generator.addProvider(true, new RFRItemTagProvider(packOutput, lookupProvider));
     }
 }

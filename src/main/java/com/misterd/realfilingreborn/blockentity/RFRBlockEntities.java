@@ -19,42 +19,42 @@ public class RFRBlockEntities {
             DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, RealFilingReborn.MODID);
 
     public static final Supplier<BlockEntityType<FilingCabinetBlockEntity>> FILING_CABINET_BE =
-            BLOCK_ENTITIES.register("filing_cabinet_be", () -> BlockEntityType.Builder.of(
+            BLOCK_ENTITIES.register("filing_cabinet_be", () -> new BlockEntityType<>(
                     FilingCabinetBlockEntity::new,
                     RFRBlocks.FILING_CABINET.get(),
                     RFRBlocks.ACACIA_FILING_CABINET.get(),
                     RFRBlocks.BIRCH_FILING_CABINET.get(),
                     RFRBlocks.CHERRY_FILING_CABINET.get(),
                     RFRBlocks.CRIMSON_FILING_CABINET.get(),
-                    RFRBlocks.DARKOAK_FILING_CABINET.get(),
+                    RFRBlocks.DARK_OAK_FILING_CABINET.get(),
                     RFRBlocks.JUNGLE_FILING_CABINET.get(),
                     RFRBlocks.MANGROVE_FILING_CABINET.get(),
                     RFRBlocks.OAK_FILING_CABINET.get(),
                     RFRBlocks.WARPED_FILING_CABINET.get()
-            ).build(null));
+            ));
 
     public static final Supplier<BlockEntityType<FluidCabinetBlockEntity>> FLUID_CABINET_BE =
-            BLOCK_ENTITIES.register("fluid_cabinet_be", () -> BlockEntityType.Builder.of(
-                    FluidCabinetBlockEntity::new, RFRBlocks.FLUID_CABINET.get()).build(null));
+            BLOCK_ENTITIES.register("fluid_cabinet_be", () -> new BlockEntityType<>(
+                    FluidCabinetBlockEntity::new, RFRBlocks.FLUID_CABINET.get()));
 
     public static final Supplier<BlockEntityType<FilingIndexBlockEntity>> FILING_INDEX_BE =
-            BLOCK_ENTITIES.register("filing_index_be", () -> BlockEntityType.Builder.of(
-                    FilingIndexBlockEntity::new, RFRBlocks.FILING_INDEX.get()).build(null));
+            BLOCK_ENTITIES.register("filing_index_be", () -> new BlockEntityType<>(
+                    FilingIndexBlockEntity::new, RFRBlocks.FILING_INDEX.get()));
 
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FILING_CABINET_BE.get(),
+        event.registerBlockEntity(Capabilities.Item.BLOCK, FILING_CABINET_BE.get(),
                 (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
 
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FLUID_CABINET_BE.get(),
+        event.registerBlockEntity(Capabilities.Item.BLOCK, FLUID_CABINET_BE.get(),
                 (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
 
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, FILING_INDEX_BE.get(),
+        event.registerBlockEntity(Capabilities.Item.BLOCK, FILING_INDEX_BE.get(),
                 (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
 
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, FLUID_CABINET_BE.get(),
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, FLUID_CABINET_BE.get(),
                 (blockEntity, direction) -> blockEntity.getFluidCapabilityHandler(direction));
 
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, FILING_INDEX_BE.get(),
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, FILING_INDEX_BE.get(),
                 (blockEntity, direction) -> blockEntity.getFluidCapabilityHandler(direction));
     }
 

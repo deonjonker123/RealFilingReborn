@@ -23,7 +23,7 @@ public class RFRLootTableProvider extends BlockLootSubProvider {
         dropSelf(RFRBlocks.BIRCH_FILING_CABINET.get());
         dropSelf(RFRBlocks.CHERRY_FILING_CABINET.get());
         dropSelf(RFRBlocks.CRIMSON_FILING_CABINET.get());
-        dropSelf(RFRBlocks.DARKOAK_FILING_CABINET.get());
+        dropSelf(RFRBlocks.DARK_OAK_FILING_CABINET.get());
         dropSelf(RFRBlocks.JUNGLE_FILING_CABINET.get());
         dropSelf(RFRBlocks.MANGROVE_FILING_CABINET.get());
         dropSelf(RFRBlocks.OAK_FILING_CABINET.get());

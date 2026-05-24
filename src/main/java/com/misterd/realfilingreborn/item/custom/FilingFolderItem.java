@@ -12,10 +12,10 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
@@ -23,23 +23,24 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.alchemy.PotionContents;
 import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class FilingFolderItem extends Item {
 
     public enum FolderTier {
-        BASE      (4_096),
-        COPPER    (32_768),
-        IRON      (262_144),
-        GOLD      (2_097_152),
-        DIAMOND   (16_777_216),
-        NETHERITE (134_217_728);
+        BASE(4_096),
+        COPPER(32_768),
+        IRON(262_144),
+        GOLD(2_097_152),
+        DIAMOND(16_777_216),
+        NETHERITE(134_217_728);
 
         private final int capacity;
 
@@ -56,16 +57,16 @@ public class FilingFolderItem extends Item {
 
     private static final Codec<FolderContents> FOLDER_CONTENTS_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    ResourceLocation.CODEC.optionalFieldOf("storedItemId").forGetter(FolderContents::storedItemId),
+                    Identifier.CODEC.optionalFieldOf("storedItemId").forGetter(FolderContents::storedItemId),
                     Codec.INT.fieldOf("count").forGetter(FolderContents::count)
             ).apply(instance, FolderContents::new));
 
-    public static final StreamCodec<ByteBuf, ResourceLocation> RESOURCE_LOCATION_STREAM_CODEC =
-            ByteBufCodecs.STRING_UTF8.map(ResourceLocation::parse, ResourceLocation::toString);
+    public static final StreamCodec<ByteBuf, Identifier> IDENTIFIER_STREAM_CODEC =
+            ByteBufCodecs.STRING_UTF8.map(Identifier::parse, Identifier::toString);
 
     private static final StreamCodec<ByteBuf, FolderContents> FOLDER_CONTENTS_STREAM_CODEC =
             StreamCodec.composite(
-                    ByteBufCodecs.optional(RESOURCE_LOCATION_STREAM_CODEC), FolderContents::storedItemId,
+                    ByteBufCodecs.optional(IDENTIFIER_STREAM_CODEC), FolderContents::storedItemId,
                     ByteBufCodecs.INT, FolderContents::count,
                     FolderContents::new);
 
@@ -116,9 +117,9 @@ public class FilingFolderItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack folderStack = player.getItemInHand(hand);
-        if (level.isClientSide()) return InteractionResultHolder.success(folderStack);
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         if (player.isShiftKeyDown()) {
             if (player instanceof ServerPlayer serverPlayer) {
@@ -137,48 +138,48 @@ public class FilingFolderItem extends Item {
                     ), buf -> buf.writeInt(slotIndex));
                 }
             }
-            return InteractionResultHolder.success(folderStack);
+            return InteractionResult.SUCCESS;
         }
 
         ItemStack offhand = player.getItemInHand(InteractionHand.OFF_HAND);
 
         if (offhand.isEmpty() || offhand.getItem() instanceof FilingFolderItem) {
             if (!offhand.isEmpty()) {
-                player.displayClientMessage(Component.translatable("message.realfilingreborn.no_folder_ception"), true);
+                player.sendOverlayMessage(Component.translatable("message.realfilingreborn.no_folder_ception"));
             }
-            return InteractionResultHolder.pass(folderStack);
+            return InteractionResult.PASS;
         }
 
         if (hasSignificantNBT(offhand)) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt"), true);
-            return InteractionResultHolder.fail(folderStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt"));
+            return InteractionResult.FAIL;
         }
 
         if (folderStack.getCount() > 1) {
             ItemStack singleFolder = folderStack.copyWithCount(1);
             FolderContents contents = singleFolder.getOrDefault(FOLDER_CONTENTS.value(), new FolderContents(Optional.empty(), 0));
-            InteractionResultHolder<ItemStack> result = storeItems(level, player, singleFolder, offhand, contents);
-            folderStack.shrink(1);
-            ItemStack modified = result.getObject();
-            if (!player.getInventory().add(modified)) {
-                player.drop(modified, false);
+            boolean stored = storeItems(player, singleFolder, offhand, contents);
+            if (stored) {
+                folderStack.shrink(1);
+                if (!player.getInventory().add(singleFolder)) player.drop(singleFolder, false);
             }
-            return InteractionResultHolder.success(folderStack);
+            return InteractionResult.SUCCESS;
         }
 
         FolderContents contents = folderStack.getOrDefault(FOLDER_CONTENTS.value(), new FolderContents(Optional.empty(), 0));
         folderStack.set(FOLDER_CONTENTS.value(), contents);
-        return storeItems(level, player, folderStack, offhand, contents);
+        storeItems(player, folderStack, offhand, contents);
+        return InteractionResult.SUCCESS;
     }
 
-    private InteractionResultHolder<ItemStack> extractItems(Level level, Player player, ItemStack folderStack, FolderContents contents) {
+    private void extractItems(Player player, ItemStack folderStack, FolderContents contents) {
         if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.folder_empty"), true);
-            return InteractionResultHolder.fail(folderStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.folder_empty"));
+            return;
         }
 
-        ResourceLocation itemId = contents.storedItemId().get();
-        Item item = BuiltInRegistries.ITEM.get(itemId);
+        Identifier itemId = contents.storedItemId().get();
+        Item item = BuiltInRegistries.ITEM.getValue(itemId);
         ItemStack dummy = new ItemStack(item);
         int extractAmount = Math.min(Math.min(contents.count(), item.getMaxStackSize(dummy)), 64);
         ItemStack extracted = new ItemStack(item, extractAmount);
@@ -189,77 +190,76 @@ public class FilingFolderItem extends Item {
         if (!player.getInventory().add(extracted)) {
             player.drop(extracted, false);
         }
-        return InteractionResultHolder.success(folderStack);
     }
 
-    private InteractionResultHolder<ItemStack> storeItems(Level level, Player player, ItemStack folderStack, ItemStack itemToStore, FolderContents contents) {
+    private boolean storeItems(Player player, ItemStack folderStack, ItemStack itemToStore, FolderContents contents) {
         if (itemToStore.isEmpty() || itemToStore.getItem() instanceof FilingFolderItem) {
-            return InteractionResultHolder.pass(folderStack);
+            return false;
         }
         if (hasSignificantNBT(itemToStore)) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt"), true);
-            return InteractionResultHolder.fail(folderStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt"));
+            return false;
         }
 
-        ResourceLocation newItemId = BuiltInRegistries.ITEM.getKey(itemToStore.getItem());
-        ResourceLocation effectiveItemId;
+        Identifier newItemId = BuiltInRegistries.ITEM.getKey(itemToStore.getItem());
+        Identifier effectiveItemId;
 
         if (contents.storedItemId().isEmpty()) {
             effectiveItemId = newItemId;
         } else {
             effectiveItemId = contents.storedItemId().get();
             if (!effectiveItemId.equals(newItemId)) {
-                Item storedItem = BuiltInRegistries.ITEM.get(effectiveItemId);
-                player.displayClientMessage(Component.translatable("message.realfilingreborn.wrong_item_type",
-                        storedItem.getDescription().copy().withStyle(ChatFormatting.YELLOW)), true);
-                return InteractionResultHolder.fail(folderStack);
+                Item storedItem = BuiltInRegistries.ITEM.getValue(effectiveItemId);
+                player.sendOverlayMessage(Component.translatable("message.realfilingreborn.wrong_item_type",
+                        Component.translatable(storedItem.getDescriptionId()).withStyle(ChatFormatting.YELLOW)));
+                return false;
             }
         }
 
         int toAdd = Math.min(itemToStore.getCount(), getCapacity() - contents.count());
         if (toAdd <= 0) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.folder_full"), true);
-            return InteractionResultHolder.fail(folderStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.folder_full"));
+            return false;
         }
 
         folderStack.set(FOLDER_CONTENTS.value(),
                 new FolderContents(Optional.of(effectiveItemId), contents.count() + toAdd));
         itemToStore.shrink(toAdd);
-        return InteractionResultHolder.success(folderStack);
+        return true;
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
         FolderContents contents = stack.get(FOLDER_CONTENTS.value());
         if (contents != null && contents.storedItemId().isPresent()) {
-            Item item = BuiltInRegistries.ITEM.get(contents.storedItemId().get());
-            tooltip.add(Component.translatable("tooltip.realfilingreborn.stored_item",
-                            Component.literal(item.getDescription().getString()).withStyle(ChatFormatting.YELLOW))
+            Item item = BuiltInRegistries.ITEM.getValue(contents.storedItemId().get());
+            adder.accept(Component.translatable("tooltip.realfilingreborn.stored_item",
+                            Component.translatable(item.getDescriptionId()).withStyle(ChatFormatting.YELLOW))
                     .withStyle(ChatFormatting.GRAY));
             if (contents.count() > 0) {
-                tooltip.add(Component.translatable("tooltip.realfilingreborn.item_count",
+                adder.accept(Component.translatable("tooltip.realfilingreborn.item_count",
                                 Component.literal(String.format("%,d", contents.count())).withStyle(ChatFormatting.GREEN))
                         .withStyle(ChatFormatting.GRAY));
             } else {
-                tooltip.add(Component.translatable("tooltip.realfilingreborn.empty_folder")
+                adder.accept(Component.translatable("tooltip.realfilingreborn.empty_folder")
                         .withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
             }
         } else {
-            tooltip.add(Component.translatable("tooltip.realfilingreborn.unregistered_folder")
+            adder.accept(Component.translatable("tooltip.realfilingreborn.unregistered_folder")
                     .withStyle(ChatFormatting.GRAY));
         }
 
-        tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_capacity",
+        adder.accept(Component.translatable("tooltip.realfilingreborn.folder_capacity",
                         Component.literal(String.format("%,d", getCapacity())).withStyle(ChatFormatting.GREEN))
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_info")
+        adder.accept(Component.translatable("tooltip.realfilingreborn.folder_info")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
-        tooltip.add(Component.translatable("tooltip.realfilingreborn.standard_folder_info")
+        adder.accept(Component.translatable("tooltip.realfilingreborn.standard_folder_info")
                 .withStyle(ChatFormatting.RED, ChatFormatting.ITALIC));
-        tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_gui_hint")
+        adder.accept(Component.translatable("tooltip.realfilingreborn.folder_gui_hint")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
-        super.appendHoverText(stack, context, tooltip, flag);
+        super.appendHoverText(stack, context, display, adder, flag);
     }
 
-    public record FolderContents(Optional<ResourceLocation> storedItemId, int count) {}
+    public record FolderContents(Optional<Identifier> storedItemId, int count) {}
 }

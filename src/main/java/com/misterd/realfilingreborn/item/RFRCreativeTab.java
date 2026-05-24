@@ -22,7 +22,7 @@ public class RFRCreativeTab {
                         output.accept(RFRBlocks.BIRCH_FILING_CABINET);
                         output.accept(RFRBlocks.CHERRY_FILING_CABINET);
                         output.accept(RFRBlocks.CRIMSON_FILING_CABINET);
-                        output.accept(RFRBlocks.DARKOAK_FILING_CABINET);
+                        output.accept(RFRBlocks.DARK_OAK_FILING_CABINET);
                         output.accept(RFRBlocks.JUNGLE_FILING_CABINET);
                         output.accept(RFRBlocks.MANGROVE_FILING_CABINET);
                         output.accept(RFRBlocks.OAK_FILING_CABINET);

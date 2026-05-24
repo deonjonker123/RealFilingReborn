@@ -2,20 +2,18 @@ package com.misterd.realfilingreborn.datagen.custom;
 
 import com.misterd.realfilingreborn.RealFilingReborn;
 import com.misterd.realfilingreborn.block.RFRBlocks;
-import com.misterd.realfilingreborn.util.RFRTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
 import net.neoforged.neoforge.common.data.ExistingFileHelper;
 
-import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 public class RFRBlockTagProvider extends BlockTagsProvider {
 
-    public RFRBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
-        super(output, lookupProvider, RealFilingReborn.MODID, existingFileHelper);
+    public RFRBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider) {
+        super(output, lookupProvider, RealFilingReborn.MODID);
     }
 
     @Override
@@ -26,7 +24,7 @@ public class RFRBlockTagProvider extends BlockTagsProvider {
                 .add(RFRBlocks.BIRCH_FILING_CABINET.get())
                 .add(RFRBlocks.CHERRY_FILING_CABINET.get())
                 .add(RFRBlocks.CRIMSON_FILING_CABINET.get())
-                .add(RFRBlocks.DARKOAK_FILING_CABINET.get())
+                .add(RFRBlocks.DARK_OAK_FILING_CABINET.get())
                 .add(RFRBlocks.JUNGLE_FILING_CABINET.get())
                 .add(RFRBlocks.MANGROVE_FILING_CABINET.get())
                 .add(RFRBlocks.OAK_FILING_CABINET.get())

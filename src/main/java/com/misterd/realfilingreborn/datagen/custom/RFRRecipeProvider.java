@@ -5,35 +5,46 @@ import com.misterd.realfilingreborn.item.RFRItems;
 import com.misterd.realfilingreborn.util.RFRTags;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
-import net.minecraft.data.recipes.RecipeCategory;
-import net.minecraft.data.recipes.RecipeOutput;
-import net.minecraft.data.recipes.RecipeProvider;
-import net.minecraft.data.recipes.ShapedRecipeBuilder;
+import net.minecraft.data.recipes.*;
 import net.minecraft.tags.ItemTags;
 import net.minecraft.world.item.Items;
 import net.neoforged.neoforge.common.Tags;
-import net.neoforged.neoforge.common.conditions.IConditionBuilder;
 
 import java.util.concurrent.CompletableFuture;
 
-public class RFRRecipeProvider extends RecipeProvider implements IConditionBuilder {
+public class RFRRecipeProvider extends RecipeProvider {
+    public RFRRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
+        super(provider, recipeOutput);
+    }
 
-    public RFRRecipeProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> registries) {
-        super(output, registries);
+    public static class Runner extends RecipeProvider.Runner {
+        public Runner(PackOutput packOutput, CompletableFuture<HolderLookup.Provider> provider) {
+            super(packOutput, provider);
+        }
+
+        @Override
+        protected RecipeProvider createRecipeProvider(HolderLookup.Provider provider, RecipeOutput recipeOutput) {
+            return new RFRRecipeProvider(provider, recipeOutput);
+        }
+
+        @Override
+        public String getName() {
+            return "RFR Recipes";
+        }
     }
 
     @Override
-    protected void buildRecipes(RecipeOutput recipeOutput) {
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.FILING_FOLDER.get(), 5)
+    protected void buildRecipes() {
+        shaped(RecipeCategory.MISC, RFRItems.FILING_FOLDER.get(), 5)
                 .pattern("PPP")
                 .pattern("PG ")
                 .pattern("PPP")
                 .define('P', Items.PAPER)
                 .define('G', Tags.Items.GLASS_BLOCKS)
                 .unlockedBy("has_paper", has(Items.PAPER))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.COPPER_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.COPPER_FILING_FOLDER.get(), 5)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -41,9 +52,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.COPPER_INGOT)
                 .define('P', Items.PAPER)
                 .unlockedBy("has_copper_ingot", has(Items.COPPER_INGOT))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.IRON_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.IRON_FILING_FOLDER.get(), 5)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -51,9 +62,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.IRON_INGOT)
                 .define('P', Items.PAPER)
                 .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.GOLD_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.GOLD_FILING_FOLDER.get(), 5)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -61,9 +72,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.GOLD_INGOT)
                 .define('P', Items.PAPER)
                 .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FILING_FOLDER.get(), 5)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -71,9 +82,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.DIAMOND)
                 .define('P', Items.PAPER)
                 .unlockedBy("has_diamond", has(Items.DIAMOND))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FILING_FOLDER.get(), 5)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -81,17 +92,17 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.NETHERITE_INGOT)
                 .define('P', Items.PAPER)
                 .unlockedBy("has_netherite_ingot", has(Items.NETHERITE_INGOT))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.FLUID_CANISTER.get(), 4)
+        shaped(RecipeCategory.MISC, RFRItems.FLUID_CANISTER.get(), 4)
                 .pattern("BGB")
                 .pattern(" B ")
                 .define('B', Items.BUCKET)
                 .define('G', Tags.Items.GLASS_BLOCKS)
                 .unlockedBy("has_bucket", has(Items.BUCKET))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.COPPER_FLUID_CANISTER.get(), 4)
+        shaped(RecipeCategory.MISC, RFRItems.COPPER_FLUID_CANISTER.get(), 4)
                 .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
@@ -99,9 +110,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.COPPER_INGOT)
                 .define('P', Items.BUCKET)
                 .unlockedBy("has_copper_ingot", has(Items.COPPER_INGOT))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.IRON_FLUID_CANISTER.get(), 4)
+        shaped(RecipeCategory.MISC, RFRItems.IRON_FLUID_CANISTER.get(), 4)
                 .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
@@ -109,9 +120,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.IRON_INGOT)
                 .define('P', Items.BUCKET)
                 .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.GOLD_FLUID_CANISTER.get(), 4)
+        shaped(RecipeCategory.MISC, RFRItems.GOLD_FLUID_CANISTER.get(), 4)
                 .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
@@ -119,9 +130,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.GOLD_INGOT)
                 .define('P', Items.BUCKET)
                 .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FLUID_CANISTER.get(), 4)
+        shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FLUID_CANISTER.get(), 4)
                 .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
@@ -129,9 +140,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.DIAMOND)
                 .define('P', Items.BUCKET)
                 .unlockedBy("has_diamond", has(Items.DIAMOND))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FLUID_CANISTER.get(), 4)
+        shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FLUID_CANISTER.get(), 4)
                 .pattern("I I")
                 .pattern("PGP")
                 .pattern("IPI")
@@ -139,29 +150,19 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('I', Items.NETHERITE_INGOT)
                 .define('P', Items.BUCKET)
                 .unlockedBy("has_netherite_ingot", has(Items.NETHERITE_INGOT))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.LEDGER.get())
-                .pattern("RQR")
-                .pattern("QBQ")
-                .pattern("RQR")
-                .define('R', Items.REDSTONE)
-                .define('B', Items.BOOK)
-                .define('Q', Items.QUARTZ)
-                .unlockedBy("has_quartz", has(Items.QUARTZ))
-                .save(recipeOutput);
-
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.IRON_RANGE_UPGRADE.get())
+        shaped(RecipeCategory.MISC, RFRItems.IRON_RANGE_UPGRADE.get())
                 .pattern("IRI")
                 .pattern("RGR")
                 .pattern("IRI")
                 .define('R', Items.REDSTONE)
-                .define('G', net.neoforged.neoforge.common.Tags.Items.GLASS_BLOCKS)
-                .define('I', Items.IRON_INGOT)
-                .unlockedBy("has_iron", has(Items.IRON_INGOT))
-                .save(recipeOutput);
+                .define('G', Items.IRON_INGOT)
+                .define('I', Items.IRON_BLOCK)
+                .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.DIAMOND_RANGE_UPGRADE.get())
+        shaped(RecipeCategory.MISC, RFRItems.DIAMOND_RANGE_UPGRADE.get())
                 .pattern("DRD")
                 .pattern("RGR")
                 .pattern("DRD")
@@ -169,9 +170,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('G', RFRItems.IRON_RANGE_UPGRADE.get())
                 .define('D', Items.DIAMOND)
                 .unlockedBy("has_iron_upgrade", has(RFRItems.IRON_RANGE_UPGRADE.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRItems.NETHERITE_RANGE_UPGRADE.get())
+        shaped(RecipeCategory.MISC, RFRItems.NETHERITE_RANGE_UPGRADE.get())
                 .pattern("NRN")
                 .pattern("RGR")
                 .pattern("NRN")
@@ -179,9 +180,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('G', RFRItems.DIAMOND_RANGE_UPGRADE.get())
                 .define('N', Items.NETHERITE_INGOT)
                 .unlockedBy("has_diamond_upgrade", has(RFRItems.DIAMOND_RANGE_UPGRADE.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -189,9 +190,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.SPRUCE_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -199,9 +200,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', ItemTags.PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput, "realfilingreborn:filing_cabinet_from_wood");
+                .save(output, "realfilingreborn:filing_cabinet_from_wood");
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.ACACIA_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.ACACIA_FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -209,9 +210,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.ACACIA_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.BIRCH_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.BIRCH_FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -219,9 +220,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.BIRCH_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.CHERRY_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.CHERRY_FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -229,9 +230,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.CHERRY_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.CRIMSON_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.CRIMSON_FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -239,9 +240,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.CRIMSON_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.DARKOAK_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.DARK_OAK_FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -249,9 +250,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.DARK_OAK_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.JUNGLE_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.JUNGLE_FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -259,9 +260,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.JUNGLE_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.MANGROVE_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.MANGROVE_FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -269,9 +270,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.MANGROVE_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.OAK_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.OAK_FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -279,9 +280,19 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.OAK_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.WARPED_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.OAK_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', ItemTags.LOGS)
+                .define('P', ItemTags.PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output, "realfilingreborn:oak_cabinet_from_any_wood");
+
+        shaped(RecipeCategory.MISC, RFRBlocks.WARPED_FILING_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -289,9 +300,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.WARPED_PLANKS)
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.FLUID_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.FLUID_CABINET.get())
                 .pattern("LPL")
                 .pattern("PBP")
                 .pattern("LPL")
@@ -299,9 +310,9 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('P', Items.IRON_INGOT)
                 .define('B', Items.BUCKET)
                 .unlockedBy("has_fluid_canister", has(RFRItems.FLUID_CANISTER.get()))
-                .save(recipeOutput);
+                .save(output);
 
-        ShapedRecipeBuilder.shaped(RecipeCategory.MISC, RFRBlocks.FILING_INDEX.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.FILING_INDEX.get())
                 .pattern("IXI")
                 .pattern("RFR")
                 .pattern("ICI")
@@ -311,6 +322,6 @@ public class RFRRecipeProvider extends RecipeProvider implements IConditionBuild
                 .define('C', Items.COMPARATOR)
                 .define('I', Items.QUARTZ_BLOCK)
                 .unlockedBy("has_cabinet", has(RFRBlocks.FILING_CABINET))
-                .save(recipeOutput);
+                .save(output);
     }
 }

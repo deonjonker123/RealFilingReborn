@@ -11,30 +11,31 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
-import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
-import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class FluidCanisterItem extends Item {
 
     public enum CanisterTier {
-        BASE      (64_000),
-        COPPER    (512_000),
-        IRON      (4_096_000),
-        GOLD      (32_768_000),
-        DIAMOND   (262_144_000),
-        NETHERITE (2_097_152_000);
+        BASE(64_000),
+        COPPER(512_000),
+        IRON(4_096_000),
+        GOLD(32_768_000),
+        DIAMOND(262_144_000),
+        NETHERITE(2_097_152_000);
 
         private final int capacity;
 
@@ -51,16 +52,16 @@ public class FluidCanisterItem extends Item {
 
     private static final Codec<CanisterContents> CANISTER_CONTENTS_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    ResourceLocation.CODEC.optionalFieldOf("storedFluidId").forGetter(CanisterContents::storedFluidId),
+                    Identifier.CODEC.optionalFieldOf("storedFluidId").forGetter(CanisterContents::storedFluidId),
                     Codec.INT.fieldOf("amount").forGetter(CanisterContents::amount)
             ).apply(instance, CanisterContents::new));
 
-    public static final StreamCodec<ByteBuf, ResourceLocation> RESOURCE_LOCATION_STREAM_CODEC =
-            ByteBufCodecs.STRING_UTF8.map(ResourceLocation::parse, ResourceLocation::toString);
+    public static final StreamCodec<ByteBuf, Identifier> IDENTIFIER_STREAM_CODEC =
+            ByteBufCodecs.STRING_UTF8.map(Identifier::parse, Identifier::toString);
 
     private static final StreamCodec<ByteBuf, CanisterContents> CANISTER_CONTENTS_STREAM_CODEC =
             StreamCodec.composite(
-                    ByteBufCodecs.optional(RESOURCE_LOCATION_STREAM_CODEC), CanisterContents::storedFluidId,
+                    ByteBufCodecs.optional(IDENTIFIER_STREAM_CODEC), CanisterContents::storedFluidId,
                     ByteBufCodecs.INT, CanisterContents::amount,
                     CanisterContents::new);
 
@@ -92,9 +93,9 @@ public class FluidCanisterItem extends Item {
     }
 
     @Override
-    public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
+    public InteractionResult use(Level level, Player player, InteractionHand hand) {
         ItemStack canisterStack = player.getItemInHand(hand);
-        if (level.isClientSide()) return InteractionResultHolder.success(canisterStack);
+        if (level.isClientSide()) return InteractionResult.SUCCESS;
 
         if (player.isShiftKeyDown()) {
             if (player instanceof ServerPlayer serverPlayer) {
@@ -113,50 +114,52 @@ public class FluidCanisterItem extends Item {
                     ), buf -> buf.writeInt(slotIndex));
                 }
             }
-            return InteractionResultHolder.success(canisterStack);
+            return InteractionResult.SUCCESS;
         }
 
         ItemStack offhand = player.getItemInHand(InteractionHand.OFF_HAND);
         if (offhand.isEmpty() || !(offhand.getItem() instanceof BucketItem bucketItem)) {
-            return InteractionResultHolder.pass(canisterStack);
+            return InteractionResult.PASS;
         }
 
         if (!FluidHelper.isValidFluid(bucketItem.content)) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.invalid_fluid"), true);
-            return InteractionResultHolder.pass(canisterStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.invalid_fluid"));
+            return InteractionResult.PASS;
         }
 
         if (canisterStack.getCount() > 1) {
             ItemStack singleCanister = canisterStack.copyWithCount(1);
             CanisterContents contents = singleCanister.getOrDefault(CANISTER_CONTENTS.value(), new CanisterContents(Optional.empty(), 0));
-            InteractionResultHolder<ItemStack> result = storeFluid(level, player, singleCanister, offhand, contents);
-            canisterStack.shrink(1);
-            ItemStack modified = result.getObject();
-            if (!player.getInventory().add(modified)) player.drop(modified, false);
-            return InteractionResultHolder.success(canisterStack);
+            boolean stored = storeFluid(player, singleCanister, offhand, contents);
+            if (stored) {
+                canisterStack.shrink(1);
+                if (!player.getInventory().add(singleCanister)) player.drop(singleCanister, false);
+            }
+            return InteractionResult.SUCCESS;
         }
 
         CanisterContents contents = canisterStack.getOrDefault(CANISTER_CONTENTS.value(), new CanisterContents(Optional.empty(), 0));
         canisterStack.set(CANISTER_CONTENTS.value(), contents);
-        return storeFluid(level, player, canisterStack, offhand, contents);
+        storeFluid(player, canisterStack, offhand, contents);
+        return InteractionResult.SUCCESS;
     }
 
-    private InteractionResultHolder<ItemStack> extractFluid(Level level, Player player, ItemStack canisterStack, CanisterContents contents) {
+    private void extractFluid(Player player, ItemStack canisterStack, CanisterContents contents) {
         if (contents == null || contents.storedFluidId().isEmpty() || contents.amount() <= 0) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.canister_empty"), true);
-            return InteractionResultHolder.fail(canisterStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.canister_empty"));
+            return;
         }
 
         if (contents.amount() < 1000) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.not_enough_fluid"), true);
-            return InteractionResultHolder.fail(canisterStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.not_enough_fluid"));
+            return;
         }
 
-        ResourceLocation fluidId = contents.storedFluidId().get();
+        Identifier fluidId = contents.storedFluidId().get();
         ItemStack bucketToGive = FluidHelper.getBucketForFluid(fluidId);
         if (bucketToGive.isEmpty()) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.no_bucket_for_fluid"), true);
-            return InteractionResultHolder.fail(canisterStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.no_bucket_for_fluid"));
+            return;
         }
 
         boolean bucketRemoved = false;
@@ -170,40 +173,39 @@ public class FluidCanisterItem extends Item {
         }
 
         if (!bucketRemoved) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.need_empty_bucket"), true);
-            return InteractionResultHolder.fail(canisterStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.need_empty_bucket"));
+            return;
         }
 
         canisterStack.set(CANISTER_CONTENTS.value(),
                 new CanisterContents(contents.storedFluidId(), Math.max(0, contents.amount() - 1000)));
         if (!player.getInventory().add(bucketToGive)) player.drop(bucketToGive, false);
-        return InteractionResultHolder.success(canisterStack);
     }
 
-    private InteractionResultHolder<ItemStack> storeFluid(Level level, Player player, ItemStack canisterStack, ItemStack bucketStack, CanisterContents contents) {
-        if (!(bucketStack.getItem() instanceof BucketItem bucketItem)) return InteractionResultHolder.pass(canisterStack);
+    private boolean storeFluid(Player player, ItemStack canisterStack, ItemStack bucketStack, CanisterContents contents) {
+        if (!(bucketStack.getItem() instanceof BucketItem bucketItem)) return false;
 
         Fluid fluid = bucketItem.content;
-        if (!FluidHelper.isValidFluid(fluid)) return InteractionResultHolder.pass(canisterStack);
+        if (!FluidHelper.isValidFluid(fluid)) return false;
 
-        ResourceLocation newFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(fluid));
-        ResourceLocation effectiveFluidId;
+        Identifier newFluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(fluid));
+        Identifier effectiveFluidId;
 
         if (contents.storedFluidId().isEmpty()) {
             effectiveFluidId = newFluidId;
         } else {
             effectiveFluidId = contents.storedFluidId().get();
             if (!FluidHelper.areFluidsCompatible(effectiveFluidId, newFluidId)) {
-                player.displayClientMessage(Component.translatable("message.realfilingreborn.wrong_fluid_type",
-                        Component.literal(FluidHelper.getFluidDisplayName(effectiveFluidId)).withStyle(ChatFormatting.YELLOW)), true);
-                return InteractionResultHolder.fail(canisterStack);
+                player.sendOverlayMessage(Component.translatable("message.realfilingreborn.wrong_fluid_type",
+                        Component.literal(FluidHelper.getFluidDisplayName(effectiveFluidId)).withStyle(ChatFormatting.YELLOW)));
+                return false;
             }
         }
 
         int toAdd = Math.min(1000, getCapacity() - contents.amount());
         if (toAdd <= 0) {
-            player.displayClientMessage(Component.translatable("message.realfilingreborn.canister_full"), true);
-            return InteractionResultHolder.fail(canisterStack);
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.canister_full"));
+            return false;
         }
 
         canisterStack.set(CANISTER_CONTENTS.value(),
@@ -211,15 +213,15 @@ public class FluidCanisterItem extends Item {
         bucketStack.shrink(1);
         ItemStack emptyBucket = new ItemStack(Items.BUCKET);
         if (!player.getInventory().add(emptyBucket)) player.drop(emptyBucket, false);
-        return InteractionResultHolder.success(canisterStack);
+        return true;
     }
 
     @Override
-    public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
+    public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display, Consumer<Component> adder, TooltipFlag flag) {
         CanisterContents contents = stack.get(CANISTER_CONTENTS.value());
         if (contents != null && contents.storedFluidId().isPresent()) {
             String fluidName = FluidHelper.getFluidDisplayName(contents.storedFluidId().get());
-            tooltip.add(Component.translatable("tooltip.realfilingreborn.stored_fluid",
+            adder.accept(Component.translatable("tooltip.realfilingreborn.stored_fluid",
                             Component.literal(fluidName).withStyle(ChatFormatting.AQUA))
                     .withStyle(ChatFormatting.GRAY));
             if (contents.amount() > 0) {
@@ -228,27 +230,27 @@ public class FluidCanisterItem extends Item {
                 String amountText = buckets > 0
                         ? (mb > 0 ? buckets + "." + mb / 100 + "B" : buckets + "B")
                         : mb + "mB";
-                tooltip.add(Component.translatable("tooltip.realfilingreborn.fluid_amount",
+                adder.accept(Component.translatable("tooltip.realfilingreborn.fluid_amount",
                                 Component.literal(amountText).withStyle(ChatFormatting.BLUE))
                         .withStyle(ChatFormatting.GRAY));
             } else {
-                tooltip.add(Component.translatable("tooltip.realfilingreborn.empty_canister")
+                adder.accept(Component.translatable("tooltip.realfilingreborn.empty_canister")
                         .withStyle(ChatFormatting.ITALIC, ChatFormatting.GRAY));
             }
         } else {
-            tooltip.add(Component.translatable("tooltip.realfilingreborn.unregistered_canister")
+            adder.accept(Component.translatable("tooltip.realfilingreborn.unregistered_canister")
                     .withStyle(ChatFormatting.GRAY));
         }
 
-        tooltip.add(Component.translatable("tooltip.realfilingreborn.canister_capacity",
+        adder.accept(Component.translatable("tooltip.realfilingreborn.canister_capacity",
                         Component.literal(String.format("%,d", getCapacity() / 1000) + "B").withStyle(ChatFormatting.BLUE))
                 .withStyle(ChatFormatting.GRAY));
-        tooltip.add(Component.translatable("tooltip.realfilingreborn.canister_info")
+        adder.accept(Component.translatable("tooltip.realfilingreborn.canister_info")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
-        tooltip.add(Component.translatable("tooltip.realfilingreborn.canister_gui_hint")
+        adder.accept(Component.translatable("tooltip.realfilingreborn.canister_gui_hint")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));
-        super.appendHoverText(stack, context, tooltip, flag);
+        super.appendHoverText(stack, context, display, adder, flag);
     }
 
-    public record CanisterContents(Optional<ResourceLocation> storedFluidId, int amount) {}
+    public record CanisterContents(Optional<Identifier> storedFluidId, int amount) {}
 }

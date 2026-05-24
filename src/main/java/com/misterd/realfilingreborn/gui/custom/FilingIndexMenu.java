@@ -7,6 +7,7 @@ import com.misterd.realfilingreborn.item.custom.DiamondRangeUpgradeItem;
 import com.misterd.realfilingreborn.item.custom.IronRangeUpgradeItem;
 import com.misterd.realfilingreborn.item.custom.NetheriteRangeUpgradeItem;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -16,7 +17,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 public class FilingIndexMenu extends AbstractContainerMenu {
 
@@ -26,7 +28,6 @@ public class FilingIndexMenu extends AbstractContainerMenu {
     private static final int HOTBAR_SLOT_COUNT = 9;
     private static final int PLAYER_INVENTORY_ROW_COUNT = 3;
     private static final int PLAYER_INVENTORY_COLUMN_COUNT = 9;
-    private static final int PLAYER_INVENTORY_SLOT_COUNT = 27;
     private static final int VANILLA_SLOT_COUNT = 36;
     private static final int VANILLA_FIRST_SLOT_INDEX = 0;
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = 36;
@@ -42,14 +43,7 @@ public class FilingIndexMenu extends AbstractContainerMenu {
         this.level = inv.player.level();
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
-        addSlot(new SlotItemHandler(this.blockEntity.inventory, 0, 80, 23) {
-            @Override
-            public boolean mayPlace(ItemStack stack) {
-                return stack.getItem() instanceof IronRangeUpgradeItem
-                        || stack.getItem() instanceof DiamondRangeUpgradeItem
-                        || stack.getItem() instanceof NetheriteRangeUpgradeItem;
-            }
-        });
+        addSlot(new UpgradeSlot(this.blockEntity, 0, 80, 23));
     }
 
     @Override
@@ -69,9 +63,7 @@ public class FilingIndexMenu extends AbstractContainerMenu {
                 return ItemStack.EMPTY;
             }
         } else {
-            if (index >= TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) {
-                return ItemStack.EMPTY;
-            }
+            if (index >= TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) return ItemStack.EMPTY;
             if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_SLOT_COUNT, false)) {
                 return ItemStack.EMPTY;
             }
@@ -103,6 +95,69 @@ public class FilingIndexMenu extends AbstractContainerMenu {
     private void addPlayerHotbar(Inventory playerInventory) {
         for (int i = 0; i < HOTBAR_SLOT_COUNT; i++) {
             addSlot(new Slot(playerInventory, i, 8 + i * 18, 119));
+        }
+    }
+
+    private static class UpgradeSlot extends Slot {
+        private final FilingIndexBlockEntity be;
+        private final int index;
+
+        public UpgradeSlot(FilingIndexBlockEntity be, int index, int x, int y) {
+            super(new SimpleContainer(be.inventory.size()), index, x, y);
+            this.be = be;
+            this.index = index;
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return be.getUpgradeStack();
+        }
+
+        @Override
+        public boolean hasItem() {
+            return !be.getUpgradeStack().isEmpty();
+        }
+
+        @Override
+        public void set(ItemStack stack) {
+            try (Transaction tx = Transaction.openRoot()) {
+                ItemStack existing = be.getUpgradeStack();
+                if (!existing.isEmpty())
+                    be.inventory.extract(index, ItemResource.of(existing), existing.getCount(), tx);
+                if (!stack.isEmpty())
+                    be.inventory.insert(index, ItemResource.of(stack), stack.getCount(), tx);
+                tx.commit();
+            }
+            setChanged();
+        }
+
+        @Override
+        public void setChanged() {
+            be.setChanged();
+        }
+
+        @Override
+        public boolean mayPlace(ItemStack stack) {
+            return stack.getItem() instanceof IronRangeUpgradeItem
+                    || stack.getItem() instanceof DiamondRangeUpgradeItem
+                    || stack.getItem() instanceof NetheriteRangeUpgradeItem;
+        }
+
+        @Override
+        public boolean mayPickup(Player player) {
+            return !be.getUpgradeStack().isEmpty();
+        }
+
+        @Override
+        public ItemStack remove(int amount) {
+            ItemStack existing = getItem();
+            if (existing.isEmpty()) return ItemStack.EMPTY;
+            int toExtract = Math.min(amount, existing.getCount());
+            try (Transaction tx = Transaction.openRoot()) {
+                int extracted = be.inventory.extract(index, ItemResource.of(existing), toExtract, tx);
+                tx.commit();
+                return new ItemStack(existing.getItem(), extracted);
+            }
         }
     }
 }

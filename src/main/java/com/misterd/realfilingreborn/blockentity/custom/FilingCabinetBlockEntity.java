@@ -7,30 +7,27 @@ import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemStackHandler;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 
 import javax.annotation.Nullable;
-import java.util.HashMap;
-import java.util.Map;
 
 public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -40,9 +37,9 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
     private final boolean[] dirtySlots = new boolean[5];
     private boolean anySlotDirty = false;
 
-    public final ItemStackHandler inventory = new ItemStackHandler(5) {
+    public final ItemStacksResourceHandler inventory = new ItemStacksResourceHandler(5) {
         @Override
-        protected void onContentsChanged(int slot) {
+        protected void onContentsChanged(int slot, ItemStack previous) {
             setChanged();
             if (slot >= 0 && slot < 5) {
                 dirtySlots[slot] = true;
@@ -58,17 +55,14 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
         }
     };
 
-    private final Map<Direction, IItemHandler> handlers = new HashMap<>();
-
     public FilingCabinetBlockEntity(BlockPos pos, BlockState blockState) {
         super(RFRBlockEntities.FILING_CABINET_BE.get(), pos, blockState);
     }
 
     @Nullable
-    public IItemHandler getCapabilityHandler(@Nullable Direction side) {
+    public ResourceHandler<ItemResource> getCapabilityHandler(@Nullable Direction side) {
         if (side != null && getBlockState().getValue(FilingCabinetBlock.FACING) == side) return null;
-        return handlers.computeIfAbsent(side != null ? side : Direction.UP,
-                s -> new FilingCabinetItemHandler(this, s));
+        return inventory;
     }
 
     public boolean[] consumeDirtySlots() {
@@ -114,29 +108,40 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
         return controllerPos != null;
     }
 
+    public ItemStack getStack(int slot) {
+        ItemResource res = inventory.getResource(slot);
+        if (res.isEmpty()) return ItemStack.EMPTY;
+        return res.toStack(inventory.getAmountAsInt(slot));
+    }
+
     public void drops() {
-        SimpleContainer inv = new SimpleContainer(inventory.getSlots());
-        for (int i = 0; i < inventory.getSlots(); i++) {
-            inv.setItem(i, inventory.getStackInSlot(i));
+        SimpleContainer inv = new SimpleContainer(inventory.size());
+        for (int i = 0; i < inventory.size(); i++) {
+            inv.setItem(i, getStack(i));
         }
         Containers.dropContents(level, worldPosition, inv);
     }
 
     @Override
-    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.saveAdditional(tag, registries);
-        tag.put("inventory", inventory.serializeNBT(registries));
+    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+        drops();
+    }
+
+    @Override
+    protected void saveAdditional(ValueOutput output) {
+        super.saveAdditional(output);
+        inventory.serialize(output);
         if (controllerPos != null) {
-            tag.putLong("controllerPos", controllerPos.asLong());
+            output.putLong("controllerPos", controllerPos.asLong());
         }
     }
 
     @Override
-    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
-        super.loadAdditional(tag, registries);
-        inventory.deserializeNBT(registries, tag.getCompound("inventory"));
-        controllerPos = tag.contains("controllerPos") ?
-                BlockPos.of(tag.getLong("controllerPos")) : null;
+    protected void loadAdditional(ValueInput input) {
+        super.loadAdditional(input);
+        inventory.deserialize(input);
+        long packed = input.getLongOr("controllerPos", Long.MIN_VALUE);
+        controllerPos = packed != Long.MIN_VALUE ? BlockPos.of(packed) : null;
     }
 
     @Override
@@ -159,91 +164,5 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
     @Override
     public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
         return saveWithoutMetadata(registries);
-    }
-
-    private static class FilingCabinetItemHandler implements IItemHandler {
-
-        private final FilingCabinetBlockEntity cabinet;
-        private final Direction side;
-
-        public FilingCabinetItemHandler(FilingCabinetBlockEntity cabinet, @Nullable Direction side) {
-            this.cabinet = cabinet;
-            this.side = side;
-        }
-
-        @Override
-        public int getSlots() {
-            return 5;
-        }
-
-        @NotNull
-        @Override
-        public ItemStack getStackInSlot(int slot) {
-            if (slot < 0 || slot >= 5) return ItemStack.EMPTY;
-            ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
-            if (!(folderStack.getItem() instanceof FilingFolderItem)) return ItemStack.EMPTY;
-            FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-            if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) return ItemStack.EMPTY;
-            Item item = BuiltInRegistries.ITEM.get(contents.storedItemId().get());
-            return new ItemStack(item, contents.count());
-        }
-
-        @NotNull
-        @Override
-        public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-            if (stack.isEmpty() || slot < 0 || slot >= 5) return stack;
-            if (FilingFolderItem.hasSignificantNBT(stack)) return stack;
-            ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
-            if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return stack;
-            FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-            if (contents == null) return stack;
-            ResourceLocation incomingId = BuiltInRegistries.ITEM.getKey(stack.getItem());
-            if (contents.storedItemId().isEmpty() || !contents.storedItemId().get().equals(incomingId)) return stack;
-            int toAdd = Math.min(stack.getCount(), folder.getCapacity() - contents.count());
-            if (toAdd <= 0) return stack;
-            if (!simulate) {
-                folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
-                        new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
-                cabinet.inventory.setStackInSlot(slot, folderStack);
-            }
-            ItemStack remaining = stack.copy();
-            remaining.shrink(toAdd);
-            return remaining;
-        }
-
-        @NotNull
-        @Override
-        public ItemStack extractItem(int slot, int amount, boolean simulate) {
-            if (amount <= 0 || slot < 0 || slot >= 5) return ItemStack.EMPTY;
-            ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
-            if (!(folderStack.getItem() instanceof FilingFolderItem)) return ItemStack.EMPTY;
-            FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-            if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) return ItemStack.EMPTY;
-            Item item = BuiltInRegistries.ITEM.get(contents.storedItemId().get());
-            ItemStack result = new ItemStack(item, 1);
-            int actualExtract = Math.min(Math.min(contents.count(), amount), item.getMaxStackSize(result));
-            if (actualExtract <= 0) return ItemStack.EMPTY;
-            result.setCount(actualExtract);
-            if (!simulate) {
-                folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
-                        new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() - actualExtract));
-                cabinet.inventory.setStackInSlot(slot, folderStack);
-            }
-            return result;
-        }
-
-        @Override
-        public int getSlotLimit(int slot) {
-            if (slot < 0 || slot >= 5) return 0;
-            ItemStack folderStack = cabinet.inventory.getStackInSlot(slot);
-            if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return 0;
-            FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-            return contents != null ? folder.getCapacity() : 0;
-        }
-
-        @Override
-        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
-            return !FilingFolderItem.hasSignificantNBT(stack);
-        }
     }
 }
