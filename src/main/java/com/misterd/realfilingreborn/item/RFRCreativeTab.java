@@ -26,6 +26,7 @@ public class RFRCreativeTab {
                         output.accept(RFRBlocks.JUNGLE_FILING_CABINET);
                         output.accept(RFRBlocks.MANGROVE_FILING_CABINET);
                         output.accept(RFRBlocks.OAK_FILING_CABINET);
+                        output.accept(RFRBlocks.PALE_OAK_FILING_CABINET);
                         output.accept(RFRBlocks.FILING_CABINET);
                         output.accept(RFRBlocks.WARPED_FILING_CABINET);
                         output.accept(RFRBlocks.FILING_INDEX);
