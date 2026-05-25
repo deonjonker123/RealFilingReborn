@@ -25,6 +25,7 @@ public class RFRItemTagProvider extends ItemTagsProvider {
                 .add(RFRBlocks.MANGROVE_FILING_CABINET.asItem())
                 .add(RFRBlocks.OAK_FILING_CABINET.asItem())
                 .add(RFRBlocks.FILING_CABINET.asItem())
-                .add(RFRBlocks.WARPED_FILING_CABINET.asItem());
+                .add(RFRBlocks.WARPED_FILING_CABINET.asItem())
+                .add(RFRBlocks.PALE_OAK_FILING_CABINET.asItem());
     }
 }

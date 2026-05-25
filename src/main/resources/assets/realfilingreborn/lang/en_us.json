@@ -10,16 +10,6 @@
   "item.realfilingreborn.diamond_filing_folder": "Diamond Folder",
   "item.realfilingreborn.netherite_filing_folder": "Netherite Folder",
 
-  "item.realfilingreborn.eraser": "Eraser",
-
-  "item.realfilingreborn.fluid_canister": "Canister",
-  "item.realfilingreborn.copper_fluid_canister": "Copper Canister",
-  "item.realfilingreborn.iron_fluid_canister": "Iron Canister",
-  "item.realfilingreborn.gold_fluid_canister": "Gold Canister",
-  "item.realfilingreborn.diamond_fluid_canister": "Diamond Canister",
-  "item.realfilingreborn.netherite_fluid_canister": "Netherite Canister",
-
-  "item.realfilingreborn.cabinet_conversion_kit": "Cabinet Conversion Kit",
   "item.realfilingreborn.iron_range_upgrade": "Filing Index Iron Range Upgrade",
   "item.realfilingreborn.diamond_range_upgrade": "Filing Index Diamond Range Upgrade",
   "item.realfilingreborn.netherite_range_upgrade": "Filing Index Netherite Range Upgrade",
@@ -36,18 +26,29 @@
   "block.realfilingreborn.oak_filing_cabinet": "Oak Filing Cabinet",
   "block.realfilingreborn.filing_cabinet": "Spruce Filing Cabinet",
   "block.realfilingreborn.warped_filing_cabinet": "Warped Filing Cabinet",
+  "block.realfilingreborn.pale_oak_filing_cabinet": "Pale Oak Filing Cabinet",
 
-  "block.realfilingreborn.fluid_cabinet": "Fluid Cabinet",
+  "item.realfilingreborn.acacia_filing_cabinet": "Acacia Filing Cabinet",
+  "item.realfilingreborn.birch_filing_cabinet": "Birch Filing Cabinet",
+  "item.realfilingreborn.cherry_filing_cabinet": "Cherry Filing Cabinet",
+  "item.realfilingreborn.crimson_filing_cabinet": "Crimson Filing Cabinet",
+  "item.realfilingreborn.dark_oak_filing_cabinet": "Dark Oak Filing Cabinet",
+  "item.realfilingreborn.jungle_filing_cabinet": "Jungle Filing Cabinet",
+  "item.realfilingreborn.mangrove_filing_cabinet": "Mangrove Filing Cabinet",
+  "item.realfilingreborn.oak_filing_cabinet": "Oak Filing Cabinet",
+  "item.realfilingreborn.filing_cabinet": "Spruce Filing Cabinet",
+  "item.realfilingreborn.warped_filing_cabinet": "Warped Filing Cabinet",
+  "item.realfilingreborn.pale_oak_filing_cabinet": "Pale Oak Filing Cabinet",
+
   "block.realfilingreborn.filing_index": "Filing Index",
+  "item.realfilingreborn.filing_index": "Filing Index",
 
   "_comment3": "=== BLOCK ENTITIES ===",
   "blockentity.realfilingreborn.name": "Filing Cabinet",
-  "blockentity.realfilingreborn.fluid_cabinet_name": "Fluid Cabinet",
   "blockentity.realfilingreborn.filing_index_name": "Filing Index",
 
   "_comment4": "=== MENUS/GUIS ===",
   "menu.realfilingreborn.menu_title": "Filing Cabinet",
-  "menu.realfilingreborn.fluid_cabinet_menu_title": "Fluid Cabinet",
   "menu.realfilingreborn.filing_index": "Filing Index",
 
   "_comment4_new": "=== NEW GUI MESSAGES ===",
@@ -76,36 +77,9 @@
   "message.realfilingreborn.no_folder_in_slot": "No folder in this slot",
 
   "_comment6": "=== FILING CABINET MESSAGES ===",
-  "message.realfilingreborn.folders_full": "Filing Cabinet is full (5 folders)",
+  "message.realfilingreborn.folders_full": "Filing Cabinet is full (4 folders)",
   "message.realfilingreborn.no_folders": "Filing Cabinet can only accept folders",
   "message.realfilingreborn.no_compatible_folder": "No folder for this item available",
-
-  "_comment8": "=== FLUID CANISTER MESSAGES ===",
-  "message.realfilingreborn.canister_empty": "Canister is empty. Hold bucket in off hand and canister in main hand to add fluid",
-  "message.realfilingreborn.no_bucket_for_fluid": "No bucket available for this fluid type",
-  "message.realfilingreborn.not_enough_fluid": "Not enough fluid to fill a bucket (need 1000mB)",
-  "message.realfilingreborn.wrong_fluid_type": "Canister assigned to: %s",
-  "message.realfilingreborn.canister_full": "Canister cannot store any more fluid",
-  "message.realfilingreborn.need_empty_bucket": "Need an empty bucket in inventory to extract fluid",
-  "message.realfilingreborn.canister_not_empty": "Canister must be empty to erase assignment",
-  "message.realfilingreborn.canister_not_assigned": "Canister is not assigned to any fluid",
-  "message.realfilingreborn.canister_erased": "Canister assignment erased",
-  "message.realfilingreborn.no_fluid_in_slot": "No fluid in this slot",
-  "message.realfilingreborn.not_enough_fluid_in_slot": "Not enough fluid in this slot (need 1000mB)",
-  "message.realfilingreborn.fluid_extracted": "Fluid extracted",
-
-  "_comment9": "=== FLUID CABINET MESSAGES ===",
-  "message.realfilingreborn.canisters_full": "Fluid Cabinet is full (4 canisters)",
-  "message.realfilingreborn.no_compatible_canister": "No compatible canister found for this fluid",
-
-  "_comment10": "=== CABINET CONVERSION MESSAGES ===",
-  "message.realfilingreborn.cabinet_must_be_empty": "Filing Cabinet must be empty before conversion",
-  "message.realfilingreborn.cabinet_converted": "Filing Cabinet converted to Fluid Cabinet!",
-  "message.realfilingreborn.already_fluid_cabinet": "This is already a Fluid Cabinet",
-  "message.realfilingreborn.conversion_only_filing_cabinet": "Conversion Kit only works on Filing Cabinets",
-
-  "_comment13": "=== ERASER TOOLTIPS ===",
-  "tooltip.realfilingreborn.eraser_info": "Right-click while holding an empty folder or canister to erase its assignment",
 
   "_comment14": "=== FILING FOLDER TOOLTIPS ===",
   "tooltip.realfilingreborn.stored_item": "Assigned to (Contents): %s",
@@ -118,42 +92,6 @@
 
   "_comment14_new": "=== NEW FILING FOLDER TOOLTIPS ===",
   "tooltip.realfilingreborn.folder_gui_hint": "Shift+Right-click to open assignment GUI",
-
-  "_comment16": "=== FLUID CANISTER TOOLTIPS ===",
-  "tooltip.realfilingreborn.stored_fluid": "Assigned to (Contents): %s",
-  "tooltip.realfilingreborn.fluid_amount": "Amount: %s",
-  "tooltip.realfilingreborn.empty_canister": "Canister is empty",
-  "tooltip.realfilingreborn.unregistered_canister": "Canister is unassigned. Add fluid to assign it",
-  "tooltip.realfilingreborn.canister_capacity": "Capacity: %s",
-  "tooltip.realfilingreborn.canister_info": "Hold filled bucket in off hand to store",
-  "message.realfilingreborn.invalid_fluid": "This fluid cannot be stored in canisters",
-
-  "_comment16_new": "=== NEW FLUID CANISTER TOOLTIPS ===",
-  "tooltip.realfilingreborn.canister_gui_hint": "Shift+Right-click to open assignment GUI",
-
-  "_comment17": "=== CABINET CONVERSION KIT TOOLTIPS ===",
-  "tooltip.realfilingreborn.cabinet_conversion_kit_info": "Item used to convert a Filing Cabinet into a Fluid Cabinet. Consumed on use",
-  "tooltip.realfilingreborn.cabinet_conversion_usage": "Right-click on empty Filing Cabinet to convert",
-
-  "_comment21": "=== JADE PLUGIN INTEGRATION ===",
-  "tooltip.realfilingreborn.jade.cabinet_title": "Filing Cabinet Contents",
-  "tooltip.realfilingreborn.jade.empty_cabinet": "Cabinet is empty. Right click to insert folders",
-  "tooltip.realfilingreborn.jade.empty_fluid_cabinet": "Fluid Cabinet is empty. Right click to insert canisters",
-  "tooltip.realfilingreborn.jade.folder_summary": "Folders: %d/%d filled",
-  "tooltip.realfilingreborn.jade.folder_content": "Folder %d: %s (%s items, %s full)",
-  "tooltip.realfilingreborn.jade.folder_short": "F%d: %s (%s, %s)",
-  "tooltip.realfilingreborn.jade.empty_folder": "Folder %d: Empty",
-  "tooltip.realfilingreborn.jade.total_folders": "Total Folders: %d",
-  "tooltip.realfilingreborn.jade.total_items": "Total Items: %s",
-  "tooltip.realfilingreborn.jade.index.linked": "Linked Cabinets: %s",
-  "tooltip.realfilingreborn.jade.index.range": "Range: %s (%s)",
-  "tooltip.realfilingreborn.jade.index.connected": "Connected: %s",
-  "tooltip.realfilingreborn.jade.index.yes": "Yes",
-  "tooltip.realfilingreborn.jade.index.no": "No",
-
-  "_comment22": "=== JADE PLUGIN CONFIGURATION ===",
-  "config.jade.plugin_realfilingreborn.filing_cabinet_info": "Filing Cabinet Information",
-  "config.jade.plugin_realfilingreborn.fluid_cabinet_info": "Fluid Cabinet Information",
 
   "_comment_ledger": "=== LEDGER MESSAGES ===",
   "item.realfilingreborn.ledger.mode.add": "Ledger: Add Mode",
@@ -187,10 +125,5 @@
   "_comment_upgrades": "=== UPGRADE ITEMS TOOLTIPS ===",
   "item.realfilingreborn.iron_range_upgrade.subtitle": "Extends Filing Index range to 16 blocks (radius)",
   "item.realfilingreborn.diamond_range_upgrade.subtitle": "Extends Filing Index range to 32 blocks (radius)",
-  "item.realfilingreborn.netherite_range_upgrade.subtitle": "Extends Filing Index range to 64 blocks (radius)",
-
-  "jei.realfilingreborn.folder_upgrade": "Folder Upgrade",
-  "jei.realfilingreborn.canister_upgrade": "Canister Upgrade",
-  "jei.realfilingreborn.folder_reset": "Folder Reset",
-  "jei.realfilingreborn.canister_reset": "Canister Reset"
+  "item.realfilingreborn.netherite_range_upgrade.subtitle": "Extends Filing Index range to 64 blocks (radius)"
 }

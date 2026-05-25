@@ -27,7 +27,8 @@ public class RFRBlockTagProvider extends BlockTagsProvider {
                 .add(RFRBlocks.JUNGLE_FILING_CABINET.get())
                 .add(RFRBlocks.MANGROVE_FILING_CABINET.get())
                 .add(RFRBlocks.OAK_FILING_CABINET.get())
-                .add(RFRBlocks.WARPED_FILING_CABINET.get());
+                .add(RFRBlocks.WARPED_FILING_CABINET.get())
+                .add(RFRBlocks.PALE_OAK_FILING_CABINET.get());
 
         tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(RFRBlocks.FILING_INDEX.get());

@@ -39,11 +39,12 @@ public class RFRModelProvider extends ModelProvider {
         registerCabinet(g, "birch_filing_cabinet", RFRBlocks.BIRCH_FILING_CABINET);
         registerCabinet(g, "cherry_filing_cabinet", RFRBlocks.CHERRY_FILING_CABINET);
         registerCabinet(g, "crimson_filing_cabinet", RFRBlocks.CRIMSON_FILING_CABINET);
-        registerCabinet(g, "darkoak_filing_cabinet", RFRBlocks.DARK_OAK_FILING_CABINET);
+        registerCabinet(g, "dark_oak_filing_cabinet", RFRBlocks.DARK_OAK_FILING_CABINET);
         registerCabinet(g, "jungle_filing_cabinet", RFRBlocks.JUNGLE_FILING_CABINET);
         registerCabinet(g, "mangrove_filing_cabinet", RFRBlocks.MANGROVE_FILING_CABINET);
         registerCabinet(g, "oak_filing_cabinet", RFRBlocks.OAK_FILING_CABINET);
         registerCabinet(g, "warped_filing_cabinet", RFRBlocks.WARPED_FILING_CABINET);
+        registerCabinet(g, "pale_oak_filing_cabinet", RFRBlocks.PALE_OAK_FILING_CABINET);
 
         g.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(RFRBlocks.FILING_INDEX.get(),
                         BlockModelGenerators.plainVariant(Identifier.fromNamespaceAndPath(RealFilingReborn.MODID, "block/filing_index")))

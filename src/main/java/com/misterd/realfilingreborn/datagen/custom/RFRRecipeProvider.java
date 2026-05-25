@@ -244,6 +244,16 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
+        shaped(RecipeCategory.MISC, RFRBlocks.PALE_OAK_FILING_CABINET.get())
+                .pattern("LPL")
+                .pattern("PBP")
+                .pattern("LPL")
+                .define('L', Items.STRIPPED_PALE_OAK_LOG)
+                .define('P', Items.PALE_OAK_PLANKS)
+                .define('B', Items.BARREL)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
         shaped(RecipeCategory.MISC, RFRBlocks.FILING_INDEX.get())
                 .pattern("IXI")
                 .pattern("RFR")

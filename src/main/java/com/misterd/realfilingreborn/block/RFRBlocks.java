@@ -90,6 +90,13 @@ public class RFRBlocks {
                     .sound(SoundType.STONE)
                     .requiresCorrectToolForDrops()));
 
+    public static final DeferredBlock<Block> PALE_OAK_FILING_CABINET = registerBlock("pale_oak_filing_cabinet",
+            id -> new FilingCabinetBlock(BlockBehaviour.Properties.of()
+                    .setId(ResourceKey.create(Registries.BLOCK, id))
+                    .strength(3.0F, 5.0F)
+                    .sound(SoundType.STONE)
+                    .requiresCorrectToolForDrops()));
+
     public static final DeferredBlock<Block> FILING_INDEX = registerBlock("filing_index",
             id -> new FilingIndexBlock(BlockBehaviour.Properties.of()
                     .setId(ResourceKey.create(Registries.BLOCK, id))
