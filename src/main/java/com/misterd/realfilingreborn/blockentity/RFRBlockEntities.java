@@ -29,7 +29,8 @@ public class RFRBlockEntities {
                     RFRBlocks.JUNGLE_FILING_CABINET.get(),
                     RFRBlocks.MANGROVE_FILING_CABINET.get(),
                     RFRBlocks.OAK_FILING_CABINET.get(),
-                    RFRBlocks.WARPED_FILING_CABINET.get()
+                    RFRBlocks.WARPED_FILING_CABINET.get(),
+                    RFRBlocks.PALE_OAK_FILING_CABINET.get()
             ));
 
     public static final Supplier<BlockEntityType<FilingIndexBlockEntity>> FILING_INDEX_BE =
