@@ -149,10 +149,10 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
             if (existing.isEmpty()) return ItemStack.EMPTY;
             int toExtract = Math.min(amount, existing.getCount());
             try (Transaction tx = Transaction.openRoot()) {
-                int extracted = be.inventory.extract(index, ItemResource.of(existing), toExtract, tx);
+                be.inventory.extract(index, ItemResource.of(existing), toExtract, tx);
                 tx.commit();
-                return new ItemStack(existing.getItem(), extracted);
             }
+            return existing.copyWithCount(toExtract);
         }
     }
 }

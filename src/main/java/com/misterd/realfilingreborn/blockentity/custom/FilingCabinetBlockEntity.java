@@ -7,11 +7,13 @@ import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
@@ -26,8 +28,10 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 import javax.annotation.Nullable;
+import java.util.Optional;
 
 public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvider {
 
@@ -52,6 +56,51 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
                     index.scheduleFlush();
                 }
             }
+        }
+
+        @Override
+        public boolean isValid(int slot, ItemResource resource) {
+            if (resource.isEmpty()) return false;
+            return resource.toStack().getItem() instanceof FilingFolderItem;
+        }
+
+        @Override
+        public int insert(int slot, ItemResource resource, int amount, TransactionContext tx) {
+            if (resource.isEmpty() || amount <= 0) return 0;
+            ItemStack incoming = resource.toStack(amount);
+
+            if (incoming.getItem() instanceof FilingFolderItem) {
+                return super.insert(slot, resource, amount, tx);
+            }
+
+            if (FilingFolderItem.hasSignificantNBT(incoming)) return 0;
+
+            Identifier itemId = BuiltInRegistries.ITEM.getKey(incoming.getItem());
+
+            for (int i = 0; i < 4; i++) {
+                ItemStack folderStack = getStack(i);
+                if (!(folderStack.getItem() instanceof FilingFolderItem folder)) continue;
+
+                FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+                if (contents == null) continue;
+
+                if (contents.storedItemId().isPresent() && !contents.storedItemId().get().equals(itemId)) continue;
+
+                int capacity = folder.getCapacity();
+                int toAdd = Math.min(amount, capacity - contents.count());
+                if (toAdd <= 0) continue;
+
+                ItemStack updatedFolder = folderStack.copy();
+                updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+                        new FilingFolderItem.FolderContents(Optional.of(itemId), contents.count() + toAdd));
+
+                super.extract(i, ItemResource.of(folderStack), 1, tx);
+                super.insert(i, ItemResource.of(updatedFolder), 1, tx);
+
+                return toAdd;
+            }
+
+            return 0;
         }
     };
 

@@ -37,6 +37,13 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
         return snapshotRef.get();
     }
 
+    private FilingFolderItem.FolderContents getLiveContents(FilingIndexBlockEntity.FolderRef ref) {
+        if (!(level.getBlockEntity(ref.cabinetPos()) instanceof FilingCabinetBlockEntity cabinet)) return null;
+        ItemStack folderStack = cabinet.getStack(ref.slot());
+        if (!(folderStack.getItem() instanceof FilingFolderItem)) return null;
+        return folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+    }
+
     @Override
     public int size() {
         return Math.max(snapshot().size(), 1);
@@ -47,7 +54,8 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
         List<Map.Entry<Identifier, FilingIndexBlockEntity.FolderRef>> snap = snapshot();
         if (slot < 0 || slot >= snap.size()) return ItemResource.EMPTY;
         FilingIndexBlockEntity.FolderRef ref = snap.get(slot).getValue();
-        if (ref.count() <= 0) return ItemResource.EMPTY;
+        FilingFolderItem.FolderContents contents = getLiveContents(ref);
+        if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) return ItemResource.EMPTY;
         Item item = BuiltInRegistries.ITEM.getValue(snap.get(slot).getKey());
         if (item == null) return ItemResource.EMPTY;
         return ItemResource.of(new ItemStack(item));
@@ -57,14 +65,20 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
     public long getAmountAsLong(int slot) {
         List<Map.Entry<Identifier, FilingIndexBlockEntity.FolderRef>> snap = snapshot();
         if (slot < 0 || slot >= snap.size()) return 0;
-        return snap.get(slot).getValue().count();
+        FilingFolderItem.FolderContents contents = getLiveContents(snap.get(slot).getValue());
+        if (contents == null) return 0;
+        return contents.count();
     }
 
     @Override
     public long getCapacityAsLong(int slot, ItemResource resource) {
         List<Map.Entry<Identifier, FilingIndexBlockEntity.FolderRef>> snap = snapshot();
         if (slot < 0 || slot >= snap.size()) return 0;
-        return snap.get(slot).getValue().capacity();
+        FilingIndexBlockEntity.FolderRef ref = snap.get(slot).getValue();
+        if (!(level.getBlockEntity(ref.cabinetPos()) instanceof FilingCabinetBlockEntity cabinet)) return 0;
+        ItemStack folderStack = cabinet.getStack(ref.slot());
+        if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return 0;
+        return folder.getCapacity();
     }
 
     @Override
@@ -85,21 +99,23 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
         if (!(level.getBlockEntity(ref.cabinetPos()) instanceof FilingCabinetBlockEntity cabinet)) return 0;
         if (!cabinet.isLinkedToController()) return 0;
 
-        ItemStack folderStack = cabinet.getStack(ref.slot());
-        if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return 0;
+        ItemStack originalFolder = cabinet.getStack(ref.slot());
+        if (!(originalFolder.getItem() instanceof FilingFolderItem folder)) return 0;
 
-        FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+        FilingFolderItem.FolderContents contents = originalFolder.get(FilingFolderItem.FOLDER_CONTENTS.value());
         if (contents == null || contents.storedItemId().isEmpty()) return 0;
         if (!contents.storedItemId().get().equals(itemId)) return 0;
 
         int toAdd = (int) Math.min(amount, folder.getCapacity() - contents.count());
         if (toAdd <= 0) return 0;
 
-        folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+        ItemStack updatedFolder = originalFolder.copy();
+        updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                 new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
+
         try (Transaction innerTx = Transaction.open(tx)) {
-            cabinet.inventory.extract(ref.slot(), ItemResource.of(cabinet.getStack(ref.slot())), 1, innerTx);
-            cabinet.inventory.insert(ref.slot(), ItemResource.of(folderStack), 1, innerTx);
+            cabinet.inventory.extract(ref.slot(), ItemResource.of(originalFolder), 1, innerTx);
+            cabinet.inventory.insert(ref.slot(), ItemResource.of(updatedFolder), 1, innerTx);
             innerTx.commit();
         }
         return toAdd;
@@ -112,24 +128,33 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
         List<Map.Entry<Identifier, FilingIndexBlockEntity.FolderRef>> snap = snapshot();
         if (slot < 0 || slot >= snap.size()) return 0;
 
+        Identifier expectedId = snap.get(slot).getKey();
+        if (!resource.isEmpty()) {
+            Identifier requestedId = BuiltInRegistries.ITEM.getKey(resource.toStack().getItem());
+            if (!expectedId.equals(requestedId)) return 0;
+        }
+
         FilingIndexBlockEntity.FolderRef ref = snap.get(slot).getValue();
         if (!(level.getBlockEntity(ref.cabinetPos()) instanceof FilingCabinetBlockEntity cabinet)) return 0;
         if (!cabinet.isLinkedToController()) return 0;
 
-        ItemStack folderStack = cabinet.getStack(ref.slot());
-        if (!(folderStack.getItem() instanceof FilingFolderItem)) return 0;
+        ItemStack originalFolder = cabinet.getStack(ref.slot());
+        if (!(originalFolder.getItem() instanceof FilingFolderItem)) return 0;
 
-        FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+        FilingFolderItem.FolderContents contents = originalFolder.get(FilingFolderItem.FOLDER_CONTENTS.value());
         if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) return 0;
+        if (!contents.storedItemId().get().equals(expectedId)) return 0;
 
         int toExtract = Math.min(amount, contents.count());
         if (toExtract <= 0) return 0;
 
-        folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+        ItemStack updatedFolder = originalFolder.copy();
+        updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                 new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() - toExtract));
+
         try (Transaction innerTx = Transaction.open(tx)) {
-            cabinet.inventory.extract(ref.slot(), ItemResource.of(cabinet.getStack(ref.slot())), 1, innerTx);
-            cabinet.inventory.insert(ref.slot(), ItemResource.of(folderStack), 1, innerTx);
+            cabinet.inventory.extract(ref.slot(), ItemResource.of(originalFolder), 1, innerTx);
+            cabinet.inventory.insert(ref.slot(), ItemResource.of(updatedFolder), 1, innerTx);
             innerTx.commit();
         }
         return toExtract;

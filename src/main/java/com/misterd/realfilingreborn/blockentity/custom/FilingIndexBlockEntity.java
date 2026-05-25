@@ -165,16 +165,11 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
             ItemStack folder = cabinet.getStack(i);
             if (!(folder.getItem() instanceof FilingFolderItem ff)) continue;
 
-            FilingFolderItem.FolderContents contents =
-                    folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
-
-            if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0)
-                continue;
+            FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
+            if (contents == null || contents.storedItemId().isEmpty()) continue;
 
             Identifier id = contents.storedItemId().get();
-
-            itemIndex.putIfAbsent(id,
-                    new FolderRef(pos, i, contents.count(), ff.getCapacity()));
+            itemIndex.putIfAbsent(id, new FolderRef(pos, i, contents.count(), ff.getCapacity()));
         }
     }
 

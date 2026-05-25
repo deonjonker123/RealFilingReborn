@@ -131,7 +131,7 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         }
 
         if (heldItem.getItem() instanceof FilingFolderItem) {
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 4; i++) {
                 if (cabinet.getStack(i).isEmpty()) {
                     try (var tx = Transaction.openRoot()) {
                         cabinet.inventory.insert(i, ItemResource.of(heldItem), 1, tx);
@@ -162,11 +162,12 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             if (contents == null) continue;
 
             if (contents.storedItemId().isEmpty()) {
-                folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+                ItemStack updatedFolder = folderStack.copy();
+                updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                         new FilingFolderItem.FolderContents(Optional.of(itemId), heldItem.getCount()));
                 try (var tx = Transaction.openRoot()) {
-                    cabinet.inventory.extract(i, ItemResource.of(cabinet.getStack(i)), cabinet.getStack(i).getCount(), tx);
-                    cabinet.inventory.insert(i, ItemResource.of(folderStack), 1, tx);
+                    cabinet.inventory.extract(i, ItemResource.of(folderStack), 1, tx);
+                    cabinet.inventory.insert(i, ItemResource.of(updatedFolder), 1, tx);
                     tx.commit();
                 }
                 heldItem.shrink(heldItem.getCount());
@@ -178,11 +179,12 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             if (contents.storedItemId().get().equals(itemId)) {
                 int toAdd = Math.min(heldItem.getCount(), folder.getCapacity() - contents.count());
                 if (toAdd > 0) {
-                    folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+                    ItemStack updatedFolder = folderStack.copy();
+                    updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                             new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
                     try (var tx = Transaction.openRoot()) {
-                        cabinet.inventory.extract(i, ItemResource.of(cabinet.getStack(i)), cabinet.getStack(i).getCount(), tx);
-                        cabinet.inventory.insert(i, ItemResource.of(folderStack), 1, tx);
+                        cabinet.inventory.extract(i, ItemResource.of(folderStack), 1, tx);
+                        cabinet.inventory.insert(i, ItemResource.of(updatedFolder), 1, tx);
                         tx.commit();
                     }
                     heldItem.shrink(toAdd);
@@ -201,6 +203,7 @@ public class FilingCabinetBlock extends BaseEntityBlock {
     private int getSlotFromHitResult(BlockHitResult hitResult, Direction facing) {
         Vec3 hitPos = hitResult.getLocation();
         double relX = hitPos.x - Math.floor(hitPos.x);
+        double relY = hitPos.y - Math.floor(hitPos.y);
         double relZ = hitPos.z - Math.floor(hitPos.z);
 
         double faceX = switch (facing) {
@@ -212,11 +215,11 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         };
 
         if (faceX < 0) return -1;
-        if (faceX < 0.2) return 0;
-        if (faceX < 0.4) return 1;
-        if (faceX < 0.6) return 2;
-        if (faceX < 0.8) return 3;
-        return 4;
+
+        int col = faceX < 0.5 ? 0 : 1;
+        int row = relY >= 0.5 ? 0 : 1;
+
+        return row * 2 + col;
     }
 
     private void extractFromSlot(FilingCabinetBlockEntity blockEntity, int slot, int amount, Player player, Level level, BlockPos pos, BlockState state) {
@@ -231,8 +234,8 @@ public class FilingCabinetBlock extends BaseEntityBlock {
 
         Identifier itemId = contents.storedItemId().get();
         Item item = BuiltInRegistries.ITEM.getValue(itemId);
-        ItemStack extracted = new ItemStack(item);
-        int extractAmount = Math.min(Math.min(contents.count(), item.getMaxStackSize(extracted)), amount);
+        ItemStack dummy = new ItemStack(item);
+        int extractAmount = Math.min(Math.min(contents.count(), item.getMaxStackSize(dummy)), amount);
 
         if (extractAmount <= 0) {
             player.sendOverlayMessage(Component.translatable("message.realfilingreborn.folder_empty"));
@@ -240,11 +243,13 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         }
 
         ItemStack extractedStack = new ItemStack(item, extractAmount);
-        folderStack.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+        ItemStack updatedFolder = folderStack.copy();
+        updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                 new FilingFolderItem.FolderContents(contents.storedItemId(), Math.max(0, contents.count() - extractAmount)));
+
         try (var tx = Transaction.openRoot()) {
-            blockEntity.inventory.extract(slot, ItemResource.of(blockEntity.getStack(slot)), blockEntity.getStack(slot).getCount(), tx);
-            blockEntity.inventory.insert(slot, ItemResource.of(folderStack), 1, tx);
+            blockEntity.inventory.extract(slot, ItemResource.of(folderStack), 1, tx);
+            blockEntity.inventory.insert(slot, ItemResource.of(updatedFolder), 1, tx);
             tx.commit();
         }
 
