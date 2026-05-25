@@ -42,7 +42,7 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
 
     public record FolderRef(BlockPos cabinetPos, int slot, int count, int capacity) {}
 
-    private final LinkedHashMap<Identifier, FolderRef> itemIndex = new LinkedHashMap<>();
+    private final LinkedHashMap<Identifier, List<FolderRef>> itemIndex = new LinkedHashMap<>();
     private final List<Map.Entry<Identifier, FolderRef>> indexEntries = new ArrayList<>();
     private boolean itemIndexDirty = true;
 
@@ -155,7 +155,9 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
         if (!(level.getBlockEntity(cabinetPos) instanceof FilingCabinetBlockEntity cabinet)) return;
         if (!cabinet.isLinkedToController()) return;
 
-        itemIndex.entrySet().removeIf(e -> e.getValue().cabinetPos().equals(cabinetPos));
+        itemIndex.forEach((id, refs) -> refs.removeIf(r -> r.cabinetPos().equals(cabinetPos)));
+        itemIndex.entrySet().removeIf(e -> e.getValue().isEmpty());
+
         readCabinetIntoIndex(cabinet, cabinetPos);
         cabinet.sendUpdatePacket();
     }
@@ -169,13 +171,21 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
             if (contents == null || contents.storedItemId().isEmpty()) continue;
 
             Identifier id = contents.storedItemId().get();
-            itemIndex.putIfAbsent(id, new FolderRef(pos, i, contents.count(), ff.getCapacity()));
+            itemIndex.computeIfAbsent(id, k -> new ArrayList<>())
+                    .add(new FolderRef(pos, i, contents.count(), ff.getCapacity()));
         }
     }
 
     private void rebuildIndexEntries() {
         indexEntries.clear();
-        indexEntries.addAll(itemIndex.entrySet());
+        for (Map.Entry<Identifier, List<FolderRef>> e : itemIndex.entrySet()) {
+            int totalCount = e.getValue().stream().mapToInt(FolderRef::count).sum();
+            int totalCapacity = e.getValue().stream().mapToInt(FolderRef::capacity).sum();
+            FolderRef synthetic = new FolderRef(e.getValue().get(0).cabinetPos(),
+                    e.getValue().get(0).slot(),
+                    totalCount, totalCapacity);
+            indexEntries.add(Map.entry(e.getKey(), synthetic));
+        }
     }
 
     public List<Map.Entry<Identifier, FolderRef>> getIndexEntries() {
@@ -189,9 +199,19 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     }
 
     @Nullable
-    public FolderRef getFolderRef(Identifier id) {
+    public List<FolderRef> getFolderRefs(Identifier id) {
         if (itemIndexDirty) rebuildItemIndex();
         return itemIndex.get(id);
+    }
+
+    @Nullable
+    public FolderRef getFolderRef(Identifier id) {
+        List<FolderRef> refs = getFolderRefs(id);
+        if (refs == null || refs.isEmpty()) return null;
+        for (FolderRef ref : refs) {
+            if (ref.count() < ref.capacity()) return ref;
+        }
+        return refs.get(0);
     }
 
     public boolean isInRange(BlockPos pos) {
