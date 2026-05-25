@@ -4,6 +4,7 @@ import com.misterd.realfilingreborn.RealFilingReborn;
 import com.misterd.realfilingreborn.block.RFRBlocks;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.IEventBus;
@@ -42,6 +43,9 @@ public class RFRCreativeTab {
                         output.accept(RFRItems.IRON_RANGE_UPGRADE);
                         output.accept(RFRItems.DIAMOND_RANGE_UPGRADE);
                         output.accept(RFRItems.NETHERITE_RANGE_UPGRADE);
+                        output.accept(guideme.Guides.createGuideItem(
+                                Identifier.parse("realfilingreborn:guide")
+                        ));
                     }).build());
 
     public static void register(IEventBus eventBus) {

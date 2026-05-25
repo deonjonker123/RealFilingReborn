@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:barrel",
+    "L": "minecraft:stripped_cherry_log",
+    "P": "minecraft:cherry_planks"
+  },
+  "pattern": [
+    "LPL",
+    "PBP",
+    "LPL"
+  ],
+  "result": {
+    "id": "realfilingreborn:cherry_filing_cabinet"
+  }
+}

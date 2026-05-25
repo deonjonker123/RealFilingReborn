@@ -1,6 +1,6 @@
-# Real Filing Reborn
+![logo.png](logo.png)
 
-**Real Filing Reborn** is a modern storage solution for Minecraft, inspired by the classic _Real Filing Cabinet_ by BlueNeenja.
+Real Filing Reborn is a storage mod built around **Filing Folders** — items that each hold a massive quantity of a single item type — and **Filing Cabinets** to house them.
 
 ---
 

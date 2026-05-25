@@ -1,0 +1,14 @@
+{
+  "item_settings": {
+    "display_name": {
+      "type": "translatable",
+      "translate": "item.realfilingreborn.guide"
+    },
+    "tooltip_lines": [
+      {
+        "translate": "item.realfilingreborn.guide.tooltip",
+        "color": "dark_gray"
+      }
+    ]
+  }
+}

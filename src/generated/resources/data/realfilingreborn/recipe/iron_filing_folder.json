@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "#c:glass_blocks",
+    "I": "minecraft:iron_ingot",
+    "P": "minecraft:paper"
+  },
+  "pattern": [
+    "IPI",
+    "IGP",
+    "IPI"
+  ],
+  "result": {
+    "count": 4,
+    "id": "realfilingreborn:iron_filing_folder"
+  }
+}

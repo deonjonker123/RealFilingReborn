@@ -125,5 +125,8 @@
   "_comment_upgrades": "=== UPGRADE ITEMS TOOLTIPS ===",
   "item.realfilingreborn.iron_range_upgrade.subtitle": "Extends Filing Index range to 16 blocks (radius)",
   "item.realfilingreborn.diamond_range_upgrade.subtitle": "Extends Filing Index range to 32 blocks (radius)",
-  "item.realfilingreborn.netherite_range_upgrade.subtitle": "Extends Filing Index range to 64 blocks (radius)"
+  "item.realfilingreborn.netherite_range_upgrade.subtitle": "Extends Filing Index range to 64 blocks (radius)",
+
+  "item.realfilingreborn.guide": "Real Filing Reborn Guide",
+  "item.realfilingreborn.guide.tooltip": "A guide to filing cabinets, folders, and storage networks."
 }

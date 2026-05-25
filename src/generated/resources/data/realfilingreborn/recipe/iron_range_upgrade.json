@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "minecraft:iron_block",
+    "I": "minecraft:iron_ingot",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "IRI",
+    "RGR",
+    "IRI"
+  ],
+  "result": {
+    "id": "realfilingreborn:iron_range_upgrade"
+  }
+}

@@ -35,7 +35,7 @@ public class RFRRecipeProvider extends RecipeProvider {
 
     @Override
     protected void buildRecipes() {
-        shaped(RecipeCategory.MISC, RFRItems.FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.FILING_FOLDER.get(), 4)
                 .pattern("PPP")
                 .pattern("PG ")
                 .pattern("PPP")
@@ -44,7 +44,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_paper", has(Items.PAPER))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRItems.COPPER_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.COPPER_FILING_FOLDER.get(), 4)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -54,7 +54,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_copper_ingot", has(Items.COPPER_INGOT))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRItems.IRON_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.IRON_FILING_FOLDER.get(), 4)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -64,7 +64,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRItems.GOLD_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.GOLD_FILING_FOLDER.get(), 4)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -74,7 +74,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_gold_ingot", has(Items.GOLD_INGOT))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.DIAMOND_FILING_FOLDER.get(), 4)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -84,7 +84,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_diamond", has(Items.DIAMOND))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FILING_FOLDER.get(), 5)
+        shaped(RecipeCategory.MISC, RFRItems.NETHERITE_FILING_FOLDER.get(), 4)
                 .pattern("IPI")
                 .pattern("IGP")
                 .pattern("IPI")
@@ -99,8 +99,8 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .pattern("RGR")
                 .pattern("IRI")
                 .define('R', Items.REDSTONE)
-                .define('G', Items.IRON_INGOT)
-                .define('I', Items.IRON_BLOCK)
+                .define('G', Items.IRON_BLOCK)
+                .define('I', Items.IRON_INGOT)
                 .unlockedBy("has_iron_ingot", has(Items.IRON_INGOT))
                 .save(output);
 
@@ -122,6 +122,16 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .define('G', RFRItems.DIAMOND_RANGE_UPGRADE.get())
                 .define('N', Items.NETHERITE_INGOT)
                 .unlockedBy("has_diamond_upgrade", has(RFRItems.DIAMOND_RANGE_UPGRADE.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRItems.LEDGER.get())
+                .pattern("RQR")
+                .pattern("QBQ")
+                .pattern("RQR")
+                .define('R', Items.REDSTONE)
+                .define('B', Items.BOOK)
+                .define('Q', Items.QUARTZ)
+                .unlockedBy("has_quartz", has(Items.QUARTZ))
                 .save(output);
 
         shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get())
@@ -223,16 +233,6 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .define('B', Items.BARREL)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
-
-        shaped(RecipeCategory.MISC, RFRBlocks.OAK_FILING_CABINET.get())
-                .pattern("LPL")
-                .pattern("PBP")
-                .pattern("LPL")
-                .define('L', ItemTags.LOGS)
-                .define('P', ItemTags.PLANKS)
-                .define('B', Items.BARREL)
-                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(output, "realfilingreborn:oak_cabinet_from_any_wood");
 
         shaped(RecipeCategory.MISC, RFRBlocks.WARPED_FILING_CABINET.get())
                 .pattern("LPL")

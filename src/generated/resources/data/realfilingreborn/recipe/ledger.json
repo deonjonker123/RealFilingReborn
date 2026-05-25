@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:book",
+    "Q": "minecraft:quartz",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "RQR",
+    "QBQ",
+    "RQR"
+  ],
+  "result": {
+    "id": "realfilingreborn:ledger"
+  }
+}

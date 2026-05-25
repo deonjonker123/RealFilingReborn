@@ -3,5 +3,5 @@
   "id": "realfilingreborn:diamond_to_netherite_folder",
   "input_tier": "realfilingreborn:diamond_filing_folder",
   "output_tier": "realfilingreborn:netherite_filing_folder",
-  "material": { "item": "minecraft:netherite_ingot" }
+  "material": "minecraft:netherite_ingot"
 }

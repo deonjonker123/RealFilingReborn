@@ -1,0 +1,13 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "ingredients": [
+    { "item": "minecraft:book" },
+    { "item": "realfilingreborn:filing_folder" }
+  ],
+  "result": {
+    "id": "guideme:guide",
+    "components": {
+      "guideme:guide_id": "realfilingreborn:guide"
+    }
+  }
+}

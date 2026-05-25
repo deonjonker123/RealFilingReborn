@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "#c:glass_blocks",
+    "I": "minecraft:netherite_ingot",
+    "P": "minecraft:paper"
+  },
+  "pattern": [
+    "IPI",
+    "IGP",
+    "IPI"
+  ],
+  "result": {
+    "count": 4,
+    "id": "realfilingreborn:netherite_filing_folder"
+  }
+}

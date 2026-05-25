@@ -3,5 +3,5 @@
   "id": "realfilingreborn:gold_to_diamond_folder",
   "input_tier": "realfilingreborn:gold_filing_folder",
   "output_tier": "realfilingreborn:diamond_filing_folder",
-  "material": { "item": "minecraft:diamond" }
+  "material": "minecraft:diamond"
 }

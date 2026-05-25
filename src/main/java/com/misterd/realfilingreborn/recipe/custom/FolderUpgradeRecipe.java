@@ -56,9 +56,9 @@ public class FolderUpgradeRecipe extends CustomRecipe {
     public boolean matches(CraftingInput input, Level level) {
         if (input.width() != 2 || input.height() != 2) return false;
 
-        ItemStack topLeft     = input.getItem(0, 0);
-        ItemStack topRight    = input.getItem(1, 0);
-        ItemStack bottomLeft  = input.getItem(0, 1);
+        ItemStack topLeft = input.getItem(0, 0);
+        ItemStack topRight = input.getItem(1, 0);
+        ItemStack bottomLeft = input.getItem(0, 1);
         ItemStack bottomRight = input.getItem(1, 1);
 
         if (topLeft.getItem() != inputTier) return false;

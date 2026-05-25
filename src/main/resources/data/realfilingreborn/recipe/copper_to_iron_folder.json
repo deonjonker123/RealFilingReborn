@@ -3,5 +3,5 @@
   "id": "realfilingreborn:copper_to_iron_folder",
   "input_tier": "realfilingreborn:copper_filing_folder",
   "output_tier": "realfilingreborn:iron_filing_folder",
-  "material": { "item": "minecraft:iron_ingot" }
+  "material": "minecraft:iron_ingot"
 }

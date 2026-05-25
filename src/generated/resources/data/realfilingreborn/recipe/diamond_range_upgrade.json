@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "D": "minecraft:diamond",
+    "G": "realfilingreborn:iron_range_upgrade",
+    "R": "minecraft:redstone"
+  },
+  "pattern": [
+    "DRD",
+    "RGR",
+    "DRD"
+  ],
+  "result": {
+    "id": "realfilingreborn:diamond_range_upgrade"
+  }
+}

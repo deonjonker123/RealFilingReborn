@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "C": "minecraft:comparator",
+    "F": "#realfilingreborn:filing_cabinet_items",
+    "I": "minecraft:quartz_block",
+    "R": "minecraft:redstone",
+    "X": "minecraft:repeater"
+  },
+  "pattern": [
+    "IXI",
+    "RFR",
+    "ICI"
+  ],
+  "result": {
+    "id": "realfilingreborn:filing_index"
+  }
+}

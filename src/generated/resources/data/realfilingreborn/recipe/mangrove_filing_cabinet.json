@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:barrel",
+    "L": "minecraft:stripped_mangrove_log",
+    "P": "minecraft:mangrove_planks"
+  },
+  "pattern": [
+    "LPL",
+    "PBP",
+    "LPL"
+  ],
+  "result": {
+    "id": "realfilingreborn:mangrove_filing_cabinet"
+  }
+}
