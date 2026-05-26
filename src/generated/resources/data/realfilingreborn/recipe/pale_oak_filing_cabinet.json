@@ -2,14 +2,15 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": "minecraft:barrel",
-    "L": "minecraft:stripped_pale_oak_log",
-    "P": "minecraft:pale_oak_planks"
+    "B": "#c:chests",
+    "L": "minecraft:pale_oak_planks",
+    "P": "minecraft:pale_oak_log",
+    "S": "minecraft:pale_oak_slab"
   },
   "pattern": [
-    "LPL",
+    "LSL",
     "PBP",
-    "LPL"
+    "LSL"
   ],
   "result": {
     "id": "realfilingreborn:pale_oak_filing_cabinet"

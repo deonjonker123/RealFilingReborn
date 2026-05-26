@@ -13,7 +13,7 @@
     },
     "has_the_recipe": {
       "conditions": {
-        "recipe": "realfilingreborn:filing_cabinet_from_wood"
+        "recipe": "realfilingreborn:zzz_filing_cabinet_from_wood"
       },
       "trigger": "minecraft:recipe_unlocked"
     }
@@ -26,7 +26,7 @@
   ],
   "rewards": {
     "recipes": [
-      "realfilingreborn:filing_cabinet_from_wood"
+      "realfilingreborn:zzz_filing_cabinet_from_wood"
     ]
   }
 }

@@ -2,14 +2,13 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "key": {
-    "B": "minecraft:barrel",
-    "L": "minecraft:stripped_cherry_log",
-    "P": "minecraft:cherry_planks"
+    "B": "#c:chests",
+    "L": "minecraft:cherry_planks"
   },
   "pattern": [
-    "LPL",
-    "PBP",
-    "LPL"
+    "LLL",
+    "LBL",
+    "LLL"
   ],
   "result": {
     "id": "realfilingreborn:cherry_filing_cabinet"
