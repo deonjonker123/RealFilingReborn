@@ -136,11 +136,22 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
         try {
             for (BlockPos pos : linkedCabinets) {
                 if (!isInRange(pos)) continue;
-                if (!(level.getBlockEntity(pos) instanceof FilingCabinetBlockEntity cabinet)) continue;
-                if (!cabinet.isLinkedToController()) continue;
 
-                readCabinetIntoIndex(cabinet, pos);
-                cabinet.sendUpdatePacket();
+                BlockEntity be = level.getBlockEntity(pos);
+
+                if (be instanceof FilingCabinetBlockEntity cabinet) {
+                    if (!cabinet.isLinkedToController()) continue;
+                    readCabinetIntoIndex(cabinet, pos);
+                    cabinet.sendUpdatePacket();
+                } else if (be instanceof SingleFilingCabinetBlockEntity cabinet) {
+                    if (!cabinet.isLinkedToController()) continue;
+                    readSingleCabinetIntoIndex(cabinet, pos);
+                    cabinet.sendUpdatePacket();
+                } else if (be instanceof DoubleFilingCabinetBlockEntity cabinet) {
+                    if (!cabinet.isLinkedToController()) continue;
+                    readDoubleCabinetIntoIndex(cabinet, pos);
+                    cabinet.sendUpdatePacket();
+                }
             }
         } finally {
             cabinetLock.readLock().unlock();
@@ -152,27 +163,39 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     }
 
     private void patchCabinetInIndex(BlockPos cabinetPos) {
-        if (!(level.getBlockEntity(cabinetPos) instanceof FilingCabinetBlockEntity cabinet)) return;
-        if (!cabinet.isLinkedToController()) return;
-
         itemIndex.forEach((id, refs) -> refs.removeIf(r -> r.cabinetPos().equals(cabinetPos)));
         itemIndex.entrySet().removeIf(e -> e.getValue().isEmpty());
 
-        readCabinetIntoIndex(cabinet, cabinetPos);
-        cabinet.sendUpdatePacket();
+        BlockEntity be = level.getBlockEntity(cabinetPos);
+
+        if (be instanceof FilingCabinetBlockEntity cabinet) {
+            if (!cabinet.isLinkedToController()) return;
+            readCabinetIntoIndex(cabinet, cabinetPos);
+            cabinet.sendUpdatePacket();
+        } else if (be instanceof SingleFilingCabinetBlockEntity cabinet) {
+            if (!cabinet.isLinkedToController()) return;
+            readSingleCabinetIntoIndex(cabinet, cabinetPos);
+            cabinet.sendUpdatePacket();
+        } else if (be instanceof DoubleFilingCabinetBlockEntity cabinet) {
+            if (!cabinet.isLinkedToController()) return;
+            readDoubleCabinetIntoIndex(cabinet, cabinetPos);
+            cabinet.sendUpdatePacket();
+        }
     }
 
     private void readCabinetIntoIndex(FilingCabinetBlockEntity cabinet, BlockPos pos) {
         for (int i = 0; i < 4; i++) {
-            ItemStack folder = cabinet.getStack(i);
-            if (!(folder.getItem() instanceof FilingFolderItem ff)) continue;
+            readFolderIntoIndex(cabinet.getStack(i), pos, i);
+        }
+    }
 
-            FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
-            if (contents == null || contents.storedItemId().isEmpty()) continue;
+    private void readSingleCabinetIntoIndex(SingleFilingCabinetBlockEntity cabinet, BlockPos pos) {
+        readFolderIntoIndex(cabinet.getStack(0), pos, 0);
+    }
 
-            Identifier id = contents.storedItemId().get();
-            itemIndex.computeIfAbsent(id, k -> new ArrayList<>())
-                    .add(new FolderRef(pos, i, contents.count(), ff.getCapacity()));
+    private void readDoubleCabinetIntoIndex(DoubleFilingCabinetBlockEntity cabinet, BlockPos pos) {
+        for (int i = 0; i < 2; i++) {
+            readFolderIntoIndex(cabinet.getStack(i), pos, i);
         }
     }
 
@@ -186,6 +209,15 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
                     totalCount, totalCapacity);
             indexEntries.add(Map.entry(e.getKey(), synthetic));
         }
+    }
+
+    private void readFolderIntoIndex(ItemStack folder, BlockPos pos, int slot) {
+        if (!(folder.getItem() instanceof FilingFolderItem ff)) return;
+        FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
+        if (contents == null || contents.storedItemId().isEmpty()) return;
+        Identifier id = contents.storedItemId().get();
+        itemIndex.computeIfAbsent(id, k -> new ArrayList<>())
+                .add(new FolderRef(pos, slot, contents.count(), ff.getCapacity()));
     }
 
     public List<Map.Entry<Identifier, FolderRef>> getIndexEntries() {
@@ -263,6 +295,7 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
                 setChanged();
 
                 if (level != null && !level.isClientSide()) {
+                    scheduleFlush();
                     scheduleBlockUpdate();
                     if (wasEmpty) scheduleConnectedStateUpdate();
                 }
@@ -281,6 +314,7 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
                 setChanged();
 
                 if (level != null && !level.isClientSide()) {
+                    scheduleFlush();
                     scheduleBlockUpdate();
                     if (linkedCabinets.isEmpty()) scheduleConnectedStateUpdate();
                 }

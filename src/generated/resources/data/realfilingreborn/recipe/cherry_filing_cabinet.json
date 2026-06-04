@@ -6,11 +6,12 @@
     "L": "minecraft:cherry_planks"
   },
   "pattern": [
+    "BLB",
     "LLL",
-    "LBL",
-    "LLL"
+    "BLB"
   ],
   "result": {
+    "count": 4,
     "id": "realfilingreborn:cherry_filing_cabinet"
   }
 }

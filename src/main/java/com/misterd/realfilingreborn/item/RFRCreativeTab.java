@@ -19,17 +19,50 @@ public class RFRCreativeTab {
             () -> CreativeModeTab.builder().icon(() -> new ItemStack(RFRItems.FILING_FOLDER.get()))
                     .title(Component.translatable("creativetab.realfilingreborn.real_filing_reborn"))
                     .displayItems((itemDisplayParameters, output) -> {
+                        output.accept(RFRBlocks.SINGLE_ACACIA_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_ACACIA_FILING_CABINET);
                         output.accept(RFRBlocks.ACACIA_FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_BIRCH_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_BIRCH_FILING_CABINET);
                         output.accept(RFRBlocks.BIRCH_FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_CHERRY_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_CHERRY_FILING_CABINET);
                         output.accept(RFRBlocks.CHERRY_FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_CRIMSON_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_CRIMSON_FILING_CABINET);
                         output.accept(RFRBlocks.CRIMSON_FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_DARK_OAK_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_DARK_OAK_FILING_CABINET);
                         output.accept(RFRBlocks.DARK_OAK_FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_JUNGLE_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_JUNGLE_FILING_CABINET);
                         output.accept(RFRBlocks.JUNGLE_FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_MANGROVE_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_MANGROVE_FILING_CABINET);
                         output.accept(RFRBlocks.MANGROVE_FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_OAK_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_OAK_FILING_CABINET);
                         output.accept(RFRBlocks.OAK_FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_PALE_OAK_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_PALE_OAK_FILING_CABINET);
                         output.accept(RFRBlocks.PALE_OAK_FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_SPRUCE_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_SPRUCE_FILING_CABINET);
                         output.accept(RFRBlocks.FILING_CABINET);
+
+                        output.accept(RFRBlocks.SINGLE_WARPED_FILING_CABINET);
+                        output.accept(RFRBlocks.DOUBLE_WARPED_FILING_CABINET);
                         output.accept(RFRBlocks.WARPED_FILING_CABINET);
+
                         output.accept(RFRBlocks.FILING_INDEX);
 
                         output.accept(RFRItems.FILING_FOLDER);

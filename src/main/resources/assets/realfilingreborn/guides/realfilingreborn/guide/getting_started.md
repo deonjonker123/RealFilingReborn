@@ -26,11 +26,11 @@ Alternatively, hold the item you wish to assign in your off-hand and an empty Fi
 
 <RecipeFor id="filing_cabinet" />
 
-Filing Cabinets come in all wood variants — they are functionally identical.
+Filing Cabinets come in all wood variants and three types — they are functionally identical.
 
 ## 4. Insert the Folder
 
-Right-click the Filing Cabinet with the Filing Folder in hand to insert it into an empty slot. A Filing Cabinet holds up to **4 folders**.
+Right-click the Filing Cabinet with the Filing Folder in hand to insert it into an empty slot. Filing Cabinets hold up to **4 folders**.
 
 ## 5. Start Storing
 

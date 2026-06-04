@@ -2,14 +2,19 @@ package com.misterd.realfilingreborn.capability;
 
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
+import com.misterd.realfilingreborn.blockentity.custom.SingleFilingCabinetBlockEntity;
+import com.misterd.realfilingreborn.blockentity.custom.DoubleFilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
@@ -37,6 +42,42 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
     private List<Map.Entry<Identifier, FilingIndexBlockEntity.FolderRef>> snapshot() {
         return snapshotRef.get();
     }
+
+    // --- Cabinet helpers ---
+
+    private boolean isSupportedCabinet(BlockEntity be) {
+        return be instanceof FilingCabinetBlockEntity
+                || be instanceof SingleFilingCabinetBlockEntity
+                || be instanceof DoubleFilingCabinetBlockEntity;
+    }
+
+    private boolean isLinkedToController(BlockEntity be) {
+        if (be instanceof FilingCabinetBlockEntity e) return e.isLinkedToController();
+        if (be instanceof SingleFilingCabinetBlockEntity e) return e.isLinkedToController();
+        if (be instanceof DoubleFilingCabinetBlockEntity e) return e.isLinkedToController();
+        return false;
+    }
+
+    private ItemStack getCabinetStack(BlockEntity be, int slot) {
+        if (be instanceof FilingCabinetBlockEntity e) return e.getStack(slot);
+        if (be instanceof SingleFilingCabinetBlockEntity e) return e.getStack(slot);
+        if (be instanceof DoubleFilingCabinetBlockEntity e) return e.getStack(slot);
+        return ItemStack.EMPTY;
+    }
+
+    private ItemStacksResourceHandler getCabinetInventory(BlockEntity be) {
+        if (be instanceof FilingCabinetBlockEntity e) return e.inventory;
+        if (be instanceof SingleFilingCabinetBlockEntity e) return e.inventory;
+        if (be instanceof DoubleFilingCabinetBlockEntity e) return e.inventory;
+        return null;
+    }
+
+    private BlockEntity getCabinet(BlockPos pos) {
+        BlockEntity be = level.getBlockEntity(pos);
+        return isSupportedCabinet(be) ? be : null;
+    }
+
+    // --- ResourceHandler impl ---
 
     @Override
     public int size() {
@@ -88,10 +129,10 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
         for (FilingIndexBlockEntity.FolderRef ref : refs) {
             if (remaining <= 0) break;
 
-            if (!(level.getBlockEntity(ref.cabinetPos()) instanceof FilingCabinetBlockEntity cabinet)) continue;
-            if (!cabinet.isLinkedToController()) continue;
+            BlockEntity cabinet = getCabinet(ref.cabinetPos());
+            if (cabinet == null || !isLinkedToController(cabinet)) continue;
 
-            ItemStack originalFolder = cabinet.getStack(ref.slot());
+            ItemStack originalFolder = getCabinetStack(cabinet, ref.slot());
             if (!(originalFolder.getItem() instanceof FilingFolderItem folder)) continue;
 
             FilingFolderItem.FolderContents contents = originalFolder.get(FilingFolderItem.FOLDER_CONTENTS.value());
@@ -105,9 +146,12 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
             updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                     new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
 
+            var inventory = getCabinetInventory(cabinet);
+            if (inventory == null) continue;
+
             try (Transaction innerTx = Transaction.open(tx)) {
-                cabinet.inventory.extract(ref.slot(), ItemResource.of(originalFolder), 1, innerTx);
-                cabinet.inventory.insert(ref.slot(), ItemResource.of(updatedFolder), 1, innerTx);
+                inventory.extract(ref.slot(), ItemResource.of(originalFolder), 1, innerTx);
+                inventory.insert(ref.slot(), ItemResource.of(updatedFolder), 1, innerTx);
                 innerTx.commit();
             }
 
@@ -138,10 +182,10 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
         for (FilingIndexBlockEntity.FolderRef ref : refs) {
             if (remaining <= 0) break;
 
-            if (!(level.getBlockEntity(ref.cabinetPos()) instanceof FilingCabinetBlockEntity cabinet)) continue;
-            if (!cabinet.isLinkedToController()) continue;
+            BlockEntity cabinet = getCabinet(ref.cabinetPos());
+            if (cabinet == null || !isLinkedToController(cabinet)) continue;
 
-            ItemStack originalFolder = cabinet.getStack(ref.slot());
+            ItemStack originalFolder = getCabinetStack(cabinet, ref.slot());
             if (!(originalFolder.getItem() instanceof FilingFolderItem)) continue;
 
             FilingFolderItem.FolderContents contents = originalFolder.get(FilingFolderItem.FOLDER_CONTENTS.value());
@@ -155,9 +199,12 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
             updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                     new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() - toExtract));
 
+            var inventory = getCabinetInventory(cabinet);
+            if (inventory == null) continue;
+
             try (Transaction innerTx = Transaction.open(tx)) {
-                cabinet.inventory.extract(ref.slot(), ItemResource.of(originalFolder), 1, innerTx);
-                cabinet.inventory.insert(ref.slot(), ItemResource.of(updatedFolder), 1, innerTx);
+                inventory.extract(ref.slot(), ItemResource.of(originalFolder), 1, innerTx);
+                inventory.insert(ref.slot(), ItemResource.of(updatedFolder), 1, innerTx);
                 innerTx.commit();
             }
 

@@ -2,7 +2,9 @@ package com.misterd.realfilingreborn;
 
 import com.misterd.realfilingreborn.block.RFRBlocks;
 import com.misterd.realfilingreborn.blockentity.RFRBlockEntities;
+import com.misterd.realfilingreborn.client.ber.DoubleFilingCabinetBlockEntityRenderer;
 import com.misterd.realfilingreborn.client.ber.FilingCabinetBlockEntityRenderer;
+import com.misterd.realfilingreborn.client.ber.SingleFilingCabinetBlockEntityRenderer;
 import com.misterd.realfilingreborn.component.RFRDataComponents;
 import com.misterd.realfilingreborn.gui.RFRMenuTypes;
 import com.misterd.realfilingreborn.gui.custom.*;
@@ -50,11 +52,15 @@ public class RealFilingReborn {
         @SubscribeEvent
         public static void registerBER(EntityRenderersEvent.RegisterRenderers event) {
             event.registerBlockEntityRenderer(RFRBlockEntities.FILING_CABINET_BE.get(), FilingCabinetBlockEntityRenderer::new);
+            event.registerBlockEntityRenderer(RFRBlockEntities.DOUBLE_FILING_CABINET_BE.get(), DoubleFilingCabinetBlockEntityRenderer::new);
+            event.registerBlockEntityRenderer(RFRBlockEntities.SINGLE_FILING_CABINET_BE.get(), SingleFilingCabinetBlockEntityRenderer::new);
         }
 
         @SubscribeEvent
         public static void registerScreens(RegisterMenuScreensEvent event) {
             event.register(RFRMenuTypes.FILING_CABINET_MENU.get(), FilingCabinetScreen::new);
+            event.register(RFRMenuTypes.DOUBLE_FILING_CABINET_MENU.get(), DoubleFilingCabinetScreen::new);
+            event.register(RFRMenuTypes.SINGLE_FILING_CABINET_MENU.get(), SingleFilingCabinetScreen::new);
             event.register(RFRMenuTypes.FILING_INDEX_MENU.get(), FilingIndexScreen::new);
             event.register(RFRMenuTypes.FILING_FOLDER_MENU.get(), FilingFolderScreen::new);
         }

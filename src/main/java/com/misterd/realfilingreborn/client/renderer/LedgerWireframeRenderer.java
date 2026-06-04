@@ -3,6 +3,8 @@ package com.misterd.realfilingreborn.client.renderer;
 import com.misterd.realfilingreborn.RealFilingReborn;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
+import com.misterd.realfilingreborn.blockentity.custom.SingleFilingCabinetBlockEntity;
+import com.misterd.realfilingreborn.blockentity.custom.DoubleFilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.component.RFRDataComponents;
 import com.misterd.realfilingreborn.component.custom.LedgerData;
 import com.misterd.realfilingreborn.item.custom.LedgerItem;
@@ -18,6 +20,7 @@ import net.minecraft.util.ARGB;
 import net.minecraft.util.context.ContextKey;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -59,9 +62,9 @@ public class LedgerWireframeRenderer {
 
                 Set<BlockPos> linked = indexEntity.getLinkedCabinets();
                 for (BlockPos cabinetPos : linked) {
-                    boolean valid = false;
-                    if (level.getBlockEntity(cabinetPos) instanceof FilingCabinetBlockEntity cab && cab.isLinkedToController()) valid = true;
-                    if (valid) boxes.add(new WireframeBox(new AABB(cabinetPos), ARGB.colorFromFloat(0.6f, 1f, 1f, 1f)));
+                    if (isLinkedCabinet(level.getBlockEntity(cabinetPos))) {
+                        boxes.add(new WireframeBox(new AABB(cabinetPos), ARGB.colorFromFloat(0.6f, 1f, 1f, 1f)));
+                    }
                 }
 
                 int range = indexEntity.getRange();
@@ -89,6 +92,13 @@ public class LedgerWireframeRenderer {
         }
 
         if (!boxes.isEmpty()) event.getRenderState().setRenderData(WIREFRAME_KEY, boxes);
+    }
+
+    private static boolean isLinkedCabinet(BlockEntity be) {
+        if (be instanceof FilingCabinetBlockEntity cab) return cab.isLinkedToController();
+        if (be instanceof SingleFilingCabinetBlockEntity cab) return cab.isLinkedToController();
+        if (be instanceof DoubleFilingCabinetBlockEntity cab) return cab.isLinkedToController();
+        return false;
     }
 
     @SubscribeEvent

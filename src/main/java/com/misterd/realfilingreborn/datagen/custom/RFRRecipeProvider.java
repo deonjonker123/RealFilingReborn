@@ -134,25 +134,8 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_quartz", has(Items.QUARTZ))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get())
-                .pattern("LLL")
-                .pattern("LBL")
-                .pattern("LLL")
-                .define('L', Items.SPRUCE_PLANKS)
-                .define('B', Tags.Items.CHESTS)
-                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(output);
-
-        shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get())
-                .pattern("LLL")
-                .pattern("LBL")
-                .pattern("LLL")
-                .define('L', ItemTags.PLANKS)
-                .define('B', Tags.Items.CHESTS)
-                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
-                .save(output, "realfilingreborn:zzz_filing_cabinet_from_wood");
-
-        shaped(RecipeCategory.MISC, RFRBlocks.ACACIA_FILING_CABINET.get())
+        // Single
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_ACACIA_FILING_CABINET.get())
                 .pattern("LLL")
                 .pattern("LBL")
                 .pattern("LLL")
@@ -161,7 +144,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.BIRCH_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_BIRCH_FILING_CABINET.get())
                 .pattern("LLL")
                 .pattern("LBL")
                 .pattern("LLL")
@@ -170,7 +153,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.CHERRY_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_CHERRY_FILING_CABINET.get())
                 .pattern("LLL")
                 .pattern("LBL")
                 .pattern("LLL")
@@ -179,7 +162,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.CRIMSON_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_CRIMSON_FILING_CABINET.get())
                 .pattern("LLL")
                 .pattern("LBL")
                 .pattern("LLL")
@@ -188,7 +171,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.DARK_OAK_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_DARK_OAK_FILING_CABINET.get())
                 .pattern("LLL")
                 .pattern("LBL")
                 .pattern("LLL")
@@ -197,7 +180,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.JUNGLE_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_JUNGLE_FILING_CABINET.get())
                 .pattern("LLL")
                 .pattern("LBL")
                 .pattern("LLL")
@@ -206,7 +189,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.MANGROVE_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_MANGROVE_FILING_CABINET.get())
                 .pattern("LLL")
                 .pattern("LBL")
                 .pattern("LLL")
@@ -215,7 +198,7 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.OAK_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_OAK_FILING_CABINET.get())
                 .pattern("LLL")
                 .pattern("LBL")
                 .pattern("LLL")
@@ -224,7 +207,34 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.WARPED_FILING_CABINET.get())
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_PALE_OAK_FILING_CABINET.get())
+                .pattern("LLL")
+                .pattern("LBL")
+                .pattern("LLL")
+                .define('L', Items.PALE_OAK_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_SPRUCE_FILING_CABINET.get())
+                .pattern("LLL")
+                .pattern("LBL")
+                .pattern("LLL")
+                .define('L', Items.SPRUCE_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_SPRUCE_FILING_CABINET.get())
+                .pattern("LLL")
+                .pattern("LBL")
+                .pattern("LLL")
+                .define('L', ItemTags.PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output, "realfilingreborn:zzz_single_spruce_filing_cabinet_from_wood");
+
+        shaped(RecipeCategory.MISC, RFRBlocks.SINGLE_WARPED_FILING_CABINET.get())
                 .pattern("LLL")
                 .pattern("LBL")
                 .pattern("LLL")
@@ -233,16 +243,223 @@ public class RFRRecipeProvider extends RecipeProvider {
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
 
-        shaped(RecipeCategory.MISC, RFRBlocks.PALE_OAK_FILING_CABINET.get())
-                .pattern("LSL")
-                .pattern("PBP")
-                .pattern("LSL")
-                .define('L', Items.PALE_OAK_PLANKS)
-                .define('P', Items.PALE_OAK_LOG)
-                .define('S', Items.PALE_OAK_SLAB)
+        // Double
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_ACACIA_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.ACACIA_PLANKS)
                 .define('B', Tags.Items.CHESTS)
                 .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
                 .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_BIRCH_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.BIRCH_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_CHERRY_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.CHERRY_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_CRIMSON_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.CRIMSON_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_DARK_OAK_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.DARK_OAK_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_JUNGLE_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.JUNGLE_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_MANGROVE_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.MANGROVE_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_OAK_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.OAK_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_PALE_OAK_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.PALE_OAK_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_SPRUCE_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.SPRUCE_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_SPRUCE_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', ItemTags.PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output, "realfilingreborn:zzz_double_spruce_filing_cabinet_from_wood");
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DOUBLE_WARPED_FILING_CABINET.get(),2)
+                .pattern("LBL")
+                .pattern("LLL")
+                .pattern("LBL")
+                .define('L', Items.WARPED_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        // Quad
+        shaped(RecipeCategory.MISC, RFRBlocks.ACACIA_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.ACACIA_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.BIRCH_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.BIRCH_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.CHERRY_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.CHERRY_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.CRIMSON_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.CRIMSON_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.DARK_OAK_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.DARK_OAK_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.JUNGLE_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.JUNGLE_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.MANGROVE_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.MANGROVE_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.OAK_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.OAK_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.PALE_OAK_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.PALE_OAK_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.WARPED_FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.WARPED_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', Items.SPRUCE_PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output);
+
+        shaped(RecipeCategory.MISC, RFRBlocks.FILING_CABINET.get(), 4)
+                .pattern("BLB")
+                .pattern("LLL")
+                .pattern("BLB")
+                .define('L', ItemTags.PLANKS)
+                .define('B', Tags.Items.CHESTS)
+                .unlockedBy("has_filing_folder", has(RFRItems.FILING_FOLDER.get()))
+                .save(output, "realfilingreborn:zzz_filing_cabinet_from_wood");
 
         shaped(RecipeCategory.MISC, RFRBlocks.FILING_INDEX.get())
                 .pattern("IXI")

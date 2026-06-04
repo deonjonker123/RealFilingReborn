@@ -11,3 +11,12 @@ All notable changes to this project will be documented here.
 ## [2.0.0.1+mc-26.1.2] - 2026-05-26
 ### Fixed
 - Fallback recipe for cabinets
+
+## [2.0.1+mc-26.1.2] - 2026-06-04
+### Fixed
+- Pale oak cabinet recipes
+- Block properties refinements for all cabinet blocks
+
+### Added
+- Single Cabinets in all wood types - holds 1 folder
+- Double Cabinets in all wood types - holds 2 folders

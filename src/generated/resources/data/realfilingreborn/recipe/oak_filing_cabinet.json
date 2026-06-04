@@ -6,11 +6,12 @@
     "L": "minecraft:oak_planks"
   },
   "pattern": [
+    "BLB",
     "LLL",
-    "LBL",
-    "LLL"
+    "BLB"
   ],
   "result": {
+    "count": 4,
     "id": "realfilingreborn:oak_filing_cabinet"
   }
 }

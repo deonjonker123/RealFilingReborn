@@ -6,11 +6,12 @@
     "L": "minecraft:dark_oak_planks"
   },
   "pattern": [
+    "BLB",
     "LLL",
-    "LBL",
-    "LLL"
+    "BLB"
   ],
   "result": {
+    "count": 4,
     "id": "realfilingreborn:dark_oak_filing_cabinet"
   }
 }

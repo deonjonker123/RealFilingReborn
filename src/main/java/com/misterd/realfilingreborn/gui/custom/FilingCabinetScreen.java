@@ -9,11 +9,11 @@ import net.minecraft.world.entity.player.Inventory;
 
 public class FilingCabinetScreen extends AbstractContainerScreen<FilingCabinetMenu> {
     private static final Identifier GUI_TEXTURE =
-            Identifier.fromNamespaceAndPath("realfilingreborn", "textures/gui/cabinet_gui.png");
+            Identifier.fromNamespaceAndPath("realfilingreborn", "textures/gui/quad_cabinet_gui.png");
 
     public FilingCabinetScreen(FilingCabinetMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title, 176, 145);
-        this.inventoryLabelY = 145 - 94;
+        super(menu, playerInventory, title, 176, 165);
+        this.inventoryLabelY = 165 - 94;
     }
 
     @Override

@@ -16,13 +16,39 @@ item_ids:
   - realfilingreborn:mangrove_filing_cabinet
   - realfilingreborn:pale_oak_filing_cabinet
   - realfilingreborn:warped_filing_cabinet
+  - realfilingreborn:single_spruce_filing_cabinet
+  - realfilingreborn:single_oak_filing_cabinet
+  - realfilingreborn:single_acacia_filing_cabinet
+  - realfilingreborn:single_birch_filing_cabinet
+  - realfilingreborn:single_cherry_filing_cabinet
+  - realfilingreborn:single_crimson_filing_cabinet
+  - realfilingreborn:single_dark_oak_filing_cabinet
+  - realfilingreborn:single_jungle_filing_cabinet
+  - realfilingreborn:single_mangrove_filing_cabinet
+  - realfilingreborn:single_pale_oak_filing_cabinet
+  - realfilingreborn:single_warped_filing_cabinet
+  - realfilingreborn:double_spruce_filing_cabinet
+  - realfilingreborn:double_oak_filing_cabinet
+  - realfilingreborn:double_acacia_filing_cabinet
+  - realfilingreborn:double_birch_filing_cabinet
+  - realfilingreborn:double_cherry_filing_cabinet
+  - realfilingreborn:double_crimson_filing_cabinet
+  - realfilingreborn:double_dark_oak_filing_cabinet
+  - realfilingreborn:double_jungle_filing_cabinet
+  - realfilingreborn:double_mangrove_filing_cabinet
+  - realfilingreborn:double_pale_oak_filing_cabinet
+  - realfilingreborn:double_warped_filing_cabinet
 ---
 
-# Filing Cabinet
+# Filing Cabinets
 
-The Filing Cabinet holds up to **4 Filing Folders**. It is available in all wood variants — they are functionally identical.
+The Filing Cabinet holds up to **4 Filing Folders**. It is available in three types (Single - 1 Folder, Double - 2 Folders and Quad - 4 Folders) and in all wood variants — they are functionally identical. 
 
+<Row>
+<RecipeFor id="single_spruce_filing_cabinet" />
+<RecipeFor id="double_spruce_filing_cabinet" />
 <RecipeFor id="filing_cabinet" />
+</Row>
 
 ## Interaction
 

@@ -6,11 +6,12 @@
     "L": "minecraft:spruce_planks"
   },
   "pattern": [
+    "BLB",
     "LLL",
-    "LBL",
-    "LLL"
+    "BLB"
   ],
   "result": {
+    "count": 4,
     "id": "realfilingreborn:filing_cabinet"
   }
 }

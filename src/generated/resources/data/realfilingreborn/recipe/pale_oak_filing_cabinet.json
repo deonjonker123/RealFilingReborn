@@ -3,16 +3,15 @@
   "category": "misc",
   "key": {
     "B": "#c:chests",
-    "L": "minecraft:pale_oak_planks",
-    "P": "minecraft:pale_oak_log",
-    "S": "minecraft:pale_oak_slab"
+    "L": "minecraft:pale_oak_planks"
   },
   "pattern": [
-    "LSL",
-    "PBP",
-    "LSL"
+    "BLB",
+    "LLL",
+    "BLB"
   ],
   "result": {
+    "count": 4,
     "id": "realfilingreborn:pale_oak_filing_cabinet"
   }
 }

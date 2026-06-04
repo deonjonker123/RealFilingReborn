@@ -18,6 +18,12 @@ public class RFRMenuTypes {
     public static final DeferredHolder<MenuType<?>, MenuType<FilingCabinetMenu>> FILING_CABINET_MENU =
             registerMenuType("filing_cabinet_menu", FilingCabinetMenu::new);
 
+    public static final DeferredHolder<MenuType<?>, MenuType<DoubleFilingCabinetMenu>> DOUBLE_FILING_CABINET_MENU =
+            registerMenuType("double_filing_cabinet_menu", DoubleFilingCabinetMenu::new);
+
+    public static final DeferredHolder<MenuType<?>, MenuType<SingleFilingCabinetMenu>> SINGLE_FILING_CABINET_MENU =
+            registerMenuType("single_filing_cabinet_menu", SingleFilingCabinetMenu::new);
+
     public static final DeferredHolder<MenuType<?>, MenuType<FilingIndexMenu>> FILING_INDEX_MENU =
             registerMenuType("filing_index_menu", FilingIndexMenu::new);
 

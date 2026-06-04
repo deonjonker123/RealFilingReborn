@@ -6,11 +6,12 @@
     "L": "minecraft:mangrove_planks"
   },
   "pattern": [
+    "BLB",
     "LLL",
-    "LBL",
-    "LLL"
+    "BLB"
   ],
   "result": {
+    "count": 4,
     "id": "realfilingreborn:mangrove_filing_cabinet"
   }
 }

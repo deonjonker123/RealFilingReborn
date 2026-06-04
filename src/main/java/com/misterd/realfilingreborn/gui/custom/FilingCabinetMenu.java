@@ -41,7 +41,15 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
         addPlayerHotbar(inv);
 
         for (int i = 0; i < 4; i++) {
-            addSlot(new CabinetSlot(this.blockEntity, i, 53 + i * 18, 23));
+            int col = i % 2;
+            int row = i / 2;
+
+            addSlot(new CabinetSlot(
+                    this.blockEntity,
+                    i,
+                    71 + col * 18,
+                    24 + row * 18
+            ));
         }
     }
 
@@ -84,14 +92,14 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
     private void addPlayerInventory(Inventory playerInventory) {
         for (int row = 0; row < PLAYER_INVENTORY_ROW_COUNT; row++) {
             for (int col = 0; col < PLAYER_INVENTORY_COLUMN_COUNT; col++) {
-                addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 61 + row * 18));
+                addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 81 + row * 18));
             }
         }
     }
 
     private void addPlayerHotbar(Inventory playerInventory) {
         for (int i = 0; i < HOTBAR_SLOT_COUNT; i++) {
-            addSlot(new Slot(playerInventory, i, 8 + i * 18, 119));
+            addSlot(new Slot(playerInventory, i, 8 + i * 18, 139));
         }
     }
 
