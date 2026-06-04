@@ -7,8 +7,10 @@ Real Filing Reborn is a storage mod built around **Filing Folders** — items th
 ## Features
 
 ### Filing Cabinet
-
-- Holds up to **4 folders**
+Filing cabinets come in three types:
+- Single Cabinet - Holds 1 folder
+- Double Cabinet - Holds 2 folders
+- Quad Cabinet - Holds 4 folders
 - Fully compatible with automation (hoppers, pipes, etc.)
 - **Right-click** to insert items directly into a matching folder
 - **Right-click** with a folder to insert it into an empty slot
