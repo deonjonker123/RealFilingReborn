@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "#c:chests",
+    "L": "minecraft:oak_planks"
+  },
+  "pattern": [
+    "LLL",
+    "LBL",
+    "LLL"
+  ],
+  "result": {
+    "id": "realfilingreborn:single_oak_filing_cabinet"
+  }
+}

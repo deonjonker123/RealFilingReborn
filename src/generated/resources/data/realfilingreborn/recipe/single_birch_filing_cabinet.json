@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "#c:chests",
+    "L": "minecraft:birch_planks"
+  },
+  "pattern": [
+    "LLL",
+    "LBL",
+    "LLL"
+  ],
+  "result": {
+    "id": "realfilingreborn:single_birch_filing_cabinet"
+  }
+}

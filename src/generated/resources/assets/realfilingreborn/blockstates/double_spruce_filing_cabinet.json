@@ -1,0 +1,19 @@
+{
+  "variants": {
+    "facing=east": {
+      "model": "realfilingreborn:block/double_spruce_filing_cabinet",
+      "y": 90
+    },
+    "facing=north": {
+      "model": "realfilingreborn:block/double_spruce_filing_cabinet"
+    },
+    "facing=south": {
+      "model": "realfilingreborn:block/double_spruce_filing_cabinet",
+      "y": 180
+    },
+    "facing=west": {
+      "model": "realfilingreborn:block/double_spruce_filing_cabinet",
+      "y": 270
+    }
+  }
+}
