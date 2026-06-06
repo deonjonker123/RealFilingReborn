@@ -1,7 +1,9 @@
 package com.misterd.realfilingreborn.block.custom;
 
+import com.misterd.realfilingreborn.blockentity.custom.DoubleFilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
+import com.misterd.realfilingreborn.blockentity.custom.SingleFilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.component.RFRDataComponents;
 import com.misterd.realfilingreborn.component.custom.LedgerData;
 import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
@@ -21,6 +23,7 @@ import net.minecraft.world.Containers;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -39,10 +42,14 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nullable;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 public class FilingIndexBlock extends BaseEntityBlock {
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
@@ -140,62 +147,212 @@ public class FilingIndexBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hitResult) {
+    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level,
+                                          BlockPos pos, Player player,
+                                          InteractionHand hand, BlockHitResult hitResult) {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
-        if (!(level.getBlockEntity(pos) instanceof FilingIndexBlockEntity index)) return InteractionResult.FAIL;
+        if (!(level.getBlockEntity(pos) instanceof FilingIndexBlockEntity index))
+            return InteractionResult.FAIL;
 
         if (player.isCrouching()) {
-            ((ServerPlayer) player).openMenu(new SimpleMenuProvider(index,
-                    Component.translatable("menu.realfilingreborn.filing_index")), pos);
+            openMenu(index, (ServerPlayer) player, pos, level);
             return InteractionResult.SUCCESS;
         }
 
         ItemStack heldItem = player.getItemInHand(hand);
+        depositItem(player, hand, heldItem, index, level, pos);
 
-        if (!heldItem.isEmpty() && !(heldItem.getItem() instanceof FilingFolderItem) && !FilingFolderItem.hasSignificantNBT(heldItem)) {
-            Identifier itemId = BuiltInRegistries.ITEM.getKey(heldItem.getItem());
-            FilingIndexBlockEntity.FolderRef ref = index.getFolderRef(itemId);
+        return InteractionResult.SUCCESS;
+    }
 
-            if (ref != null && level.getBlockEntity(ref.cabinetPos()) instanceof FilingCabinetBlockEntity cabinet && cabinet.isLinkedToController()) {
-                ItemStack folderStack = cabinet.getStack(ref.slot());
-                if (folderStack.getItem() instanceof FilingFolderItem folder) {
-                    FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-                    if (contents != null && contents.storedItemId().isPresent() && contents.storedItemId().get().equals(itemId)) {
-                        int toAdd = Math.min(heldItem.getCount(), folder.getCapacity() - contents.count());
-                        if (toAdd > 0) {
-                            ItemStack updatedFolder = folderStack.copy();
-                            updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
-                                    new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
-                            try (Transaction tx = Transaction.openRoot()) {
-                                cabinet.inventory.extract(ref.slot(), ItemResource.of(folderStack), 1, tx);
-                                cabinet.inventory.insert(ref.slot(), ItemResource.of(updatedFolder), 1, tx);
-                                tx.commit();
-                            }
-                            heldItem.shrink(toAdd);
-                            level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
-                            index.scheduleFlush(ref.cabinetPos());
-                            return InteractionResult.SUCCESS;
-                        }
-                    } else if (contents != null && contents.storedItemId().isEmpty()) {
-                        ItemStack updatedFolder = folderStack.copy();
-                        updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
-                                new FilingFolderItem.FolderContents(Optional.of(itemId), heldItem.getCount()));
-                        try (Transaction tx = Transaction.openRoot()) {
-                            cabinet.inventory.extract(ref.slot(), ItemResource.of(folderStack), 1, tx);
-                            cabinet.inventory.insert(ref.slot(), ItemResource.of(updatedFolder), 1, tx);
-                            tx.commit();
-                        }
-                        heldItem.shrink(heldItem.getCount());
-                        level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
-                        index.scheduleFlush(ref.cabinetPos());
-                        return InteractionResult.SUCCESS;
-                    }
+    private boolean depositItem(Player player, InteractionHand hand, ItemStack heldItem,
+                                FilingIndexBlockEntity index, Level level, BlockPos pos) {
+        if (level.isClientSide()) return false;
+
+        long gameTime = level.getGameTime();
+        boolean doubleClick = gameTime - index.getLastDepositTime() < 10;
+        index.setLastDepositTime(gameTime);
+
+        if (doubleClick) {
+            return depositAllInventoryItemsIntoNetwork(player, index, level, pos);
+        }
+
+        if (heldItem.isEmpty()) return false;
+
+        Identifier itemId = BuiltInRegistries.ITEM.getKey(heldItem.getItem());
+        FilingIndexBlockEntity.FolderRef ref = index.getFolderRef(itemId);
+        return depositStackIntoNetwork(heldItem, itemId, ref, index, player, hand, level, pos);
+    }
+
+    private boolean depositAllInventoryItemsIntoNetwork(Player player, FilingIndexBlockEntity index, Level level, BlockPos pos) {
+        Inventory inv = player.getInventory();
+        boolean depositedAnything = false;
+        Set<Identifier> processedItems = new HashSet<>();
+
+        for (int i = 0; i < inv.getContainerSize(); i++) {
+            ItemStack playerStack = inv.getItem(i);
+            if (playerStack.isEmpty()) continue;
+
+            Identifier itemId = BuiltInRegistries.ITEM.getKey(playerStack.getItem());
+
+            if (processedItems.contains(itemId)) continue;
+            processedItems.add(itemId);
+
+            List<FilingIndexBlockEntity.FolderRef> allRefs = index.getFolderRefs(itemId);
+            if (allRefs == null || allRefs.isEmpty()) continue;
+
+            int remainingInStack = playerStack.getCount();
+            if (remainingInStack <= 0) continue;
+
+            for (FilingIndexBlockEntity.FolderRef ref : allRefs) {
+                if (remainingInStack <= 0) break;
+
+                BlockEntity be = level.getBlockEntity(ref.cabinetPos());
+
+                ItemStack folderStack;
+                ItemStacksResourceHandler inventory;
+                FilingFolderItem folder;
+
+                if (be instanceof FilingCabinetBlockEntity cabinet && cabinet.isLinkedToController()) {
+                    folderStack = cabinet.getStack(ref.slot());
+                    inventory = cabinet.inventory;
+                } else if (be instanceof SingleFilingCabinetBlockEntity cabinet && cabinet.isLinkedToController()) {
+                    folderStack = cabinet.getStack(ref.slot());
+                    inventory = cabinet.inventory;
+                } else if (be instanceof DoubleFilingCabinetBlockEntity cabinet && cabinet.isLinkedToController()) {
+                    folderStack = cabinet.getStack(ref.slot());
+                    inventory = cabinet.inventory;
+                } else {
+                    continue;
                 }
+
+                if (!(folderStack.getItem() instanceof FilingFolderItem folderItem)) continue;
+                folder = folderItem;
+
+                FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+                if (contents == null || contents.storedItemId().isEmpty()) continue;
+                if (!contents.storedItemId().get().equals(itemId)) continue;
+
+                int remainingSpace = folder.getCapacity() - contents.count();
+                if (remainingSpace <= 0) continue;
+
+                int toAdd = Math.min(remainingInStack, remainingSpace);
+                if (toAdd <= 0) continue;
+
+                ItemStack updatedFolder = folderStack.copy();
+                updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
+                        new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd)
+                );
+
+                swapFolder(inventory, ref.slot(), folderStack, updatedFolder);
+
+                remainingInStack -= toAdd;
+                playerStack.shrink(toAdd);
+                if (playerStack.isEmpty()) {
+                    inv.setItem(i, ItemStack.EMPTY);
+                }
+
+                depositedAnything = true;
+                index.scheduleFlush(ref.cabinetPos());
             }
         }
 
-        ((ServerPlayer) player).openMenu(new SimpleMenuProvider(index,
-                Component.translatable("menu.realfilingreborn.filing_index")), pos);
-        return InteractionResult.SUCCESS;
+        if (depositedAnything) {
+            level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
+        }
+
+        return depositedAnything;
+    }
+
+    private boolean depositStackIntoNetwork(ItemStack heldItem, Identifier itemId, FilingIndexBlockEntity.FolderRef ref, FilingIndexBlockEntity index, Player player, InteractionHand hand, Level level, BlockPos pos) {
+
+        if (ref == null) return false;
+
+        BlockEntity be = level.getBlockEntity(ref.cabinetPos());
+
+        ItemStack folderStack;
+        ItemStacksResourceHandler inventory;
+
+        if (be instanceof FilingCabinetBlockEntity cabinet) {
+            if (!cabinet.isLinkedToController()) return false;
+            folderStack = cabinet.getStack(ref.slot());
+            inventory = cabinet.inventory;
+        }
+        else if (be instanceof SingleFilingCabinetBlockEntity cabinet) {
+            if (!cabinet.isLinkedToController()) return false;
+            folderStack = cabinet.getStack(ref.slot());
+            inventory = cabinet.inventory;
+        }
+        else if (be instanceof DoubleFilingCabinetBlockEntity cabinet) {
+            if (!cabinet.isLinkedToController()) return false;
+            folderStack = cabinet.getStack(ref.slot());
+            inventory = cabinet.inventory;
+        }
+        else {
+            return false;
+        }
+
+        if (!(folderStack.getItem() instanceof FilingFolderItem folder))
+            return false;
+
+        FilingFolderItem.FolderContents contents =
+                folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
+
+        if (contents == null)
+            return false;
+
+        if (contents.storedItemId().isEmpty()) {
+            ItemStack updatedFolder = folderStack.copy();
+            updatedFolder.set(
+                    FilingFolderItem.FOLDER_CONTENTS.value(),
+                    new FilingFolderItem.FolderContents(
+                            Optional.of(itemId),
+                            heldItem.getCount()
+                    )
+            );
+
+            swapFolder(inventory, ref.slot(), folderStack, updatedFolder);
+            player.setItemInHand(hand, ItemStack.EMPTY);
+            level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
+            index.scheduleFlush(ref.cabinetPos());
+            return true;
+        }
+
+        if (contents.storedItemId().get().equals(itemId)) {
+
+            int toAdd = Math.min(heldItem.getCount(), folder.getCapacity() - contents.count());
+
+            if (toAdd <= 0)
+                return false;
+
+            ItemStack updatedFolder = folderStack.copy();
+            updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(), new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
+            swapFolder(inventory, ref.slot(), folderStack, updatedFolder);
+            heldItem.shrink(toAdd);
+
+            if (heldItem.isEmpty()) {
+                player.setItemInHand(hand, ItemStack.EMPTY);
+            }
+
+            level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
+            index.scheduleFlush(ref.cabinetPos());
+            return true;
+        }
+
+        return false;
+    }
+
+    private void swapFolder(ItemStacksResourceHandler inventory, int slot, ItemStack oldFolder, ItemStack newFolder) {
+
+        try (Transaction tx = Transaction.openRoot()) {
+            inventory.extract(slot, ItemResource.of(oldFolder), 1, tx);
+            inventory.insert(slot, ItemResource.of(newFolder), 1, tx);
+            tx.commit();
+        }
+    }
+
+    private void openMenu(FilingIndexBlockEntity index, ServerPlayer player, BlockPos pos, Level level) {
+        player.openMenu(new SimpleMenuProvider(index, Component.translatable("menu.realfilingreborn.filing_index")), pos);
+        level.playSound(null, pos, SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 }

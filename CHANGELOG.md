@@ -20,3 +20,7 @@ All notable changes to this project will be documented here.
 ### Added
 - Single Cabinets in all wood types - holds 1 folder
 - Double Cabinets in all wood types - holds 2 folders
+
+## [2.0.2+mc-26.1.2] - 2026-06-06
+### Added
+- Proper Cabinet and Index interaction flows

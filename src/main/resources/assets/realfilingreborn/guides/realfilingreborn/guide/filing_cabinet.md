@@ -55,6 +55,7 @@ The Filing Cabinet holds up to **4 Filing Folders**. It is available in three ty
 | Action | Result |
 |--------|--------|
 | Right-click with items | Inserts held items into a matching Filing Folder |
+| **Double-right-click** | **Deposits ALL items in your entire inventory into their matching Filing Folders** |
 | Right-click with a Filing Folder | Inserts the Filing Folder into an empty slot |
 | Shift + Right-click | Opens the Filing Cabinet GUI |
 

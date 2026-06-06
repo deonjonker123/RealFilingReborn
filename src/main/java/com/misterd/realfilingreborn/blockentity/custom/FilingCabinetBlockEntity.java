@@ -35,6 +35,8 @@ import java.util.Optional;
 
 public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvider {
 
+    private long lastDepositTime = -100;
+
     @Nullable
     private BlockPos controllerPos = null;
 
@@ -161,6 +163,14 @@ public class FilingCabinetBlockEntity extends BlockEntity implements MenuProvide
         ItemResource res = inventory.getResource(slot);
         if (res.isEmpty()) return ItemStack.EMPTY;
         return res.toStack(inventory.getAmountAsInt(slot));
+    }
+
+    public long getLastDepositTime() {
+        return lastDepositTime;
+    }
+
+    public void setLastDepositTime(long time) {
+        lastDepositTime = time;
     }
 
     public void drops() {

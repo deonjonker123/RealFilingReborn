@@ -33,7 +33,8 @@ The Filing Index has a base range of **8 blocks**. Filing Cabinets outside this 
 
 | Action | Result |
 |--------|--------|
-| Right-click with items | Inserts held items into a matching Filing Folder across the network |
+| Right-click with items | Inserts held items into a matching Filing Folder (single deposit) |
+| **Double-right-click (any hand state)** | **Deposits ALL items in your entire inventory into their matching Filing Folders across all connected cabinets** |
 | Shift + Right-click | Opens the Filing Index GUI |
 
 Hoppers and pipes connected to the Filing Index will also route items into matching Filing Folders across the network automatically.

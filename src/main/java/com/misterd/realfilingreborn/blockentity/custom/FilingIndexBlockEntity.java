@@ -40,11 +40,13 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider {
 
+    private long lastDepositTime = -100;
+
     public record FolderRef(BlockPos cabinetPos, int slot, int count, int capacity) {}
 
     private final LinkedHashMap<Identifier, List<FolderRef>> itemIndex = new LinkedHashMap<>();
     private final List<Map.Entry<Identifier, FolderRef>> indexEntries = new ArrayList<>();
-    private boolean itemIndexDirty = true;
+    public boolean itemIndexDirty = true;
 
     private final Set<BlockPos> pendingFlush = Collections.synchronizedSet(new LinkedHashSet<>());
     private boolean flushScheduled = false;
@@ -403,6 +405,14 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
         } finally {
             cabinetLock.readLock().unlock();
         }
+    }
+
+    public long getLastDepositTime() {
+        return lastDepositTime;
+    }
+
+    public void setLastDepositTime(long time) {
+        lastDepositTime = time;
     }
 
     public void drops() {
