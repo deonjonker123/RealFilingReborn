@@ -24,3 +24,6 @@ All notable changes to this project will be documented here.
 ## [2.0.2+mc-26.1.2] - 2026-06-06
 ### Added
 - Proper Cabinet and Index interaction flows
+
+## [3.0.0+neoforge-mc26.2] - 2026-06-19
+- Port to 26.2
