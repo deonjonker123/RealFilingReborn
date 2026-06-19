@@ -43,8 +43,6 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
         return snapshotRef.get();
     }
 
-    // --- Cabinet helpers ---
-
     private boolean isSupportedCabinet(BlockEntity be) {
         return be instanceof FilingCabinetBlockEntity
                 || be instanceof SingleFilingCabinetBlockEntity
@@ -76,8 +74,6 @@ public class FilingIndexItemHandler implements ResourceHandler<ItemResource> {
         BlockEntity be = level.getBlockEntity(pos);
         return isSupportedCabinet(be) ? be : null;
     }
-
-    // --- ResourceHandler impl ---
 
     @Override
     public int size() {

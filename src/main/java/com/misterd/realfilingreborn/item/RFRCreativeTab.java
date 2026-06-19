@@ -76,9 +76,6 @@ public class RFRCreativeTab {
                         output.accept(RFRItems.IRON_RANGE_UPGRADE);
                         output.accept(RFRItems.DIAMOND_RANGE_UPGRADE);
                         output.accept(RFRItems.NETHERITE_RANGE_UPGRADE);
-                        output.accept(guideme.Guides.createGuideItem(
-                                Identifier.parse("realfilingreborn:guide")
-                        ));
                     }).build());
 
     public static void register(IEventBus eventBus) {

@@ -24,10 +24,3 @@ A powerful, organized, and automation-friendly storage mod built for modern Mine
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
-
-[[dependencies.${mod_id}]]
-modId = "guideme"
-type = "required"
-versionRange = "[26.1,)"
-ordering = "NONE"
-side = "BOTH"

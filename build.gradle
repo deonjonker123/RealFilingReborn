@@ -13,7 +13,7 @@ version = mod_version
 group = mod_group_id
 
 repositories {
-    mavenCentral()
+
 }
 
 base {
@@ -66,8 +66,7 @@ configurations {
 }
 
 dependencies {
-    compileOnly "org.appliedenergistics:guideme:${guideme}:api"
-    runtimeOnly "org.appliedenergistics:guideme:${guideme}"
+
 }
 
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
