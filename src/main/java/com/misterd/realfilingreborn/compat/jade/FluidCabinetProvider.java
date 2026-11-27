@@ -4,6 +4,7 @@ import com.misterd.realfilingreborn.blockentity.custom.FluidCabinetBlockEntity;
 import com.misterd.realfilingreborn.item.custom.FluidCanisterItem;
 import com.misterd.realfilingreborn.util.FluidHelper;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.network.chat.Component;
@@ -28,6 +29,12 @@ public enum FluidCabinetProvider implements IBlockComponentProvider, IServerData
 
         ListTag canisters = data.getList("canisters", 10);
         if (canisters.isEmpty()) return;
+
+        if (!Screen.hasShiftDown()) {
+            tooltip.add(Component.translatable("tooltip.realfilingreborn.jade.canister_summary", canisters.size()).withStyle(ChatFormatting.GRAY));
+            tooltip.add(RFRJadePlugin.holdShift());
+            return;
+        }
 
         for (int i = 0; i < canisters.size(); i++) {
             CompoundTag canisterTag = canisters.getCompound(i);

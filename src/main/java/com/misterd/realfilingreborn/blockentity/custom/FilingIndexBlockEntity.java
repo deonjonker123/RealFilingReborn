@@ -77,9 +77,18 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     private long lastUpdateTime = 0L;
     private static final long MIN_UPDATE_INTERVAL_MS = 100L;
     private boolean updateScheduled = false;
+    private long lastDepositTime = -100L;
+    private UUID lastDepositPlayer;
 
     public FilingIndexBlockEntity(BlockPos pos, BlockState blockState) {
         super(RFRBlockEntities.FILING_INDEX_BE.get(), pos, blockState);
+    }
+
+    public boolean registerDepositClick(Player player, long gameTime) {
+        boolean doubleClick = player.getUUID().equals(lastDepositPlayer) && gameTime - lastDepositTime < 10;
+        lastDepositTime = doubleClick ? -100L : gameTime;
+        lastDepositPlayer = player.getUUID();
+        return doubleClick;
     }
 
     public void scheduleFlush(BlockPos cabinetPos) {

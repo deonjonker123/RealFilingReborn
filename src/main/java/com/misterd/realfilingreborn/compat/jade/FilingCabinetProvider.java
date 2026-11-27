@@ -3,6 +3,7 @@ package com.misterd.realfilingreborn.compat.jade;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -30,8 +31,17 @@ public enum FilingCabinetProvider implements IBlockComponentProvider, IServerDat
         if (!data.contains("folders")) return;
 
         ListTag folders = data.getList("folders", 10);
-        if (folders.isEmpty()) {
+        int assigned = 0;
+        for (int i = 0; i < folders.size(); i++) {
+            if (folders.getCompound(i).contains("item_id")) assigned++;
+        }
+        if (assigned == 0) {
             tooltip.add(Component.translatable("tooltip.realfilingreborn.jade.empty_cabinet").withStyle(ChatFormatting.GRAY));
+            return;
+        }
+        if (!Screen.hasShiftDown()) {
+            tooltip.add(Component.translatable("tooltip.realfilingreborn.jade.folder_summary", assigned, folders.size()).withStyle(ChatFormatting.GRAY));
+            tooltip.add(RFRJadePlugin.holdShift());
             return;
         }
 
