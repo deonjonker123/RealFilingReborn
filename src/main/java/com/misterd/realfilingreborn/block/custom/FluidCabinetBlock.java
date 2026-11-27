@@ -183,7 +183,6 @@ public class FluidCabinetBlock extends BaseEntityBlock {
 
         if (!level.isClientSide()) {
             openFluidCabinetMenu(cabinet, (ServerPlayer) player, pos);
-            level.playSound(player, pos, SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.BLOCKS, 1.0F, 1.0F);
         }
         return ItemInteractionResult.SUCCESS;
     }
