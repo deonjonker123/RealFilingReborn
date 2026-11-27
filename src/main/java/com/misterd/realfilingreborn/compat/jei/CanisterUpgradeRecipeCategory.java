@@ -16,7 +16,6 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.ItemStack;
 
 public class CanisterUpgradeRecipeCategory implements IRecipeCategory<RFRJeiRecipes.CanisterUpgradeJeiRecipe> {
-
     public static final ResourceLocation UID =
             ResourceLocation.fromNamespaceAndPath("realfilingreborn", "canister_upgrade");
     public static final ResourceLocation TEXTURE =
@@ -46,10 +45,6 @@ public class CanisterUpgradeRecipeCategory implements IRecipeCategory<RFRJeiReci
                 .addItemStack(new ItemStack(recipe.input()));
 
         builder.addSlot(RecipeIngredientRole.INPUT, 28, 10)
-                .addItemStack(new ItemStack(recipe.material()));
-        builder.addSlot(RecipeIngredientRole.INPUT, 10, 28)
-                .addItemStack(new ItemStack(recipe.material()));
-        builder.addSlot(RecipeIngredientRole.INPUT, 28, 28)
                 .addItemStack(new ItemStack(recipe.material()));
 
         builder.addSlot(RecipeIngredientRole.OUTPUT, 92, 28)

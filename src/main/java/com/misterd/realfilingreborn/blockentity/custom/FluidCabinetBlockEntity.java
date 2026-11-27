@@ -36,11 +36,15 @@ import java.util.Map;
 import java.util.Optional;
 
 public class FluidCabinetBlockEntity extends BlockEntity implements MenuProvider {
-
     @Nullable
     private BlockPos controllerPos = null;
 
     public final ItemStackHandler inventory = new ItemStackHandler(4) {
+        @Override
+        public int getSlotLimit(int slot) {
+            return 1;
+        }
+
         @Override
         protected void onContentsChanged(int slot) {
             FluidCabinetBlockEntity.this.setChanged();
@@ -155,7 +159,6 @@ public class FluidCabinetBlockEntity extends BlockEntity implements MenuProvider
     }
 
     private static class FluidCabinetFluidHandler implements IFluidHandler {
-
         private final FluidCabinetBlockEntity cabinet;
         private final Direction side;
 
@@ -277,7 +280,6 @@ public class FluidCabinetBlockEntity extends BlockEntity implements MenuProvider
     }
 
     private static class FluidCabinetItemHandler implements IItemHandler {
-
         private final FluidCabinetBlockEntity cabinet;
         private final Direction side;
 

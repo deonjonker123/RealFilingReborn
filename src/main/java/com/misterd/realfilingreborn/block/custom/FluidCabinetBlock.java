@@ -42,7 +42,6 @@ import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class FluidCabinetBlock extends BaseEntityBlock {
-
     public static final DirectionProperty FACING;
     public static final VoxelShape SHAPE;
     public static final MapCodec<FluidCabinetBlock> CODEC;
@@ -157,8 +156,8 @@ public class FluidCabinetBlock extends BaseEntityBlock {
                 ItemStack canisterStack = cabinet.inventory.getStackInSlot(i);
                 if (!(canisterStack.getItem() instanceof FluidCanisterItem canister)) continue;
 
-                FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
-                if (contents == null) continue;
+                FluidCanisterItem.CanisterContents contents = canisterStack.getOrDefault(
+                        FluidCanisterItem.CANISTER_CONTENTS.value(), new FluidCanisterItem.CanisterContents(Optional.empty(), 0));
 
                 boolean isEmpty = contents.storedFluidId().isEmpty();
                 boolean matchesFluid = !isEmpty && contents.storedFluidId().get().equals(fluidId);
@@ -198,18 +197,18 @@ public class FluidCabinetBlock extends BaseEntityBlock {
         double faceX = switch (facing) {
             case NORTH -> 1.0 - relX;
             case SOUTH -> relX;
-            case EAST  -> 1.0 - relZ;
-            case WEST  -> relZ;
-            default    -> -1;
+            case EAST -> 1.0 - relZ;
+            case WEST -> relZ;
+            default -> -1;
         };
 
         if (faceX < 0) return -1;
         boolean isLeft = faceX < 0.5;
-        boolean isTop  = relY > 0.5;
+        boolean isTop = relY > 0.5;
 
-        if (isTop  && isLeft)  return 0;
-        if (isTop  && !isLeft) return 1;
-        if (!isTop && isLeft)  return 2;
+        if (isTop && isLeft) return 0;
+        if (isTop && !isLeft) return 1;
+        if (!isTop && isLeft) return 2;
         return 3;
     }
 

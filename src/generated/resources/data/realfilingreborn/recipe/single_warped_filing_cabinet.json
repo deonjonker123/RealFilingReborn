@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:chests"
+    },
+    "L": {
+      "item": "minecraft:warped_planks"
+    }
+  },
+  "pattern": [
+    "LLL",
+    "LBL",
+    "LLL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "realfilingreborn:single_warped_filing_cabinet"
+  }
+}

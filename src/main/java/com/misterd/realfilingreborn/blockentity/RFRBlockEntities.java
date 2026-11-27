@@ -6,6 +6,8 @@ import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FluidCabinetBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
@@ -21,16 +23,7 @@ public class RFRBlockEntities {
     public static final Supplier<BlockEntityType<FilingCabinetBlockEntity>> FILING_CABINET_BE =
             BLOCK_ENTITIES.register("filing_cabinet_be", () -> BlockEntityType.Builder.of(
                     FilingCabinetBlockEntity::new,
-                    RFRBlocks.FILING_CABINET.get(),
-                    RFRBlocks.ACACIA_FILING_CABINET.get(),
-                    RFRBlocks.BIRCH_FILING_CABINET.get(),
-                    RFRBlocks.CHERRY_FILING_CABINET.get(),
-                    RFRBlocks.CRIMSON_FILING_CABINET.get(),
-                    RFRBlocks.DARKOAK_FILING_CABINET.get(),
-                    RFRBlocks.JUNGLE_FILING_CABINET.get(),
-                    RFRBlocks.MANGROVE_FILING_CABINET.get(),
-                    RFRBlocks.OAK_FILING_CABINET.get(),
-                    RFRBlocks.WARPED_FILING_CABINET.get()
+                    RFRBlocks.ALL_CABINETS.stream().map(DeferredBlock::get).toArray(Block[]::new)
             ).build(null));
 
     public static final Supplier<BlockEntityType<FluidCabinetBlockEntity>> FLUID_CABINET_BE =

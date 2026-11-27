@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:chests"
+    },
+    "L": {
+      "item": "minecraft:dark_oak_planks"
+    }
+  },
+  "pattern": [
+    "LBL",
+    "LLL",
+    "LBL"
+  ],
+  "result": {
+    "count": 2,
+    "id": "realfilingreborn:double_dark_oak_filing_cabinet"
+  }
+}

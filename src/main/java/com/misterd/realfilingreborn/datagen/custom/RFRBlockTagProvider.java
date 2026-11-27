@@ -13,24 +13,14 @@ import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 public class RFRBlockTagProvider extends BlockTagsProvider {
-
     public RFRBlockTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, @Nullable ExistingFileHelper existingFileHelper) {
         super(output, lookupProvider, RealFilingReborn.MODID, existingFileHelper);
     }
 
     @Override
     protected void addTags(HolderLookup.Provider provider) {
-        tag(BlockTags.MINEABLE_WITH_AXE)
-                .add(RFRBlocks.FILING_CABINET.get())
-                .add(RFRBlocks.ACACIA_FILING_CABINET.get())
-                .add(RFRBlocks.BIRCH_FILING_CABINET.get())
-                .add(RFRBlocks.CHERRY_FILING_CABINET.get())
-                .add(RFRBlocks.CRIMSON_FILING_CABINET.get())
-                .add(RFRBlocks.DARKOAK_FILING_CABINET.get())
-                .add(RFRBlocks.JUNGLE_FILING_CABINET.get())
-                .add(RFRBlocks.MANGROVE_FILING_CABINET.get())
-                .add(RFRBlocks.OAK_FILING_CABINET.get())
-                .add(RFRBlocks.WARPED_FILING_CABINET.get());
+        var axe = tag(BlockTags.MINEABLE_WITH_AXE);
+        RFRBlocks.ALL_CABINETS.forEach(cabinet -> axe.add(cabinet.get()));
 
         tag(BlockTags.MINEABLE_WITH_PICKAXE)
                 .add(RFRBlocks.FLUID_CABINET.get())

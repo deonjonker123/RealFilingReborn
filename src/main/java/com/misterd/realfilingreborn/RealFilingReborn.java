@@ -21,6 +21,7 @@ import org.slf4j.Logger;
 import com.mojang.logging.LogUtils;
 
 import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.ModList;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.ModContainer;
@@ -43,6 +44,10 @@ public class RealFilingReborn {
         RFRDataComponents.register(modEventBus);
         RFRRecipes.register(modEventBus);
 
+        if (ModList.get().isLoaded("create")) {
+            com.misterd.realfilingreborn.compat.create.CreateCompat.init(modEventBus);
+        }
+
         FilingFolderItem.DATA_COMPONENTS.register(modEventBus);
         FluidCanisterItem.DATA_COMPONENTS.register(modEventBus);
 
@@ -50,7 +55,6 @@ public class RealFilingReborn {
     }
 
     private void commonSetup(FMLCommonSetupEvent event) {
-
     }
 
     @EventBusSubscriber(modid = MODID, value = Dist.CLIENT)

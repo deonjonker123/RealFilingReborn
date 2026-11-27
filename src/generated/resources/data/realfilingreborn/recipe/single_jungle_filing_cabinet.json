@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:chests"
+    },
+    "L": {
+      "item": "minecraft:jungle_planks"
+    }
+  },
+  "pattern": [
+    "LLL",
+    "LBL",
+    "LLL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "realfilingreborn:single_jungle_filing_cabinet"
+  }
+}

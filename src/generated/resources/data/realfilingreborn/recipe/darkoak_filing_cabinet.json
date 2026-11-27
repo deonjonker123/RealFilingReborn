@@ -3,22 +3,19 @@
   "category": "misc",
   "key": {
     "B": {
-      "item": "minecraft:barrel"
+      "tag": "c:chests"
     },
     "L": {
-      "item": "minecraft:stripped_dark_oak_log"
-    },
-    "P": {
       "item": "minecraft:dark_oak_planks"
     }
   },
   "pattern": [
-    "LPL",
-    "PBP",
-    "LPL"
+    "BLB",
+    "LLL",
+    "BLB"
   ],
   "result": {
-    "count": 1,
+    "count": 4,
     "id": "realfilingreborn:darkoak_filing_cabinet"
   }
 }

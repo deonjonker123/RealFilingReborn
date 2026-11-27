@@ -1,6 +1,5 @@
 {
   "values": [
-    "realfilingreborn:filing_cabinet",
     "realfilingreborn:acacia_filing_cabinet",
     "realfilingreborn:birch_filing_cabinet",
     "realfilingreborn:cherry_filing_cabinet",
@@ -9,6 +8,27 @@
     "realfilingreborn:jungle_filing_cabinet",
     "realfilingreborn:mangrove_filing_cabinet",
     "realfilingreborn:oak_filing_cabinet",
-    "realfilingreborn:warped_filing_cabinet"
+    "realfilingreborn:filing_cabinet",
+    "realfilingreborn:warped_filing_cabinet",
+    "realfilingreborn:single_acacia_filing_cabinet",
+    "realfilingreborn:single_birch_filing_cabinet",
+    "realfilingreborn:single_cherry_filing_cabinet",
+    "realfilingreborn:single_crimson_filing_cabinet",
+    "realfilingreborn:single_dark_oak_filing_cabinet",
+    "realfilingreborn:single_jungle_filing_cabinet",
+    "realfilingreborn:single_mangrove_filing_cabinet",
+    "realfilingreborn:single_oak_filing_cabinet",
+    "realfilingreborn:single_spruce_filing_cabinet",
+    "realfilingreborn:single_warped_filing_cabinet",
+    "realfilingreborn:double_acacia_filing_cabinet",
+    "realfilingreborn:double_birch_filing_cabinet",
+    "realfilingreborn:double_cherry_filing_cabinet",
+    "realfilingreborn:double_crimson_filing_cabinet",
+    "realfilingreborn:double_dark_oak_filing_cabinet",
+    "realfilingreborn:double_jungle_filing_cabinet",
+    "realfilingreborn:double_mangrove_filing_cabinet",
+    "realfilingreborn:double_oak_filing_cabinet",
+    "realfilingreborn:double_spruce_filing_cabinet",
+    "realfilingreborn:double_warped_filing_cabinet"
   ]
 }

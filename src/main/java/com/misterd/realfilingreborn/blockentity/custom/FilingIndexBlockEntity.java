@@ -40,9 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider {
-
     public record FolderRef(BlockPos cabinetPos, int slot, int count, int capacity) {}
-    private final LinkedHashMap<ResourceLocation, FolderRef> itemIndex = new LinkedHashMap<>();
+    private final LinkedHashMap<ResourceLocation, List<FolderRef>> itemIndex = new LinkedHashMap<>();
     private final List<Map.Entry<ResourceLocation, FolderRef>> indexEntries = new ArrayList<>();
     private boolean itemIndexDirty = true;
     private final Set<BlockPos> pendingFlush = Collections.synchronizedSet(new LinkedHashSet<>());
@@ -148,25 +147,37 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
     private void patchCabinetInIndex(BlockPos cabinetPos) {
         if (!(level.getBlockEntity(cabinetPos) instanceof FilingCabinetBlockEntity cabinet)) return;
         if (!cabinet.isLinkedToController()) return;
-        itemIndex.entrySet().removeIf(e -> e.getValue().cabinetPos().equals(cabinetPos));
-        readCabinetIntoIndex(cabinet, cabinetPos);
+        itemIndex.values().forEach(refs -> refs.removeIf(r -> r.cabinetPos().equals(cabinetPos)));
+        itemIndex.values().removeIf(List::isEmpty);
+        if (isInRange(cabinetPos)) readCabinetIntoIndex(cabinet, cabinetPos);
         cabinet.sendUpdatePacket();
     }
 
     private void readCabinetIntoIndex(FilingCabinetBlockEntity cabinet, BlockPos cabinetPos) {
-        for (int i = 0; i < 5; i++) {
+        for (int i = 0; i < cabinet.inventory.getSlots(); i++) {
             ItemStack folder = cabinet.inventory.getStackInSlot(i);
             if (!(folder.getItem() instanceof FilingFolderItem ff)) continue;
             FilingFolderItem.FolderContents contents = folder.get(FilingFolderItem.FOLDER_CONTENTS.value());
-            if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) continue;
+            if (contents == null || contents.storedItemId().isEmpty()) continue;
             ResourceLocation itemId = contents.storedItemId().get();
-            itemIndex.putIfAbsent(itemId, new FolderRef(cabinetPos, i, contents.count(), ff.getCapacity()));
+            itemIndex.computeIfAbsent(itemId, k -> new ArrayList<>())
+                    .add(new FolderRef(cabinetPos, i, contents.count(), ff.getCapacity()));
         }
     }
 
     private void rebuildIndexEntries() {
         indexEntries.clear();
-        indexEntries.addAll(itemIndex.entrySet());
+        for (Map.Entry<ResourceLocation, List<FolderRef>> e : itemIndex.entrySet()) {
+            List<FolderRef> refs = e.getValue();
+            long count = 0, capacity = 0;
+            for (FolderRef ref : refs) {
+                count += ref.count();
+                capacity += ref.capacity();
+            }
+            FolderRef total = new FolderRef(refs.get(0).cabinetPos(), refs.get(0).slot(),
+                    (int) Math.min(count, Integer.MAX_VALUE), (int) Math.min(capacity, Integer.MAX_VALUE));
+            indexEntries.add(Map.entry(e.getKey(), total));
+        }
     }
 
     public List<Map.Entry<ResourceLocation, FolderRef>> getIndexEntries() {
@@ -179,10 +190,9 @@ public class FilingIndexBlockEntity extends BlockEntity implements MenuProvider 
         return indexEntries.size();
     }
 
-    @Nullable
-    public FolderRef getFolderRef(ResourceLocation itemId) {
+    public List<FolderRef> getFolderRefs(ResourceLocation itemId) {
         if (itemIndexDirty) rebuildItemIndex();
-        return itemIndex.get(itemId);
+        return itemIndex.getOrDefault(itemId, List.of());
     }
 
     public boolean isInRange(BlockPos cabinetPos) {

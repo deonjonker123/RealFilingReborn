@@ -9,7 +9,11 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
 public class FilingCabinetScreen extends AbstractContainerScreen<FilingCabinetMenu> {
-    private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath("realfilingreborn", "textures/gui/filing_cabinet_gui.png");
+    private static final ResourceLocation SINGLE_TEXTURE = ResourceLocation.fromNamespaceAndPath("realfilingreborn", "textures/gui/single_cabinet_gui.png");
+    private static final ResourceLocation DOUBLE_TEXTURE = ResourceLocation.fromNamespaceAndPath("realfilingreborn", "textures/gui/double_cabinet_gui.png");
+    private static final ResourceLocation QUAD_TEXTURE = ResourceLocation.fromNamespaceAndPath("realfilingreborn", "textures/gui/quad_cabinet_gui.png");
+
+    private final ResourceLocation guiTexture;
 
     protected void init() {
         super.init();
@@ -18,17 +22,22 @@ public class FilingCabinetScreen extends AbstractContainerScreen<FilingCabinetMe
 
     public FilingCabinetScreen(FilingCabinetMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
-        this.imageHeight = 145;
+        this.guiTexture = switch (menu.getCabinetSlotCount()) {
+            case 1 -> SINGLE_TEXTURE;
+            case 2 -> DOUBLE_TEXTURE;
+            default -> QUAD_TEXTURE;
+        };
+        this.imageHeight = 165;
         this.inventoryLabelY = this.imageHeight - 94;
     }
 
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         RenderSystem.setShader(GameRenderer::getPositionTexShader);
         RenderSystem.setShaderColor(1.0F, 1.0F, 1.0F, 1.0F);
-        RenderSystem.setShaderTexture(0, GUI_TEXTURE);
+        RenderSystem.setShaderTexture(0, guiTexture);
         int x = (this.width - this.imageWidth) / 2;
         int y = (this.height - this.imageHeight) / 2;
-        guiGraphics.blit(GUI_TEXTURE, x, y, 0, 0, this.imageWidth, this.imageHeight);
+        guiGraphics.blit(guiTexture, x, y, 0, 0, this.imageWidth, this.imageHeight);
     }
 
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {

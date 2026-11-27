@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": {
+      "tag": "c:chests"
+    },
+    "L": {
+      "item": "minecraft:cherry_planks"
+    }
+  },
+  "pattern": [
+    "LLL",
+    "LBL",
+    "LLL"
+  ],
+  "result": {
+    "count": 1,
+    "id": "realfilingreborn:single_cherry_filing_cabinet"
+  }
+}

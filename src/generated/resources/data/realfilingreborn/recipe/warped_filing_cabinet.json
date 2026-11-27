@@ -3,22 +3,19 @@
   "category": "misc",
   "key": {
     "B": {
-      "item": "minecraft:barrel"
+      "tag": "c:chests"
     },
     "L": {
-      "item": "minecraft:stripped_warped_stem"
-    },
-    "P": {
       "item": "minecraft:warped_planks"
     }
   },
   "pattern": [
-    "LPL",
-    "PBP",
-    "LPL"
+    "BLB",
+    "LLL",
+    "BLB"
   ],
   "result": {
-    "count": 1,
+    "count": 4,
     "id": "realfilingreborn:warped_filing_cabinet"
   }
 }

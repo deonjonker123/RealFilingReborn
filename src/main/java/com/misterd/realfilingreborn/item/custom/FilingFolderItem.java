@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -18,12 +17,13 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.component.ItemLore;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -32,13 +32,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class FilingFolderItem extends Item {
-
     public enum FolderTier {
-        BASE      (4_096),
-        COPPER    (32_768),
-        IRON      (262_144),
-        GOLD      (2_097_152),
-        DIAMOND   (16_777_216),
+        BASE (4_096),
+        COPPER (32_768),
+        IRON (262_144),
+        GOLD (2_097_152),
+        DIAMOND (16_777_216),
         NETHERITE (134_217_728);
 
         private final int capacity;
@@ -56,8 +55,7 @@ public class FilingFolderItem extends Item {
 
     private static final Codec<FolderContents> FOLDER_CONTENTS_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    ResourceLocation.CODEC.optionalFieldOf("storedItemId").forGetter(FolderContents::storedItemId),
-                    Codec.INT.fieldOf("count").forGetter(FolderContents::count)
+                    ResourceLocation.CODEC.optionalFieldOf("storedItemId").forGetter(FolderContents::storedItemId), Codec.INT.fieldOf("count").forGetter(FolderContents::count)
             ).apply(instance, FolderContents::new));
 
     public static final StreamCodec<ByteBuf, ResourceLocation> RESOURCE_LOCATION_STREAM_CODEC =
@@ -65,9 +63,7 @@ public class FilingFolderItem extends Item {
 
     private static final StreamCodec<ByteBuf, FolderContents> FOLDER_CONTENTS_STREAM_CODEC =
             StreamCodec.composite(
-                    ByteBufCodecs.optional(RESOURCE_LOCATION_STREAM_CODEC), FolderContents::storedItemId,
-                    ByteBufCodecs.INT, FolderContents::count,
-                    FolderContents::new);
+                    ByteBufCodecs.optional(RESOURCE_LOCATION_STREAM_CODEC), FolderContents::storedItemId, ByteBufCodecs.INT, FolderContents::count, FolderContents::new);
 
     public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS =
             DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, "realfilingreborn");
@@ -98,21 +94,7 @@ public class FilingFolderItem extends Item {
 
     public static boolean hasSignificantNBT(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        if (stack.isDamaged()) return true;
-
-        ItemEnchantments enchantments = stack.get(DataComponents.ENCHANTMENTS);
-        if (enchantments != null && !enchantments.isEmpty()) return true;
-
-        ItemEnchantments stored = stack.get(DataComponents.STORED_ENCHANTMENTS);
-        if (stored != null && !stored.isEmpty()) return true;
-
-        if (stack.get(DataComponents.CUSTOM_NAME) != null) return true;
-
-        ItemLore lore = stack.get(DataComponents.LORE);
-        if (lore != null && !lore.lines().isEmpty()) return true;
-
-        PotionContents potion = stack.get(DataComponents.POTION_CONTENTS);
-        return potion != null && (!potion.customEffects().isEmpty() || !potion.potion().isEmpty());
+        return !stack.getComponentsPatch().isEmpty();
     }
 
     @Override
@@ -132,8 +114,7 @@ public class FilingFolderItem extends Item {
                 if (foundSlot != -1) {
                     final int slotIndex = foundSlot;
                     serverPlayer.openMenu(new SimpleMenuProvider(
-                            (id, inventory, p) -> new FilingFolderMenu(id, inventory, slotIndex),
-                            Component.translatable("gui.realfilingreborn.folder.title")
+                            (id, inventory, p) -> new FilingFolderMenu(id, inventory, slotIndex), Component.translatable("gui.realfilingreborn.folder.title")
                     ), buf -> buf.writeInt(slotIndex));
                 }
             }
@@ -210,8 +191,7 @@ public class FilingFolderItem extends Item {
             effectiveItemId = contents.storedItemId().get();
             if (!effectiveItemId.equals(newItemId)) {
                 Item storedItem = BuiltInRegistries.ITEM.get(effectiveItemId);
-                player.displayClientMessage(Component.translatable("message.realfilingreborn.wrong_item_type",
-                        storedItem.getDescription().copy().withStyle(ChatFormatting.YELLOW)), true);
+                player.displayClientMessage(Component.translatable("message.realfilingreborn.wrong_item_type", storedItem.getDescription().copy().withStyle(ChatFormatting.YELLOW)), true);
                 return InteractionResultHolder.fail(folderStack);
             }
         }
@@ -229,16 +209,61 @@ public class FilingFolderItem extends Item {
     }
 
     @Override
+    public boolean overrideOtherStackedOnMe(ItemStack folderStack, ItemStack carried, Slot slot, ClickAction action, Player player, SlotAccess carriedAccess) {
+        if (action != ClickAction.SECONDARY || carried.isEmpty() || !slot.allowModification(player)) return false;
+        if (carried.getItem() instanceof FilingFolderItem) return false;
+
+        boolean server = !player.level().isClientSide();
+        if (hasSignificantNBT(carried)) {
+            if (server) player.displayClientMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt").withStyle(ChatFormatting.RED), true);
+            return true;
+        }
+
+        FolderContents contents = folderStack.getOrDefault(FOLDER_CONTENTS.value(), new FolderContents(Optional.empty(), 0));
+        ResourceLocation carriedId = BuiltInRegistries.ITEM.getKey(carried.getItem());
+        if (contents.storedItemId().isPresent() && !contents.storedItemId().get().equals(carriedId)) {
+            if (server) {
+                Item storedItem = BuiltInRegistries.ITEM.get(contents.storedItemId().get());
+                player.displayClientMessage(Component.translatable("message.realfilingreborn.wrong_item_type", Component.translatable(storedItem.getDescriptionId()).withStyle(ChatFormatting.GOLD)), true);
+            }
+            return true;
+        }
+
+        int toAdd = Math.min(carried.getCount(), getCapacity() - contents.count());
+        if (toAdd <= 0) {
+            if (server) player.displayClientMessage(Component.translatable("message.realfilingreborn.folder_full"), true);
+            return true;
+        }
+
+        ItemStack updated = folderStack.copyWithCount(1);
+        updated.set(FOLDER_CONTENTS.value(), new FolderContents(Optional.of(carriedId), contents.count() + toAdd));
+        replaceOne(folderStack, updated, slot, player);
+        carried.shrink(toAdd);
+        player.playSound(SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+        return true;
+    }
+
+    public static void replaceOne(ItemStack original, ItemStack updated, Slot slot, Player player) {
+        if (original.getCount() <= 1) {
+            slot.set(updated);
+            return;
+        }
+        original.shrink(1);
+        slot.setChanged();
+        if (!player.getInventory().add(updated) && !player.level().isClientSide()) {
+            player.drop(updated, false);
+        }
+    }
+
+    @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         FolderContents contents = stack.get(FOLDER_CONTENTS.value());
         if (contents != null && contents.storedItemId().isPresent()) {
             Item item = BuiltInRegistries.ITEM.get(contents.storedItemId().get());
-            tooltip.add(Component.translatable("tooltip.realfilingreborn.stored_item",
-                            Component.literal(item.getDescription().getString()).withStyle(ChatFormatting.YELLOW))
+            tooltip.add(Component.translatable("tooltip.realfilingreborn.stored_item", Component.literal(item.getDescription().getString()).withStyle(ChatFormatting.YELLOW))
                     .withStyle(ChatFormatting.GRAY));
             if (contents.count() > 0) {
-                tooltip.add(Component.translatable("tooltip.realfilingreborn.item_count",
-                                Component.literal(String.format("%,d", contents.count())).withStyle(ChatFormatting.GREEN))
+                tooltip.add(Component.translatable("tooltip.realfilingreborn.item_count", Component.literal(String.format("%,d", contents.count())).withStyle(ChatFormatting.GREEN))
                         .withStyle(ChatFormatting.GRAY));
             } else {
                 tooltip.add(Component.translatable("tooltip.realfilingreborn.empty_folder")
@@ -249,8 +274,7 @@ public class FilingFolderItem extends Item {
                     .withStyle(ChatFormatting.GRAY));
         }
 
-        tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_capacity",
-                        Component.literal(String.format("%,d", getCapacity())).withStyle(ChatFormatting.GREEN))
+        tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_capacity", Component.literal(String.format("%,d", getCapacity())).withStyle(ChatFormatting.GREEN))
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.realfilingreborn.folder_info")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));

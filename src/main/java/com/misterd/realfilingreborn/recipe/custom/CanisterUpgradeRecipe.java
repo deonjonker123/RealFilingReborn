@@ -9,11 +9,11 @@ import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
 public class CanisterUpgradeRecipe extends CustomRecipe {
-
     private final FluidCanisterItem inputTier;
     private final FluidCanisterItem outputTier;
     private final Ingredient material;
@@ -27,24 +27,33 @@ public class CanisterUpgradeRecipe extends CustomRecipe {
 
     @Override
     public boolean matches(CraftingInput input, Level level) {
-        if (input.width() != 2 || input.height() != 2) return false;
+        return findInput(input) != null;
+    }
 
-        ItemStack topLeft     = input.getItem(0, 0);
-        ItemStack topRight    = input.getItem(1, 0);
-        ItemStack bottomLeft  = input.getItem(0, 1);
-        ItemStack bottomRight = input.getItem(1, 1);
+    @Nullable
+    private ItemStack findInput(CraftingInput input) {
+        if (input.ingredientCount() != 2) return null;
 
-        if (topLeft.getItem() != inputTier) return false;
+        ItemStack found = null;
+        boolean hasMaterial = false;
+        for (int i = 0; i < input.size(); i++) {
+            ItemStack stack = input.getItem(i);
+            if (stack.isEmpty()) continue;
+            if (found == null && stack.getItem() == inputTier) found = stack;
+            else if (!hasMaterial && material.test(stack)) hasMaterial = true;
+            else return null;
+        }
+        if (found == null || !hasMaterial) return null;
 
-        FluidCanisterItem.CanisterContents contents = topLeft.get(FluidCanisterItem.CANISTER_CONTENTS.value());
-        if (contents == null || contents.storedFluidId().isEmpty()) return false;
-
-        return material.test(topRight) && material.test(bottomLeft) && material.test(bottomRight);
+        FluidCanisterItem.CanisterContents contents = found.get(FluidCanisterItem.CANISTER_CONTENTS.value());
+        if (contents == null || contents.storedFluidId().isEmpty()) return null;
+        return found;
     }
 
     @Override
     public ItemStack assemble(CraftingInput input, HolderLookup.Provider registries) {
-        ItemStack canisterStack = input.getItem(0, 0);
+        ItemStack canisterStack = findInput(input);
+        if (canisterStack == null) return ItemStack.EMPTY;
         ItemStack result = new ItemStack(outputTier);
 
         FluidCanisterItem.CanisterContents contents = canisterStack.get(FluidCanisterItem.CANISTER_CONTENTS.value());
@@ -57,7 +66,7 @@ public class CanisterUpgradeRecipe extends CustomRecipe {
 
     @Override
     public boolean canCraftInDimensions(int width, int height) {
-        return width >= 2 && height >= 2;
+        return width * height >= 2;
     }
 
     @Override
@@ -71,7 +80,6 @@ public class CanisterUpgradeRecipe extends CustomRecipe {
     }
 
     public static class Serializer implements RecipeSerializer<CanisterUpgradeRecipe> {
-
         private static final MapCodec<CanisterUpgradeRecipe> CODEC = RecordCodecBuilder.mapCodec(instance ->
                 instance.group(
                         CraftingBookCategory.CODEC.optionalFieldOf("category", CraftingBookCategory.MISC).forGetter(CustomRecipe::category),

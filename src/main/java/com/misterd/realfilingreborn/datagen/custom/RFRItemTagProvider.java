@@ -14,7 +14,7 @@ import javax.annotation.Nullable;
 import java.util.concurrent.CompletableFuture;
 
 public class RFRItemTagProvider extends ItemTagsProvider {
-    public RFRItemTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagsProvider.TagLookup<Block>> blockTags, @Nullable ExistingFileHelper existingFileHelper) {
+    public RFRItemTagProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, CompletableFuture<TagLookup<Block>> blockTags, @Nullable ExistingFileHelper existingFileHelper) {
         super(output, lookupProvider, blockTags, RealFilingReborn.MODID, existingFileHelper);
     }
 

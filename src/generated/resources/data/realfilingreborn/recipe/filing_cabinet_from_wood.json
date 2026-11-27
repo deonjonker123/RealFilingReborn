@@ -3,22 +3,54 @@
   "category": "misc",
   "key": {
     "B": {
-      "item": "minecraft:barrel"
+      "tag": "c:chests"
     },
     "L": {
-      "tag": "minecraft:logs"
-    },
-    "P": {
-      "tag": "minecraft:planks"
+      "type": "neoforge:difference",
+      "base": {
+        "tag": "minecraft:planks"
+      },
+      "subtracted": [
+        {
+          "item": "minecraft:acacia_planks"
+        },
+        {
+          "item": "minecraft:birch_planks"
+        },
+        {
+          "item": "minecraft:cherry_planks"
+        },
+        {
+          "item": "minecraft:crimson_planks"
+        },
+        {
+          "item": "minecraft:dark_oak_planks"
+        },
+        {
+          "item": "minecraft:jungle_planks"
+        },
+        {
+          "item": "minecraft:mangrove_planks"
+        },
+        {
+          "item": "minecraft:oak_planks"
+        },
+        {
+          "item": "minecraft:spruce_planks"
+        },
+        {
+          "item": "minecraft:warped_planks"
+        }
+      ]
     }
   },
   "pattern": [
-    "LPL",
-    "PBP",
-    "LPL"
+    "BLB",
+    "LLL",
+    "BLB"
   ],
   "result": {
-    "count": 1,
+    "count": 4,
     "id": "realfilingreborn:filing_cabinet"
   }
 }

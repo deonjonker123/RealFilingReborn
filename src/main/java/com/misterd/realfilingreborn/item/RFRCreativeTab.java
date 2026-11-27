@@ -18,16 +18,9 @@ public class RFRCreativeTab {
             () -> CreativeModeTab.builder().icon(() -> new ItemStack(RFRItems.FILING_FOLDER.get()))
                     .title(Component.translatable("creativetab.realfilingreborn.real_filing_reborn"))
                     .displayItems((itemDisplayParameters, output) -> {
-                        output.accept(RFRBlocks.ACACIA_FILING_CABINET);
-                        output.accept(RFRBlocks.BIRCH_FILING_CABINET);
-                        output.accept(RFRBlocks.CHERRY_FILING_CABINET);
-                        output.accept(RFRBlocks.CRIMSON_FILING_CABINET);
-                        output.accept(RFRBlocks.DARKOAK_FILING_CABINET);
-                        output.accept(RFRBlocks.JUNGLE_FILING_CABINET);
-                        output.accept(RFRBlocks.MANGROVE_FILING_CABINET);
-                        output.accept(RFRBlocks.OAK_FILING_CABINET);
-                        output.accept(RFRBlocks.FILING_CABINET);
-                        output.accept(RFRBlocks.WARPED_FILING_CABINET);
+                        RFRBlocks.SINGLE_CABINETS.forEach(output::accept);
+                        RFRBlocks.DOUBLE_CABINETS.forEach(output::accept);
+                        RFRBlocks.QUAD_CABINETS.forEach(output::accept);
                         output.accept(RFRBlocks.FLUID_CABINET);
                         output.accept(RFRBlocks.FILING_INDEX);
 

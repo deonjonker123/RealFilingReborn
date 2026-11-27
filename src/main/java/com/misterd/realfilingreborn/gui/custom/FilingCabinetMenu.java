@@ -16,7 +16,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 public class FilingCabinetMenu extends AbstractContainerMenu {
-
     public final FilingCabinetBlockEntity blockEntity;
     private final Level level;
 
@@ -27,7 +26,7 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
     private static final int VANILLA_SLOT_COUNT = 36;
     private static final int VANILLA_FIRST_SLOT_INDEX = 0;
     private static final int TE_INVENTORY_FIRST_SLOT_INDEX = 36;
-    private static final int TE_INVENTORY_SLOT_COUNT = 5;
+    private final int teInventorySlotCount;
 
     public FilingCabinetMenu(int containerId, Inventory inv, FriendlyByteBuf extraData) {
         this(containerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()));
@@ -40,15 +39,25 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
         addPlayerInventory(inv);
         addPlayerHotbar(inv);
 
-        for (int i = 0; i < 5; i++) {
-            int x = 44 + i * 18;
-            addSlot(new SlotItemHandler(this.blockEntity.inventory, i, x, 23) {
+        this.teInventorySlotCount = this.blockEntity.getSlotCount();
+        for (int i = 0; i < teInventorySlotCount; i++) {
+            int x, y;
+            switch (teInventorySlotCount) {
+                case 1 -> { x = 80; y = 33; }
+                case 2 -> { x = 80; y = 24 + i * 18; }
+                default -> { x = 71 + (i % 2) * 18; y = 24 + (i / 2) * 18; }
+            }
+            addSlot(new SlotItemHandler(this.blockEntity.inventory, i, x, y) {
                 @Override
                 public boolean mayPlace(ItemStack stack) {
                     return stack.getItem() instanceof FilingFolderItem;
                 }
             });
         }
+    }
+
+    public int getCabinetSlotCount() {
+        return teInventorySlotCount;
     }
 
     @Override
@@ -61,11 +70,11 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
 
         if (index < VANILLA_SLOT_COUNT) {
             if (!(sourceStack.getItem() instanceof FilingFolderItem)) return ItemStack.EMPTY;
-            if (!moveItemStackTo(sourceStack, TE_INVENTORY_FIRST_SLOT_INDEX, TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT, false)) {
+            if (!moveItemStackTo(sourceStack, TE_INVENTORY_FIRST_SLOT_INDEX, TE_INVENTORY_FIRST_SLOT_INDEX + teInventorySlotCount, false)) {
                 return ItemStack.EMPTY;
             }
         } else {
-            if (index >= TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) {
+            if (index >= TE_INVENTORY_FIRST_SLOT_INDEX + teInventorySlotCount) {
                 return ItemStack.EMPTY;
             }
             if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_SLOT_COUNT, false)) {
@@ -92,14 +101,14 @@ public class FilingCabinetMenu extends AbstractContainerMenu {
     private void addPlayerInventory(Inventory playerInventory) {
         for (int row = 0; row < PLAYER_INVENTORY_ROW_COUNT; row++) {
             for (int col = 0; col < PLAYER_INVENTORY_COLUMN_COUNT; col++) {
-                addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 61 + row * 18));
+                addSlot(new Slot(playerInventory, col + row * 9 + 9, 8 + col * 18, 81 + row * 18));
             }
         }
     }
 
     private void addPlayerHotbar(Inventory playerInventory) {
         for (int i = 0; i < HOTBAR_SLOT_COUNT; i++) {
-            addSlot(new Slot(playerInventory, i, 8 + i * 18, 119));
+            addSlot(new Slot(playerInventory, i, 8 + i * 18, 139));
         }
     }
 }

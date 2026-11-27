@@ -3,22 +3,19 @@
   "category": "misc",
   "key": {
     "B": {
-      "item": "minecraft:barrel"
+      "tag": "c:chests"
     },
     "L": {
-      "item": "minecraft:stripped_birch_log"
-    },
-    "P": {
       "item": "minecraft:birch_planks"
     }
   },
   "pattern": [
-    "LPL",
-    "PBP",
-    "LPL"
+    "BLB",
+    "LLL",
+    "BLB"
   ],
   "result": {
-    "count": 1,
+    "count": 4,
     "id": "realfilingreborn:birch_filing_cabinet"
   }
 }

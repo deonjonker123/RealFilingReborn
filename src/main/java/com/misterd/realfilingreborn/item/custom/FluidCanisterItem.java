@@ -17,9 +17,14 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.*;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
@@ -27,13 +32,12 @@ import java.util.List;
 import java.util.Optional;
 
 public class FluidCanisterItem extends Item {
-
     public enum CanisterTier {
-        BASE      (64_000),
-        COPPER    (512_000),
-        IRON      (4_096_000),
-        GOLD      (32_768_000),
-        DIAMOND   (262_144_000),
+        BASE (64_000),
+        COPPER (512_000),
+        IRON (4_096_000),
+        GOLD (32_768_000),
+        DIAMOND (262_144_000),
         NETHERITE (2_097_152_000);
 
         private final int capacity;
@@ -51,8 +55,7 @@ public class FluidCanisterItem extends Item {
 
     private static final Codec<CanisterContents> CANISTER_CONTENTS_CODEC = RecordCodecBuilder.create(instance ->
             instance.group(
-                    ResourceLocation.CODEC.optionalFieldOf("storedFluidId").forGetter(CanisterContents::storedFluidId),
-                    Codec.INT.fieldOf("amount").forGetter(CanisterContents::amount)
+                    ResourceLocation.CODEC.optionalFieldOf("storedFluidId").forGetter(CanisterContents::storedFluidId), Codec.INT.fieldOf("amount").forGetter(CanisterContents::amount)
             ).apply(instance, CanisterContents::new));
 
     public static final StreamCodec<ByteBuf, ResourceLocation> RESOURCE_LOCATION_STREAM_CODEC =
@@ -60,9 +63,7 @@ public class FluidCanisterItem extends Item {
 
     private static final StreamCodec<ByteBuf, CanisterContents> CANISTER_CONTENTS_STREAM_CODEC =
             StreamCodec.composite(
-                    ByteBufCodecs.optional(RESOURCE_LOCATION_STREAM_CODEC), CanisterContents::storedFluidId,
-                    ByteBufCodecs.INT, CanisterContents::amount,
-                    CanisterContents::new);
+                    ByteBufCodecs.optional(RESOURCE_LOCATION_STREAM_CODEC), CanisterContents::storedFluidId, ByteBufCodecs.INT, CanisterContents::amount, CanisterContents::new);
 
     public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENTS =
             DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, "realfilingreborn");
@@ -108,8 +109,7 @@ public class FluidCanisterItem extends Item {
                 if (foundSlot != -1) {
                     final int slotIndex = foundSlot;
                     serverPlayer.openMenu(new SimpleMenuProvider(
-                            (id, inventory, p) -> new FluidCanisterMenu(id, inventory, slotIndex),
-                            Component.translatable("gui.realfilingreborn.canister.title")
+                            (id, inventory, p) -> new FluidCanisterMenu(id, inventory, slotIndex), Component.translatable("gui.realfilingreborn.canister.title")
                     ), buf -> buf.writeInt(slotIndex));
                 }
             }
@@ -194,14 +194,13 @@ public class FluidCanisterItem extends Item {
         } else {
             effectiveFluidId = contents.storedFluidId().get();
             if (!FluidHelper.areFluidsCompatible(effectiveFluidId, newFluidId)) {
-                player.displayClientMessage(Component.translatable("message.realfilingreborn.wrong_fluid_type",
-                        Component.literal(FluidHelper.getFluidDisplayName(effectiveFluidId)).withStyle(ChatFormatting.YELLOW)), true);
+                player.displayClientMessage(Component.translatable("message.realfilingreborn.wrong_fluid_type", Component.literal(FluidHelper.getFluidDisplayName(effectiveFluidId)).withStyle(ChatFormatting.YELLOW)), true);
                 return InteractionResultHolder.fail(canisterStack);
             }
         }
 
-        int toAdd = Math.min(1000, getCapacity() - contents.amount());
-        if (toAdd <= 0) {
+        int toAdd = 1000;
+        if (getCapacity() - contents.amount() < toAdd) {
             player.displayClientMessage(Component.translatable("message.realfilingreborn.canister_full"), true);
             return InteractionResultHolder.fail(canisterStack);
         }
@@ -215,12 +214,70 @@ public class FluidCanisterItem extends Item {
     }
 
     @Override
+    public boolean overrideOtherStackedOnMe(ItemStack canisterStack, ItemStack carried, Slot slot, ClickAction action, Player player, SlotAccess carriedAccess) {
+        if (action != ClickAction.SECONDARY || carried.isEmpty() || !slot.allowModification(player)) return false;
+        if (!(carried.getItem() instanceof BucketItem bucketItem)) return false;
+
+        boolean server = !player.level().isClientSide();
+        CanisterContents contents = canisterStack.getOrDefault(CANISTER_CONTENTS.value(), new CanisterContents(Optional.empty(), 0));
+
+        if (bucketItem.content == Fluids.EMPTY) {
+            if (contents.storedFluidId().isEmpty() || contents.amount() < 1000) {
+                if (server) player.displayClientMessage(Component.translatable("message.realfilingreborn.not_enough_fluid"), true);
+                return true;
+            }
+            ItemStack filled = FluidHelper.getBucketForFluid(contents.storedFluidId().get());
+            if (filled.isEmpty()) {
+                if (server) player.displayClientMessage(Component.translatable("message.realfilingreborn.no_bucket_for_fluid"), true);
+                return true;
+            }
+            ItemStack updated = canisterStack.copyWithCount(1);
+            updated.set(CANISTER_CONTENTS.value(), new CanisterContents(contents.storedFluidId(), contents.amount() - 1000));
+            FilingFolderItem.replaceOne(canisterStack, updated, slot, player);
+            swapCarried(carried, filled, carriedAccess, player);
+            player.playSound(SoundEvents.BUCKET_FILL, 0.8F, 1.0F);
+            return true;
+        }
+
+        Fluid fluid = bucketItem.content;
+        if (!FluidHelper.isValidFluid(fluid)) return false;
+        ResourceLocation fluidId = FluidHelper.getStillFluid(FluidHelper.getFluidId(fluid));
+
+        if (contents.storedFluidId().isPresent() && !FluidHelper.areFluidsCompatible(contents.storedFluidId().get(), fluidId)) {
+            if (server) player.displayClientMessage(Component.translatable("message.realfilingreborn.wrong_fluid_type", Component.literal(FluidHelper.getFluidDisplayName(contents.storedFluidId().get())).withStyle(ChatFormatting.YELLOW)), true);
+            return true;
+        }
+        if (getCapacity() - contents.amount() < 1000) {
+            if (server) player.displayClientMessage(Component.translatable("message.realfilingreborn.canister_full"), true);
+            return true;
+        }
+
+        ResourceLocation storedId = contents.storedFluidId().orElse(fluidId);
+        ItemStack updated = canisterStack.copyWithCount(1);
+        updated.set(CANISTER_CONTENTS.value(), new CanisterContents(Optional.of(storedId), contents.amount() + 1000));
+        FilingFolderItem.replaceOne(canisterStack, updated, slot, player);
+        swapCarried(carried, new ItemStack(Items.BUCKET), carriedAccess, player);
+        player.playSound(SoundEvents.BUCKET_EMPTY, 0.8F, 1.0F);
+        return true;
+    }
+
+    private static void swapCarried(ItemStack carried, ItemStack result, SlotAccess carriedAccess, Player player) {
+        if (carried.getCount() <= 1) {
+            carriedAccess.set(result);
+            return;
+        }
+        carried.shrink(1);
+        if (!player.getInventory().add(result) && !player.level().isClientSide()) {
+            player.drop(result, false);
+        }
+    }
+
+    @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         CanisterContents contents = stack.get(CANISTER_CONTENTS.value());
         if (contents != null && contents.storedFluidId().isPresent()) {
             String fluidName = FluidHelper.getFluidDisplayName(contents.storedFluidId().get());
-            tooltip.add(Component.translatable("tooltip.realfilingreborn.stored_fluid",
-                            Component.literal(fluidName).withStyle(ChatFormatting.AQUA))
+            tooltip.add(Component.translatable("tooltip.realfilingreborn.stored_fluid", Component.literal(fluidName).withStyle(ChatFormatting.AQUA))
                     .withStyle(ChatFormatting.GRAY));
             if (contents.amount() > 0) {
                 int buckets = contents.amount() / 1000;
@@ -228,8 +285,7 @@ public class FluidCanisterItem extends Item {
                 String amountText = buckets > 0
                         ? (mb > 0 ? buckets + "." + mb / 100 + "B" : buckets + "B")
                         : mb + "mB";
-                tooltip.add(Component.translatable("tooltip.realfilingreborn.fluid_amount",
-                                Component.literal(amountText).withStyle(ChatFormatting.BLUE))
+                tooltip.add(Component.translatable("tooltip.realfilingreborn.fluid_amount", Component.literal(amountText).withStyle(ChatFormatting.BLUE))
                         .withStyle(ChatFormatting.GRAY));
             } else {
                 tooltip.add(Component.translatable("tooltip.realfilingreborn.empty_canister")
@@ -240,8 +296,7 @@ public class FluidCanisterItem extends Item {
                     .withStyle(ChatFormatting.GRAY));
         }
 
-        tooltip.add(Component.translatable("tooltip.realfilingreborn.canister_capacity",
-                        Component.literal(String.format("%,d", getCapacity() / 1000) + "B").withStyle(ChatFormatting.BLUE))
+        tooltip.add(Component.translatable("tooltip.realfilingreborn.canister_capacity", Component.literal(String.format("%,d", getCapacity() / 1000) + "B").withStyle(ChatFormatting.BLUE))
                 .withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("tooltip.realfilingreborn.canister_info")
                 .withStyle(ChatFormatting.AQUA, ChatFormatting.ITALIC));

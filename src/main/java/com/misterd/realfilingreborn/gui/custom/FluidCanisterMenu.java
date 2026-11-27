@@ -21,7 +21,6 @@ import net.neoforged.neoforge.items.SlotItemHandler;
 import java.util.Optional;
 
 public class FluidCanisterMenu extends AbstractContainerMenu {
-
     private final ItemStackHandler assignmentInventory;
     private final int canisterSlot;
     private final Inventory playerInventory;
@@ -73,6 +72,23 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
         return playerInventory.getItem(canisterSlot);
     }
 
+    private ItemStack getSingleCanister() {
+        ItemStack stack = getCanister();
+        if (stack.getCount() <= 1) return stack;
+
+        ItemStack remainder = stack.copyWithCount(stack.getCount() - 1);
+        ItemStack single = stack.copyWithCount(1);
+        playerInventory.setItem(canisterSlot, single);
+
+        Player player = playerInventory.player;
+        if (!player.level().isClientSide()) {
+            int free = playerInventory.getFreeSlot();
+            if (free >= 0) playerInventory.setItem(free, remainder);
+            else player.drop(remainder, false);
+        }
+        return single;
+    }
+
     private void updateCanisterAssignment() {
         ItemStack canister = getCanister();
         if (canister.isEmpty()) return;
@@ -110,6 +126,7 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
             int toAdd = Math.min(1000, capacity - contents.amount());
             if (toAdd < 1000) return;
 
+            canister = getSingleCanister();
             canister.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
                     new FluidCanisterItem.CanisterContents(contents.storedFluidId(), contents.amount() + toAdd));
             assignmentInventory.setStackInSlot(0, new ItemStack(Items.BUCKET));
@@ -196,6 +213,7 @@ public class FluidCanisterMenu extends AbstractContainerMenu {
 
         if (!bucketRemoved) return;
 
+        canister = getSingleCanister();
         canister.set(FluidCanisterItem.CANISTER_CONTENTS.value(),
                 new FluidCanisterItem.CanisterContents(contents.storedFluidId(), Math.max(0, contents.amount() - 1000)));
         if (!player.getInventory().add(bucketToGive)) player.drop(bucketToGive, false);
