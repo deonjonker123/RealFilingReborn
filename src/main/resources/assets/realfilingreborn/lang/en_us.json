@@ -1,6 +1,7 @@
 {
   "_comment": "=== CREATIVE TAB ===",
   "creativetab.realfilingreborn.real_filing_reborn": "Real Filing Reborn",
+
   "_comment1": "=== ITEMS ===",
   "item.realfilingreborn.filing_folder": "Folder",
   "item.realfilingreborn.copper_filing_folder": "Copper Folder",
@@ -12,6 +13,7 @@
   "item.realfilingreborn.diamond_range_upgrade": "Filing Index Diamond Range Upgrade",
   "item.realfilingreborn.netherite_range_upgrade": "Filing Index Netherite Range Upgrade",
   "item.realfilingreborn.ledger": "Ledger",
+
   "_comment2": "=== BLOCKS ===",
   "block.realfilingreborn.acacia_filing_cabinet": "Acacia Filing Cabinet IV",
   "block.realfilingreborn.birch_filing_cabinet": "Birch Filing Cabinet IV",
@@ -81,12 +83,16 @@
   "item.realfilingreborn.double_pale_oak_filing_cabinet": "Pale Oak Filing Cabinet II",
   "block.realfilingreborn.filing_index": "Filing Index",
   "item.realfilingreborn.filing_index": "Filing Index",
+  "item.realfilingreborn.fluid_cabinet": "Fluid Cabinet",
+
   "_comment3": "=== BLOCK ENTITIES ===",
   "blockentity.realfilingreborn.name": "Filing Cabinet",
   "blockentity.realfilingreborn.filing_index_name": "Filing Index",
+
   "_comment4": "=== MENUS/GUIS ===",
   "menu.realfilingreborn.menu_title": "Filing Cabinet",
   "menu.realfilingreborn.filing_index": "Filing Index",
+
   "_comment4_new": "=== NEW GUI MESSAGES ===",
   "gui.realfilingreborn.folder.instruction": "Place item to assign folder",
   "gui.realfilingreborn.canister.instruction": "Place fluid bucket to assign canister",
@@ -98,6 +104,7 @@
   "gui.realfilingreborn.extract_fluid": "Extract Fluid",
   "gui.realfilingreborn.assigned_item": "%s: ",
   "gui.realfilingreborn.assigned_fluid": "%s: ",
+
   "_comment5": "=== FILING FOLDER MESSAGES ===",
   "message.realfilingreborn.folder_erased": "Folder assignment erased",
   "message.realfilingreborn.folder_not_empty": "Folder must be empty to erase assignment",
@@ -110,12 +117,14 @@
   "message.realfilingreborn.no_items_in_slot": "No items in this slot",
   "message.realfilingreborn.items_extracted": "Items extracted",
   "message.realfilingreborn.no_folder_in_slot": "No folder in this slot",
+
   "_comment6": "=== FILING CABINET MESSAGES ===",
   "message.realfilingreborn.folders_full": "Filing Cabinet is full (4 folders)",
   "message.realfilingreborn.double_folders_full": "Filing Cabinet is full (2 folders)",
   "message.realfilingreborn.single_folders_full": "Filing Cabinet is full (1 folder)",
   "message.realfilingreborn.no_folders": "Filing Cabinet can only accept folders",
   "message.realfilingreborn.no_compatible_folder": "No folder for this item available",
+
   "_comment14": "=== FILING FOLDER TOOLTIPS ===",
   "tooltip.realfilingreborn.stored_item": "Assigned to (Contents): %s",
   "tooltip.realfilingreborn.item_count": "Count: %s",
@@ -124,8 +133,10 @@
   "tooltip.realfilingreborn.standard_folder_info": "Can only store normal items (no NBT)",
   "tooltip.realfilingreborn.folder_capacity": "Capacity: %s items",
   "tooltip.realfilingreborn.folder_info": "Hold item in off hand to store",
+
   "_comment14_new": "=== NEW FILING FOLDER TOOLTIPS ===",
   "tooltip.realfilingreborn.folder_gui_hint": "Shift+Right-click to open assignment GUI",
+
   "_comment_ledger": "=== LEDGER MESSAGES ===",
   "item.realfilingreborn.ledger.mode.add": "Ledger: Add Mode",
   "item.realfilingreborn.ledger.mode.remove": "Ledger: Remove Mode",
@@ -140,6 +151,7 @@
   "item.realfilingreborn.ledger.multi.start": "Multi-selection started at %s, %s, %s",
   "item.realfilingreborn.ledger.multi.linked": "Linked %s cabinets to index",
   "item.realfilingreborn.ledger.multi.unlinked": "Unlinked %s cabinets from index",
+
   "_comment_ledger_tooltip": "=== LEDGER TOOLTIPS ===",
   "item.realfilingreborn.ledger.subtitle": "Filing system linking tool",
   "item.realfilingreborn.ledger.tooltip.operation.add": "Operation: Add",
@@ -153,6 +165,7 @@
   "item.realfilingreborn.ledger.tooltip.usage.operation": "Shift+Right-click: Toggle operation mode",
   "item.realfilingreborn.ledger.tooltip.usage.controller": "Shift+Right-click index: Select controller",
   "item.realfilingreborn.ledger.tooltip.usage.cabinet": "Shift+Right-click cabinet: Link/unlink",
+
   "_comment_upgrades": "=== UPGRADE ITEMS TOOLTIPS ===",
   "item.realfilingreborn.iron_range_upgrade.subtitle": "Extends Filing Index range to 16 blocks (radius)",
   "item.realfilingreborn.diamond_range_upgrade.subtitle": "Extends Filing Index range to 32 blocks (radius)",

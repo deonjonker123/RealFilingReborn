@@ -199,6 +199,5 @@ public class FluidCabinetBlock extends BaseEntityBlock {
         if (!(player instanceof ServerPlayer serverPlayer)) return;
         serverPlayer.openMenu(new SimpleMenuProvider((id, inventory, playerEntity) -> new FluidCabinetMenu(id, inventory, cabinet),
                 Component.translatable("menu.realfilingreborn.fluid_cabinet_menu_title")), pos);
-        level.playSound(null, pos, SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.BLOCKS, 1.0F, 1.0F);
     }
 }
