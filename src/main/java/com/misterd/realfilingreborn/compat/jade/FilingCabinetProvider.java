@@ -3,6 +3,7 @@ package com.misterd.realfilingreborn.compat.jade;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
 import net.minecraft.ChatFormatting;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -29,20 +30,29 @@ public enum FilingCabinetProvider implements IBlockComponentProvider {
         if (!data.contains("folders")) return;
 
         ListTag folders = data.getListOrEmpty("folders");
-        boolean any = false;
+        int assigned = 0;
+        for (int i = 0; i < folders.size(); i++) {
+            if (folders.getCompoundOrEmpty(i).contains("item_name")) assigned++;
+        }
+        if (assigned == 0) {
+            tooltip.add(Component.translatable("tooltip.realfilingreborn.jade.empty_cabinet").withStyle(ChatFormatting.GRAY));
+            return;
+        }
+        if (!Minecraft.getInstance().hasShiftDown()) {
+            tooltip.add(Component.translatable("tooltip.realfilingreborn.jade.folder_summary", assigned, folders.size()).withStyle(ChatFormatting.GRAY));
+            tooltip.add(RFRJadePlugin.holdShift());
+            return;
+        }
+
         for (int i = 0; i < folders.size(); i++) {
             CompoundTag folderTag = folders.getCompoundOrEmpty(i);
             if (!folderTag.contains("item_name")) continue;
-            any = true;
             int slot = folderTag.getIntOr("slot", 0);
             int count = folderTag.getIntOr("count", 0);
             int capacity = folderTag.getIntOr("capacity", 0);
             double fillPct = capacity > 0 ? (double) count / capacity * 100.0 : 0.0;
             tooltip.add(Component.literal("Folder " + (slot + 1) + ": " + folderTag.getStringOr("item_name", "") + " ("
                     + NumberFormat.getNumberInstance(Locale.US).format(count) + ", " + String.format("%.2f%%", fillPct) + ")").withStyle(ChatFormatting.WHITE));
-        }
-        if (!any) {
-            tooltip.add(Component.translatable("tooltip.realfilingreborn.jade.empty_cabinet").withStyle(ChatFormatting.GRAY));
         }
     }
 
