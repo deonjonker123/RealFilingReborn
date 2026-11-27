@@ -28,6 +28,24 @@ public class RFRItems {
     public static final DeferredItem<Item> NETHERITE_FILING_FOLDER = ITEMS.registerItem("netherite_filing_folder",
             props -> new FilingFolderItem(FilingFolderItem.FolderTier.NETHERITE, props));
 
+    public static final DeferredItem<Item> FLUID_CANISTER = ITEMS.registerItem("fluid_canister",
+            props -> new FluidCanisterItem(FluidCanisterItem.CanisterTier.BASE, props));
+
+    public static final DeferredItem<Item> COPPER_FLUID_CANISTER = ITEMS.registerItem("copper_fluid_canister",
+            props -> new FluidCanisterItem(FluidCanisterItem.CanisterTier.COPPER, props));
+
+    public static final DeferredItem<Item> IRON_FLUID_CANISTER = ITEMS.registerItem("iron_fluid_canister",
+            props -> new FluidCanisterItem(FluidCanisterItem.CanisterTier.IRON, props));
+
+    public static final DeferredItem<Item> GOLD_FLUID_CANISTER = ITEMS.registerItem("gold_fluid_canister",
+            props -> new FluidCanisterItem(FluidCanisterItem.CanisterTier.GOLD, props));
+
+    public static final DeferredItem<Item> DIAMOND_FLUID_CANISTER = ITEMS.registerItem("diamond_fluid_canister",
+            props -> new FluidCanisterItem(FluidCanisterItem.CanisterTier.DIAMOND, props));
+
+    public static final DeferredItem<Item> NETHERITE_FLUID_CANISTER = ITEMS.registerItem("netherite_fluid_canister",
+            props -> new FluidCanisterItem(FluidCanisterItem.CanisterTier.NETHERITE, props));
+
     public static final DeferredItem<Item> LEDGER = ITEMS.registerItem("ledger",
             LedgerItem::new);
 

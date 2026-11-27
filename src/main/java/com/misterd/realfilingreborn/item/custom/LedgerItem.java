@@ -1,13 +1,10 @@
 package com.misterd.realfilingreborn.item.custom;
 
 import com.misterd.realfilingreborn.block.custom.FilingCabinetBlock;
+import com.misterd.realfilingreborn.block.custom.FluidCabinetBlock;
 import com.misterd.realfilingreborn.block.custom.FilingIndexBlock;
-import com.misterd.realfilingreborn.block.custom.SingleFilingCabinetBlock;
-import com.misterd.realfilingreborn.block.custom.DoubleFilingCabinetBlock;
-import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
+import com.misterd.realfilingreborn.blockentity.custom.LinkableCabinet;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
-import com.misterd.realfilingreborn.blockentity.custom.SingleFilingCabinetBlockEntity;
-import com.misterd.realfilingreborn.blockentity.custom.DoubleFilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.component.RFRDataComponents;
 import com.misterd.realfilingreborn.component.custom.LedgerData;
 import net.minecraft.ChatFormatting;
@@ -30,7 +27,6 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 public class LedgerItem extends Item {
-
     private static final int MAX_SELECTION_SIZE = 1000;
     private static final int MAX_SELECTION_DIMENSION = 32;
 
@@ -67,9 +63,7 @@ public class LedgerItem extends Item {
             return InteractionResult.SUCCESS;
         }
 
-        boolean isAnyCabinet = state.getBlock() instanceof FilingCabinetBlock
-                || state.getBlock() instanceof SingleFilingCabinetBlock
-                || state.getBlock() instanceof DoubleFilingCabinetBlock;
+        boolean isAnyCabinet = state.getBlock() instanceof FilingCabinetBlock || state.getBlock() instanceof FluidCabinetBlock;
 
         if (isAnyCabinet && player.isShiftKeyDown()) {
             if (data.selectionMode() == LedgerData.SelectionMode.SINGLE) {
@@ -83,34 +77,22 @@ public class LedgerItem extends Item {
         return InteractionResult.PASS;
     }
 
-    // --- Helper to get controller pos from any supported BE ---
-
     private BlockPos getControllerPos(BlockEntity be) {
-        if (be instanceof FilingCabinetBlockEntity e) return e.getControllerPos();
-        if (be instanceof SingleFilingCabinetBlockEntity e) return e.getControllerPos();
-        if (be instanceof DoubleFilingCabinetBlockEntity e) return e.getControllerPos();
+        if (be instanceof LinkableCabinet e) return e.getControllerPos();
         return null;
     }
 
     private void setControllerPos(BlockEntity be, BlockPos pos) {
-        if (be instanceof FilingCabinetBlockEntity e) e.setControllerPos(pos);
-        else if (be instanceof SingleFilingCabinetBlockEntity e) e.setControllerPos(pos);
-        else if (be instanceof DoubleFilingCabinetBlockEntity e) e.setControllerPos(pos);
+        if (be instanceof LinkableCabinet e) e.setControllerPos(pos);
     }
 
     private void clearControllerPos(BlockEntity be) {
-        if (be instanceof FilingCabinetBlockEntity e) e.clearControllerPos();
-        else if (be instanceof SingleFilingCabinetBlockEntity e) e.clearControllerPos();
-        else if (be instanceof DoubleFilingCabinetBlockEntity e) e.clearControllerPos();
+        if (be instanceof LinkableCabinet e) e.clearControllerPos();
     }
 
     private boolean isSupportedCabinet(BlockEntity be) {
-        return be instanceof FilingCabinetBlockEntity
-                || be instanceof SingleFilingCabinetBlockEntity
-                || be instanceof DoubleFilingCabinetBlockEntity;
+        return be instanceof LinkableCabinet;
     }
-
-    // --- Data helpers ---
 
     private LedgerData getData(ItemStack stack) {
         return stack.getOrDefault(RFRDataComponents.LEDGER_DATA.get(), LedgerData.DEFAULT);
@@ -119,8 +101,6 @@ public class LedgerItem extends Item {
     private void setData(ItemStack stack, LedgerData data) {
         stack.set(RFRDataComponents.LEDGER_DATA.get(), data);
     }
-
-    // --- Mode toggles ---
 
     private void toggleOperationMode(ItemStack stack, Player player) {
         LedgerData data = getData(stack);
@@ -165,8 +145,6 @@ public class LedgerItem extends Item {
         ));
     }
 
-    // --- Single cabinet action ---
-
     private void handleSingleCabinetAction(Level level, BlockPos cabinetPos, ItemStack stack, Player player) {
         if (level.isClientSide()) return;
 
@@ -196,8 +174,6 @@ public class LedgerItem extends Item {
             player.sendOverlayMessage(Component.translatable("item.realfilingreborn.ledger.cabinet.unlinked"));
         }
     }
-
-    // --- Multi cabinet action ---
 
     private void handleMultiCabinetAction(Level level, BlockPos pos, ItemStack stack, Player player) {
         if (level.isClientSide()) return;
@@ -243,7 +219,6 @@ public class LedgerItem extends Item {
         for (int x = minX; x <= maxX && processedCount < MAX_SELECTION_SIZE; x++) {
             for (int y = minY; y <= maxY && processedCount < MAX_SELECTION_SIZE; y++) {
                 for (int z = minZ; z <= maxZ && processedCount < MAX_SELECTION_SIZE; z++) {
-
                     BlockPos currentPos = new BlockPos(x, y, z);
                     BlockEntity be = level.getBlockEntity(currentPos);
                     if (!isSupportedCabinet(be)) continue;
@@ -298,7 +273,6 @@ public class LedgerItem extends Item {
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, TooltipDisplay display,
                                 Consumer<Component> adder, TooltipFlag flag) {
-
         LedgerData data = getData(stack);
 
         adder.accept(Component.translatable("item.realfilingreborn.ledger.subtitle")

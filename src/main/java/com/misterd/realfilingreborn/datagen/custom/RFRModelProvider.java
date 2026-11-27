@@ -5,6 +5,7 @@ import com.misterd.realfilingreborn.block.RFRBlocks;
 import com.misterd.realfilingreborn.item.RFRItems;
 import net.minecraft.client.data.models.BlockModelGenerators;
 import net.minecraft.client.data.models.ItemModelGenerators;
+import net.minecraft.client.data.models.model.ItemModelUtils;
 import net.minecraft.client.data.models.ModelProvider;
 import net.minecraft.client.data.models.blockstates.PropertyDispatch;
 import net.minecraft.client.data.models.model.ModelTemplates;
@@ -34,7 +35,6 @@ public class RFRModelProvider extends ModelProvider {
 
     @Override
     protected void registerModels(BlockModelGenerators g, ItemModelGenerators itemModels) {
-
         registerCabinet(g, "single_acacia_filing_cabinet", RFRBlocks.SINGLE_ACACIA_FILING_CABINET);
         registerCabinet(g, "single_birch_filing_cabinet", RFRBlocks.SINGLE_BIRCH_FILING_CABINET);
         registerCabinet(g, "single_cherry_filing_cabinet", RFRBlocks.SINGLE_CHERRY_FILING_CABINET);
@@ -71,9 +71,9 @@ public class RFRModelProvider extends ModelProvider {
         registerCabinet(g, "filing_cabinet", RFRBlocks.FILING_CABINET);
         registerCabinet(g, "warped_filing_cabinet", RFRBlocks.WARPED_FILING_CABINET);
 
-        g.blockStateOutput.accept(BlockModelGenerators.createSimpleBlock(RFRBlocks.FILING_INDEX.get(),
-                        BlockModelGenerators.plainVariant(Identifier.fromNamespaceAndPath(RealFilingReborn.MODID, "block/filing_index")))
-                .with(ROTATION_HORIZONTAL_FACING));
+        registerCabinet(g, "fluid_cabinet", RFRBlocks.FLUID_CABINET);
+        itemModels.itemModelOutput.accept(RFRBlocks.FILING_INDEX.asItem(),
+                ItemModelUtils.plainModel(Identifier.fromNamespaceAndPath(RealFilingReborn.MODID, "block/filing_index")));
 
         itemModels.generateFlatItem(RFRItems.FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.COPPER_FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
@@ -81,6 +81,13 @@ public class RFRModelProvider extends ModelProvider {
         itemModels.generateFlatItem(RFRItems.GOLD_FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.DIAMOND_FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.NETHERITE_FILING_FOLDER.get(), ModelTemplates.FLAT_ITEM);
+
+        itemModels.generateFlatItem(RFRItems.FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RFRItems.COPPER_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RFRItems.IRON_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RFRItems.GOLD_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RFRItems.DIAMOND_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
+        itemModels.generateFlatItem(RFRItems.NETHERITE_FLUID_CANISTER.get(), ModelTemplates.FLAT_ITEM);
 
         itemModels.generateFlatItem(RFRItems.LEDGER.get(), ModelTemplates.FLAT_ITEM);
         itemModels.generateFlatItem(RFRItems.IRON_RANGE_UPGRADE.get(), ModelTemplates.FLAT_ITEM);
@@ -96,7 +103,7 @@ public class RFRModelProvider extends ModelProvider {
 
     @Override
     protected Stream<? extends Holder<Block>> getKnownBlocks() {
-        return RFRBlocks.BLOCKS.getEntries().stream();
+        return RFRBlocks.BLOCKS.getEntries().stream().filter(block -> block != RFRBlocks.FILING_INDEX);
     }
 
     @Override

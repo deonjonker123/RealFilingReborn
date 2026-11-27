@@ -1,10 +1,8 @@
 package com.misterd.realfilingreborn.client.renderer;
 
 import com.misterd.realfilingreborn.RealFilingReborn;
-import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
+import com.misterd.realfilingreborn.blockentity.custom.LinkableCabinet;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
-import com.misterd.realfilingreborn.blockentity.custom.SingleFilingCabinetBlockEntity;
-import com.misterd.realfilingreborn.blockentity.custom.DoubleFilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.component.RFRDataComponents;
 import com.misterd.realfilingreborn.component.custom.LedgerData;
 import com.misterd.realfilingreborn.item.custom.LedgerItem;
@@ -37,7 +35,6 @@ import java.util.Set;
 
 @EventBusSubscriber(modid = RealFilingReborn.MODID, value = Dist.CLIENT)
 public class LedgerWireframeRenderer {
-
     private record WireframeBox(AABB aabb, int color) {}
 
     private static final ContextKey<List<WireframeBox>> WIREFRAME_KEY = new ContextKey<>(
@@ -95,10 +92,7 @@ public class LedgerWireframeRenderer {
     }
 
     private static boolean isLinkedCabinet(BlockEntity be) {
-        if (be instanceof FilingCabinetBlockEntity cab) return cab.isLinkedToController();
-        if (be instanceof SingleFilingCabinetBlockEntity cab) return cab.isLinkedToController();
-        if (be instanceof DoubleFilingCabinetBlockEntity cab) return cab.isLinkedToController();
-        return false;
+        return be instanceof LinkableCabinet cab && cab.isLinkedToController();
     }
 
     @SubscribeEvent

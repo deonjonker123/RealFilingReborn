@@ -21,7 +21,6 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 import java.util.Optional;
 
 public class FilingFolderMenu extends AbstractContainerMenu {
-
     private final ItemStacksResourceHandler assignmentInventory;
     private final int folderSlot;
     private final Inventory playerInventory;
@@ -63,6 +62,23 @@ public class FilingFolderMenu extends AbstractContainerMenu {
         return playerInventory.getItem(folderSlot);
     }
 
+    private ItemStack getSingleFolder() {
+        ItemStack stack = getFolder();
+        if (stack.getCount() <= 1) return stack;
+
+        ItemStack remainder = stack.copyWithCount(stack.getCount() - 1);
+        ItemStack single = stack.copyWithCount(1);
+        playerInventory.setItem(folderSlot, single);
+
+        Player player = playerInventory.player;
+        if (!player.level().isClientSide()) {
+            int free = playerInventory.getFreeSlot();
+            if (free >= 0) playerInventory.setItem(free, remainder);
+            else player.drop(remainder, false);
+        }
+        return single;
+    }
+
     private void updateFolderAssignment() {
         ItemStack folder = getFolder();
         if (folder.isEmpty()) return;
@@ -100,6 +116,7 @@ public class FilingFolderMenu extends AbstractContainerMenu {
             int toAdd = Math.min(assignedItem.getCount(), capacity - currentContents.count());
             if (toAdd <= 0) return;
 
+            folder = getSingleFolder();
             folder.set(FilingFolderItem.FOLDER_CONTENTS.value(),
                     new FilingFolderItem.FolderContents(currentContents.storedItemId(), currentContents.count() + toAdd));
             try (Transaction tx = Transaction.openRoot()) {
@@ -159,6 +176,7 @@ public class FilingFolderMenu extends AbstractContainerMenu {
         ItemStack dummy = new ItemStack(item);
         int extractAmount = Math.min(contents.count(), item.getMaxStackSize(dummy));
         if (extractAmount <= 0) return;
+        folder = getSingleFolder();
         ItemStack extracted = new ItemStack(item, extractAmount);
         Player player = playerInventory.player;
         if (!player.getInventory().add(extracted)) player.drop(extracted, false);

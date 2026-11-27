@@ -23,6 +23,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jspecify.annotations.Nullable;
 
 public class FilingCabinetBlockEntityRenderer implements BlockEntityRenderer<FilingCabinetBlockEntity, FilingCabinetBlockEntityRenderState> {
+    private static final float[][] SINGLE_OFFSETS = {{0.0f, 0.22f}};
+    private static final float[][] DOUBLE_OFFSETS = {{0.0f, 0.47f}, {0.0f, -0.03f}};
+    private static final float[][] QUAD_OFFSETS = {{-0.25f, 0.47f}, {0.25f, 0.47f}, {-0.25f, -0.03f}, {0.25f, -0.03f}};
 
     private final ItemModelResolver itemModelResolver;
     private final Font font;
@@ -43,11 +46,19 @@ public class FilingCabinetBlockEntityRenderer implements BlockEntityRenderer<Fil
         state.facing = be.getBlockState().getValue(FilingCabinetBlock.FACING);
         state.light = 0xF000F0;
 
-        for (int slot = 0; slot < 4; slot++) {
+        float[][] offsets = switch (be.getSlotCount()) {
+            case 1 -> SINGLE_OFFSETS;
+            case 2 -> DOUBLE_OFFSETS;
+            default -> QUAD_OFFSETS;
+        };
+        state.single = be.getSlotCount() == 1;
+
+        for (int slot = 0; slot < state.slots.length; slot++) {
             FilingCabinetBlockEntityRenderState.SlotData sd = state.slots[slot];
             sd.active = false;
             sd.countText = "";
             sd.itemState.clear();
+            if (slot >= offsets.length) continue;
 
             ItemStack folderStack = be.getStack(slot);
             if (folderStack.isEmpty() || !(folderStack.getItem() instanceof FilingFolderItem)) continue;
@@ -58,11 +69,8 @@ public class FilingCabinetBlockEntityRenderer implements BlockEntityRenderer<Fil
             ItemStack storedItem = new ItemStack(BuiltInRegistries.ITEM.getValue(contents.storedItemId().get()));
             itemModelResolver.updateForTopItem(sd.itemState, storedItem, ItemDisplayContext.GUI, be.getLevel(), null, 0);
             sd.countText = FormattingCache.getFormattedItemCount(contents.count());
-            int col = slot % 2;
-            int row = slot / 2;
-
-            sd.offsetX = col == 0 ? -0.25f : 0.25f;
-            sd.offsetY = row == 0 ? 0.47f : -0.03f;
+            sd.offsetX = offsets[slot][0];
+            sd.offsetY = offsets[slot][1];
             sd.active = true;
         }
     }
@@ -79,14 +87,16 @@ public class FilingCabinetBlockEntityRenderer implements BlockEntityRenderer<Fil
             poseStack.translate(sd.offsetX, -0.32f + sd.offsetY, 0.01f);
 
             poseStack.pushPose();
-            poseStack.scale(0.26f, 0.26f, 0.01f);
+            float itemScale = state.single ? 0.5f : 0.26f;
+            poseStack.scale(itemScale, itemScale, 0.01f);
             sd.itemState.submit(poseStack, collector, state.light, OverlayTexture.NO_OVERLAY, 0);
             poseStack.popPose();
 
             if (!sd.countText.isEmpty()) {
                 poseStack.pushPose();
-                poseStack.translate(0.0f, -0.14f, 0.001f);
-                poseStack.scale(0.005f, 0.005f, 0.005f);
+                float textScale = state.single ? 0.01f : 0.005f;
+                poseStack.translate(0.0f, state.single ? -0.27f : -0.14f, 0.001f);
+                poseStack.scale(textScale, textScale, textScale);
                 poseStack.mulPose(Axis.XP.rotationDegrees(180.0f));
                 float xOffset = -font.width(sd.countText) / 2.0f;
                 collector.submitText(poseStack, xOffset, 0f,

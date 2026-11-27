@@ -63,6 +63,7 @@ public class RFRCreativeTab {
                         output.accept(RFRBlocks.DOUBLE_WARPED_FILING_CABINET);
                         output.accept(RFRBlocks.WARPED_FILING_CABINET);
 
+                        output.accept(RFRBlocks.FLUID_CABINET);
                         output.accept(RFRBlocks.FILING_INDEX);
 
                         output.accept(RFRItems.FILING_FOLDER);
@@ -72,13 +73,17 @@ public class RFRCreativeTab {
                         output.accept(RFRItems.DIAMOND_FILING_FOLDER);
                         output.accept(RFRItems.NETHERITE_FILING_FOLDER);
 
+                        output.accept(RFRItems.FLUID_CANISTER);
+                        output.accept(RFRItems.COPPER_FLUID_CANISTER);
+                        output.accept(RFRItems.IRON_FLUID_CANISTER);
+                        output.accept(RFRItems.GOLD_FLUID_CANISTER);
+                        output.accept(RFRItems.DIAMOND_FLUID_CANISTER);
+                        output.accept(RFRItems.NETHERITE_FLUID_CANISTER);
+
                         output.accept(RFRItems.LEDGER);
                         output.accept(RFRItems.IRON_RANGE_UPGRADE);
                         output.accept(RFRItems.DIAMOND_RANGE_UPGRADE);
                         output.accept(RFRItems.NETHERITE_RANGE_UPGRADE);
-                        output.accept(guideme.Guides.createGuideItem(
-                                Identifier.parse("realfilingreborn:guide")
-                        ));
                     }).build());
 
     public static void register(IEventBus eventBus) {

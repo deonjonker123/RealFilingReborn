@@ -7,6 +7,7 @@ import net.minecraft.core.Direction;
 public class FilingCabinetBlockEntityRenderState extends BlockEntityRenderState {
     public Direction facing = Direction.NORTH;
     public int light = 0;
+    public boolean single = false;
     public final SlotData[] slots = new SlotData[4];
 
     {

@@ -2,17 +2,19 @@ package com.misterd.realfilingreborn.blockentity;
 
 import com.misterd.realfilingreborn.RealFilingReborn;
 import com.misterd.realfilingreborn.block.RFRBlocks;
-import com.misterd.realfilingreborn.blockentity.custom.DoubleFilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.blockentity.custom.FilingIndexBlockEntity;
-import com.misterd.realfilingreborn.blockentity.custom.SingleFilingCabinetBlockEntity;
+import com.misterd.realfilingreborn.blockentity.custom.FluidCabinetBlockEntity;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.world.level.block.Block;
+import net.neoforged.neoforge.registries.DeferredBlock;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.RegisterCapabilitiesEvent;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 public class RFRBlockEntities {
@@ -20,69 +22,41 @@ public class RFRBlockEntities {
             DeferredRegister.create(BuiltInRegistries.BLOCK_ENTITY_TYPE, RealFilingReborn.MODID);
 
     public static final Supplier<BlockEntityType<FilingCabinetBlockEntity>> FILING_CABINET_BE =
-            BLOCK_ENTITIES.register("filing_cabinet_be", () -> new BlockEntityType<>(
-                    FilingCabinetBlockEntity::new,
-                    RFRBlocks.FILING_CABINET.get(),
-                    RFRBlocks.ACACIA_FILING_CABINET.get(),
-                    RFRBlocks.BIRCH_FILING_CABINET.get(),
-                    RFRBlocks.CHERRY_FILING_CABINET.get(),
-                    RFRBlocks.CRIMSON_FILING_CABINET.get(),
-                    RFRBlocks.DARK_OAK_FILING_CABINET.get(),
-                    RFRBlocks.JUNGLE_FILING_CABINET.get(),
-                    RFRBlocks.MANGROVE_FILING_CABINET.get(),
-                    RFRBlocks.OAK_FILING_CABINET.get(),
-                    RFRBlocks.WARPED_FILING_CABINET.get(),
-                    RFRBlocks.PALE_OAK_FILING_CABINET.get()
-            ));
+            cabinetType("filing_cabinet_be", RFRBlocks.QUAD_CABINETS);
 
-    public static final Supplier<BlockEntityType<DoubleFilingCabinetBlockEntity>> DOUBLE_FILING_CABINET_BE =
-            BLOCK_ENTITIES.register("double_filing_cabinet_be", () -> new BlockEntityType<>(
-                    DoubleFilingCabinetBlockEntity::new,
-                    RFRBlocks.DOUBLE_SPRUCE_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_ACACIA_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_BIRCH_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_CHERRY_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_CRIMSON_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_DARK_OAK_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_JUNGLE_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_MANGROVE_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_OAK_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_WARPED_FILING_CABINET.get(),
-                    RFRBlocks.DOUBLE_PALE_OAK_FILING_CABINET.get()
-            ));
+    public static final Supplier<BlockEntityType<FilingCabinetBlockEntity>> DOUBLE_FILING_CABINET_BE =
+            cabinetType("double_filing_cabinet_be", RFRBlocks.DOUBLE_CABINETS);
 
-    public static final Supplier<BlockEntityType<SingleFilingCabinetBlockEntity>> SINGLE_FILING_CABINET_BE =
-            BLOCK_ENTITIES.register("single_filing_cabinet_be", () -> new BlockEntityType<>(
-                    SingleFilingCabinetBlockEntity::new,
-                    RFRBlocks.SINGLE_SPRUCE_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_ACACIA_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_BIRCH_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_CHERRY_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_CRIMSON_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_DARK_OAK_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_JUNGLE_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_MANGROVE_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_OAK_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_WARPED_FILING_CABINET.get(),
-                    RFRBlocks.SINGLE_PALE_OAK_FILING_CABINET.get()
-            ));
+    public static final Supplier<BlockEntityType<FilingCabinetBlockEntity>> SINGLE_FILING_CABINET_BE =
+            cabinetType("single_filing_cabinet_be", RFRBlocks.SINGLE_CABINETS);
+
+    public static final Supplier<BlockEntityType<FluidCabinetBlockEntity>> FLUID_CABINET_BE =
+            BLOCK_ENTITIES.register("fluid_cabinet_be", () -> new BlockEntityType<>(
+                    FluidCabinetBlockEntity::new, RFRBlocks.FLUID_CABINET.get()));
 
     public static final Supplier<BlockEntityType<FilingIndexBlockEntity>> FILING_INDEX_BE =
             BLOCK_ENTITIES.register("filing_index_be", () -> new BlockEntityType<>(
                     FilingIndexBlockEntity::new, RFRBlocks.FILING_INDEX.get()));
 
     private static void registerCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.Item.BLOCK, FILING_CABINET_BE.get(),
-                (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
+        for (var type : List.of(FILING_CABINET_BE, DOUBLE_FILING_CABINET_BE, SINGLE_FILING_CABINET_BE)) {
+            event.registerBlockEntity(Capabilities.Item.BLOCK, type.get(),
+                    (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
+        }
 
-        event.registerBlockEntity(Capabilities.Item.BLOCK, DOUBLE_FILING_CABINET_BE.get(),
-                (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, FLUID_CABINET_BE.get(),
+                (blockEntity, direction) -> blockEntity.getFluidCapabilityHandler(direction));
 
-        event.registerBlockEntity(Capabilities.Item.BLOCK, SINGLE_FILING_CABINET_BE.get(),
-                (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, FILING_INDEX_BE.get(),
+                (blockEntity, direction) -> blockEntity.getFluidCapabilityHandler(direction));
 
         event.registerBlockEntity(Capabilities.Item.BLOCK, FILING_INDEX_BE.get(),
                 (blockEntity, direction) -> blockEntity.getCapabilityHandler(direction));
+    }
+
+    private static Supplier<BlockEntityType<FilingCabinetBlockEntity>> cabinetType(String name, List<DeferredBlock<Block>> blocks) {
+        return BLOCK_ENTITIES.register(name, () -> new BlockEntityType<>(FilingCabinetBlockEntity::new,
+                blocks.stream().map(DeferredBlock::get).toArray(Block[]::new)));
     }
 
     public static void register(IEventBus eventBus) {

@@ -6,7 +6,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponentType;
-import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
@@ -18,13 +17,14 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.world.entity.SlotAccess;
+import net.minecraft.world.inventory.ClickAction;
+import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.alchemy.PotionContents;
-import net.minecraft.world.item.component.ItemLore;
 import net.minecraft.world.item.component.TooltipDisplay;
-import net.minecraft.world.item.enchantment.ItemEnchantments;
 import net.minecraft.world.level.Level;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 
 public class FilingFolderItem extends Item {
-
     public enum FolderTier {
         BASE(4_096),
         COPPER(32_768),
@@ -99,21 +98,7 @@ public class FilingFolderItem extends Item {
 
     public static boolean hasSignificantNBT(ItemStack stack) {
         if (stack.isEmpty()) return false;
-        if (stack.isDamaged()) return true;
-
-        ItemEnchantments enchantments = stack.get(DataComponents.ENCHANTMENTS);
-        if (enchantments != null && !enchantments.isEmpty()) return true;
-
-        ItemEnchantments stored = stack.get(DataComponents.STORED_ENCHANTMENTS);
-        if (stored != null && !stored.isEmpty()) return true;
-
-        if (stack.get(DataComponents.CUSTOM_NAME) != null) return true;
-
-        ItemLore lore = stack.get(DataComponents.LORE);
-        if (lore != null && !lore.lines().isEmpty()) return true;
-
-        PotionContents potion = stack.get(DataComponents.POTION_CONTENTS);
-        return potion != null && (!potion.customEffects().isEmpty() || !potion.potion().isEmpty());
+        return !stack.getComponentsPatch().isEmpty();
     }
 
     @Override
@@ -226,6 +211,54 @@ public class FilingFolderItem extends Item {
                 new FolderContents(Optional.of(effectiveItemId), contents.count() + toAdd));
         itemToStore.shrink(toAdd);
         return true;
+    }
+
+    @Override
+    public boolean overrideOtherStackedOnMe(ItemStack folderStack, ItemStack carried, Slot slot, ClickAction action, Player player, SlotAccess carriedAccess) {
+        if (action != ClickAction.SECONDARY || carried.isEmpty() || !slot.allowModification(player)) return false;
+        if (carried.getItem() instanceof FilingFolderItem) return false;
+
+        boolean server = !player.level().isClientSide();
+        if (hasSignificantNBT(carried)) {
+            if (server) player.sendOverlayMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt").withStyle(ChatFormatting.RED));
+            return true;
+        }
+
+        FolderContents contents = folderStack.getOrDefault(FOLDER_CONTENTS.value(), new FolderContents(Optional.empty(), 0));
+        Identifier carriedId = BuiltInRegistries.ITEM.getKey(carried.getItem());
+        if (contents.storedItemId().isPresent() && !contents.storedItemId().get().equals(carriedId)) {
+            if (server) {
+                Item storedItem = BuiltInRegistries.ITEM.getValue(contents.storedItemId().get());
+                player.sendOverlayMessage(Component.translatable("message.realfilingreborn.wrong_item_type",
+                        Component.translatable(storedItem.getDescriptionId()).withStyle(ChatFormatting.GOLD)));
+            }
+            return true;
+        }
+
+        int toAdd = Math.min(carried.getCount(), getCapacity() - contents.count());
+        if (toAdd <= 0) {
+            if (server) player.sendOverlayMessage(Component.translatable("message.realfilingreborn.folder_full"));
+            return true;
+        }
+
+        ItemStack updated = folderStack.copyWithCount(1);
+        updated.set(FOLDER_CONTENTS.value(), new FolderContents(Optional.of(carriedId), contents.count() + toAdd));
+        replaceOne(folderStack, updated, slot, player);
+        carried.shrink(toAdd);
+        player.playSound(SoundEvents.BUNDLE_INSERT, 0.8F, 0.8F + player.level().getRandom().nextFloat() * 0.4F);
+        return true;
+    }
+
+    public static void replaceOne(ItemStack original, ItemStack updated, Slot slot, Player player) {
+        if (original.getCount() <= 1) {
+            slot.set(updated);
+            return;
+        }
+        original.shrink(1);
+        slot.setChanged();
+        if (!player.getInventory().add(updated) && !player.level().isClientSide()) {
+            player.drop(updated, false);
+        }
     }
 
     @Override

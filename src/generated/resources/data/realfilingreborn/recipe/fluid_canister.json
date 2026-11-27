@@ -1,0 +1,16 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:bucket",
+    "G": "#c:glass_blocks"
+  },
+  "pattern": [
+    "BGB",
+    " B "
+  ],
+  "result": {
+    "count": 4,
+    "id": "realfilingreborn:fluid_canister"
+  }
+}

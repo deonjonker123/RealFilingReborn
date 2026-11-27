@@ -3,7 +3,10 @@ package com.misterd.realfilingreborn.block.custom;
 import com.misterd.realfilingreborn.blockentity.custom.FilingCabinetBlockEntity;
 import com.misterd.realfilingreborn.gui.custom.FilingCabinetMenu;
 import com.misterd.realfilingreborn.item.custom.FilingFolderItem;
+import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -37,21 +40,28 @@ import net.minecraft.world.phys.HitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
-import net.neoforged.neoforge.transfer.item.ItemResource;
-import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nullable;
 import java.util.Optional;
 
 public class FilingCabinetBlock extends BaseEntityBlock {
-
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
     public static final VoxelShape SHAPE = Block.box(0.0, 0.0, 0.0, 16.0, 16.0, 16.0);
-    public static final MapCodec<FilingCabinetBlock> CODEC = simpleCodec(FilingCabinetBlock::new);
+    public static final MapCodec<FilingCabinetBlock> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
+            propertiesCodec(),
+            Codec.INT.fieldOf("slots").forGetter(FilingCabinetBlock::getSlotCount)
+    ).apply(instance, FilingCabinetBlock::new));
 
-    public FilingCabinetBlock(Properties properties) {
+    private final int slotCount;
+
+    public FilingCabinetBlock(Properties properties, int slotCount) {
         super(properties);
+        this.slotCount = slotCount;
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
+    }
+
+    public int getSlotCount() {
+        return slotCount;
     }
 
     @Override
@@ -95,58 +105,48 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         if (level.isClientSide()) return InteractionResult.SUCCESS;
         if (!(level.getBlockEntity(pos) instanceof FilingCabinetBlockEntity cabinet)) return InteractionResult.FAIL;
 
+        if (cabinet.hasOverflow()) {
+            returnOverflow(cabinet, player);
+        }
+
         Direction facing = state.getValue(FACING);
         boolean hittingFront = hitResult.getDirection() == facing;
         ItemStack heldItem = player.getItemInHand(hand);
 
-        if (player.isCrouching()) {
-            return trySneakItemInteraction(heldItem, cabinet, player, level, pos, state, hitResult, facing, hittingFront);
-        }
-
         if (!hittingFront) {
-            return InteractionResult.PASS;
+            openMenu(cabinet, player, pos, level);
+            return InteractionResult.SUCCESS;
         }
 
-        InteractionResult result = tryItemInteraction(heldItem, cabinet, player, hand, level, pos, state, hitResult, facing);
-        if (result.consumesAction()) {
-            return result;
+        if (player.isCrouching()) {
+            return trySneakInteraction(heldItem, cabinet, player, level, pos, hitResult, facing);
         }
 
-        return InteractionResult.PASS;
-    }
-
-    private InteractionResult tryItemInteraction(ItemStack heldItem, FilingCabinetBlockEntity cabinet, Player player, InteractionHand hand, Level level, BlockPos pos, BlockState state, BlockHitResult hitResult, Direction facing) {
         if (heldItem.getItem() instanceof FilingFolderItem) {
             return tryInsertFolder(heldItem, cabinet, player, level, pos, state);
         }
 
         int slot = getSlotFromHitResult(hitResult, facing);
-        if (slot >= 0 && slot < 4) {
-            if (depositItem(player, hand, heldItem, slot, cabinet, level, pos, state)) {
-                return InteractionResult.SUCCESS;
-            }
-        }
-
-        return InteractionResult.CONSUME;
-    }
-
-    private InteractionResult trySneakItemInteraction(ItemStack heldItem, FilingCabinetBlockEntity cabinet, Player player, Level level, BlockPos pos, BlockState state, BlockHitResult hitResult, Direction facing, boolean hittingFront) {
-        if (hittingFront) {
-            if (heldItem.isEmpty()) {
-                openMenu(cabinet, (ServerPlayer) player, pos, level);
-                return InteractionResult.SUCCESS;
-            }
-            int slot = getSlotFromHitResult(hitResult, facing);
-            if (slot >= 0 && slot < 4) {
-                extractFromSlot(cabinet, slot, Integer.MAX_VALUE, player, level, pos, state);
-            }
+        if (slot >= 0 && slot < slotCount && depositItem(player, hand, heldItem, slot, cabinet, level, pos)) {
             return InteractionResult.SUCCESS;
         }
         return InteractionResult.CONSUME;
     }
 
+    private InteractionResult trySneakInteraction(ItemStack heldItem, FilingCabinetBlockEntity cabinet, Player player, Level level, BlockPos pos, BlockHitResult hitResult, Direction facing) {
+        if (heldItem.isEmpty()) {
+            openMenu(cabinet, player, pos, level);
+            return InteractionResult.SUCCESS;
+        }
+        int slot = getSlotFromHitResult(hitResult, facing);
+        if (slot >= 0 && slot < slotCount) {
+            extractFromSlot(cabinet, slot, Integer.MAX_VALUE, player, level, pos);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
     @Override
-    public void attack(BlockState state, Level level, BlockPos pos, Player player) {
+    protected void attack(BlockState state, Level level, BlockPos pos, Player player) {
         if (level.isClientSide()) return;
         if (!(level.getBlockEntity(pos) instanceof FilingCabinetBlockEntity cabinet)) return;
 
@@ -156,136 +156,117 @@ public class FilingCabinetBlock extends BaseEntityBlock {
         if (!blockHit.getBlockPos().equals(pos) || blockHit.getDirection() != facing) return;
 
         int slot = getSlotFromHitResult(blockHit, facing);
-        if (slot < 0 || slot >= 4) return;
+        if (slot < 0 || slot >= slotCount) return;
 
         int amount = player.isCrouching() ? getMaxStackSizeForSlot(cabinet, slot) : 1;
-
-        extractFromSlot(cabinet, slot, amount, player, level, pos, state);
+        extractFromSlot(cabinet, slot, amount, player, level, pos);
     }
 
-    private boolean depositItem(Player player, InteractionHand hand, ItemStack heldItem, int slot, FilingCabinetBlockEntity cabinet, Level level, BlockPos pos, BlockState state) {
-        long gameTime = level.getGameTime();
-        boolean doubleClick = gameTime - cabinet.getLastDepositTime() < 10;
-        cabinet.setLastDepositTime(gameTime);
+    private void returnOverflow(FilingCabinetBlockEntity cabinet, Player player) {
+        int given = cabinet.giveOverflowTo(player);
+        if (cabinet.hasOverflow()) {
+            player.sendSystemMessage(Component.translatable("message.realfilingreborn.overflow_inventory_full", cabinet.getOverflowCount()).withStyle(ChatFormatting.GOLD));
+        } else if (given > 0) {
+            player.sendSystemMessage(Component.translatable("message.realfilingreborn.overflow_returned", given).withStyle(ChatFormatting.GREEN));
+        }
+    }
 
-        ItemStack folderStack = cabinet.getStack(slot);
+    private InteractionResult tryInsertFolder(ItemStack heldItem, FilingCabinetBlockEntity cabinet, Player player, Level level, BlockPos pos, BlockState state) {
+        for (int i = 0; i < slotCount; i++) {
+            if (cabinet.getStack(i).isEmpty()) {
+                cabinet.setStack(i, heldItem.copyWithCount(1));
+                heldItem.shrink(1);
+                level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 2.0F);
+                level.sendBlockUpdated(pos, state, state, 2);
+                return InteractionResult.SUCCESS;
+            }
+        }
+        player.sendOverlayMessage(Component.translatable(switch (slotCount) {
+            case 1 -> "message.realfilingreborn.single_folders_full";
+            case 2 -> "message.realfilingreborn.double_folders_full";
+            default -> "message.realfilingreborn.folders_full";
+        }));
+        return InteractionResult.SUCCESS;
+    }
+
+    private boolean depositItem(Player player, InteractionHand hand, ItemStack heldItem, int slot, FilingCabinetBlockEntity cabinet, Level level, BlockPos pos) {
+        boolean doubleClick = cabinet.registerDepositClick(player, level.getGameTime());
 
         if (doubleClick) {
             if (!heldItem.isEmpty()) {
-                depositStackIntoFolder(heldItem, slot, folderStack, cabinet, player, hand, level, pos, state);
-                folderStack = cabinet.getStack(slot);
+                depositStackIntoFolder(heldItem, slot, cabinet, player, hand, level, pos);
             }
-            return depositFromAllOfPlayersInventory(player, slot, folderStack, cabinet, level, pos, state);
+            return depositFromInventory(player, slot, cabinet, level, pos);
         }
 
-        if (heldItem.isEmpty()) {
-            return false;
-        }
-
-        return depositStackIntoFolder(heldItem, slot, folderStack, cabinet, player, hand, level, pos, state);
+        if (heldItem.isEmpty()) return false;
+        return depositStackIntoFolder(heldItem, slot, cabinet, player, hand, level, pos);
     }
 
-    private boolean depositStackIntoFolder(ItemStack heldItem, int slot, ItemStack folderStack, FilingCabinetBlockEntity cabinet, Player player, InteractionHand hand, Level level, BlockPos pos, BlockState state) {
-        if (!(folderStack.getItem() instanceof FilingFolderItem folder)) {
+    private boolean depositStackIntoFolder(ItemStack heldItem, int slot, FilingCabinetBlockEntity cabinet, Player player, InteractionHand hand, Level level, BlockPos pos) {
+        ItemStack folderStack = cabinet.getStack(slot);
+        if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return false;
+
+        if (FilingFolderItem.hasSignificantNBT(heldItem)) {
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.standard_folder_no_nbt").withStyle(ChatFormatting.RED));
             return false;
         }
 
-        FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-        if (contents == null) return false;
-
+        FilingFolderItem.FolderContents contents = folderStack.getOrDefault(FilingFolderItem.FOLDER_CONTENTS.value(), new FilingFolderItem.FolderContents(Optional.empty(), 0));
         Identifier itemId = BuiltInRegistries.ITEM.getKey(heldItem.getItem());
+        if (contents.storedItemId().isPresent() && !contents.storedItemId().get().equals(itemId)) return false;
 
-        if (contents.storedItemId().isEmpty()) {
-            ItemStack updatedFolder = folderStack.copy();
-            updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(), new FilingFolderItem.FolderContents(Optional.of(itemId), heldItem.getCount()));
-            swapFolder(cabinet, slot, folderStack, updatedFolder);
-            player.setItemInHand(hand, ItemStack.EMPTY);
-            playDepositSound(level, pos);
-            cabinet.setChanged();
-            level.sendBlockUpdated(pos, state, state, 2);
-            return true;
+        int toAdd = Math.min(heldItem.getCount(), folder.getCapacity() - contents.count());
+        if (toAdd <= 0) {
+            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.folder_full"));
+            return false;
         }
 
-        if (contents.storedItemId().get().equals(itemId)) {
-            int toAdd = Math.min(heldItem.getCount(), folder.getCapacity() - contents.count());
-            if (toAdd <= 0) return false;
-
-            ItemStack updatedFolder = folderStack.copy();
-            updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(), new FilingFolderItem.FolderContents(contents.storedItemId(), contents.count() + toAdd));
-            swapFolder(cabinet, slot, folderStack, updatedFolder);
-            heldItem.shrink(toAdd);
-            if (heldItem.isEmpty()) {
-                player.setItemInHand(hand, ItemStack.EMPTY);
-            }
-            playDepositSound(level, pos);
-            cabinet.setChanged();
-            level.sendBlockUpdated(pos, state, state, 2);
-            return true;
-        }
-
-        return false;
+        setFolderCount(cabinet, slot, itemId, contents.count() + toAdd);
+        heldItem.shrink(toAdd);
+        if (heldItem.isEmpty()) player.setItemInHand(hand, ItemStack.EMPTY);
+        playDepositSound(level, pos);
+        return true;
     }
 
-    private boolean depositFromAllOfPlayersInventory(Player player, int slot, ItemStack folderStack, FilingCabinetBlockEntity cabinet, Level level, BlockPos pos, BlockState state) {
+    private boolean depositFromInventory(Player player, int slot, FilingCabinetBlockEntity cabinet, Level level, BlockPos pos) {
+        ItemStack folderStack = cabinet.getStack(slot);
         if (!(folderStack.getItem() instanceof FilingFolderItem folder)) return false;
 
         FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
         if (contents == null || contents.storedItemId().isEmpty()) return false;
 
         Identifier targetId = contents.storedItemId().get();
-        int capacity = folder.getCapacity();
-        int[] currentCount = { contents.count() };
-        boolean[] changed = { false };
+        int count = contents.count();
+        boolean changed = false;
 
         Inventory inv = player.getInventory();
-        for (int i = 0; i < inv.getContainerSize(); i++) {
+        for (int i = 0; i < inv.getContainerSize() && count < folder.getCapacity(); i++) {
             ItemStack playerStack = inv.getItem(i);
-            if (playerStack.isEmpty()) continue;
+            if (playerStack.isEmpty() || FilingFolderItem.hasSignificantNBT(playerStack)) continue;
+            if (!BuiltInRegistries.ITEM.getKey(playerStack.getItem()).equals(targetId)) continue;
 
-            Identifier stackId = BuiltInRegistries.ITEM.getKey(playerStack.getItem());
-            if (!stackId.equals(targetId)) continue;
-
-            int toAdd = Math.min(playerStack.getCount(), capacity - currentCount[0]);
-            if (toAdd <= 0) break;
-
+            int toAdd = Math.min(playerStack.getCount(), folder.getCapacity() - count);
             inv.removeItem(i, toAdd);
-            currentCount[0] += toAdd;
-            changed[0] = true;
+            count += toAdd;
+            changed = true;
         }
 
-        if (!changed[0]) return false;
-
-        ItemStack updatedFolder = folderStack.copy();
-        updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(), new FilingFolderItem.FolderContents(contents.storedItemId(), currentCount[0]));
-        swapFolder(cabinet, slot, folderStack, updatedFolder);
+        if (!changed) return false;
+        setFolderCount(cabinet, slot, targetId, count);
         playDepositSound(level, pos);
-        cabinet.setChanged();
-        level.sendBlockUpdated(pos, state, state, 2);
         return true;
     }
 
-    private InteractionResult tryInsertFolder(ItemStack heldItem, FilingCabinetBlockEntity cabinet, Player player, Level level, BlockPos pos, BlockState state) {
-        for (int i = 0; i < 4; i++) {
-            if (cabinet.getStack(i).isEmpty()) {
-                try (var tx = Transaction.openRoot()) {
-                    cabinet.inventory.insert(i, ItemResource.of(heldItem), 1, tx);
-                    tx.commit();
-                }
-                heldItem.shrink(1);
-                level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 2.0F);
-                level.sendBlockUpdated(pos, state, state, 2);
-                cabinet.setChanged();
-                return InteractionResult.SUCCESS;
-            }
-        }
-        player.sendOverlayMessage(Component.translatable("message.realfilingreborn.folders_full"));
-        return InteractionResult.SUCCESS;
+    private void setFolderCount(FilingCabinetBlockEntity cabinet, int slot, Identifier itemId, int count) {
+        ItemStack updated = cabinet.getStack(slot).copyWithCount(1);
+        updated.set(FilingFolderItem.FOLDER_CONTENTS.value(), new FilingFolderItem.FolderContents(Optional.of(itemId), count));
+        cabinet.setStack(slot, updated);
     }
 
-    private void extractFromSlot(FilingCabinetBlockEntity cabinet, int slot, int amount,
-                                 Player player, Level level, BlockPos pos, BlockState state) {
+    private void extractFromSlot(FilingCabinetBlockEntity cabinet, int slot, int amount, Player player, Level level, BlockPos pos) {
         ItemStack folderStack = cabinet.getStack(slot);
-        if (folderStack.isEmpty() || !(folderStack.getItem() instanceof FilingFolderItem)) return;
+        if (!(folderStack.getItem() instanceof FilingFolderItem)) return;
 
         FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
         if (contents == null || contents.storedItemId().isEmpty() || contents.count() <= 0) {
@@ -293,28 +274,33 @@ public class FilingCabinetBlock extends BaseEntityBlock {
             return;
         }
 
-        Identifier itemId = contents.storedItemId().get();
-        Item item = BuiltInRegistries.ITEM.getValue(itemId);
-        ItemStack dummy = new ItemStack(item);
-        int extractAmount = Math.min(Math.min(contents.count(), item.getMaxStackSize(dummy)), amount);
+        Item item = BuiltInRegistries.ITEM.getValue(contents.storedItemId().get());
+        int extractAmount = Math.min(Math.min(contents.count(), new ItemStack(item).getMaxStackSize()), amount);
+        if (extractAmount <= 0) return;
 
-        if (extractAmount <= 0) {
-            player.sendOverlayMessage(Component.translatable("message.realfilingreborn.folder_empty"));
-            return;
+        setFolderCount(cabinet, slot, contents.storedItemId().get(), contents.count() - extractAmount);
+
+        ItemStack extracted = new ItemStack(item, extractAmount);
+        if (!player.getInventory().add(extracted)) {
+            player.drop(extracted, false);
         }
-
-        ItemStack extractedStack = new ItemStack(item, extractAmount);
-        ItemStack updatedFolder = folderStack.copy();
-        updatedFolder.set(FilingFolderItem.FOLDER_CONTENTS.value(), new FilingFolderItem.FolderContents(contents.storedItemId(), Math.max(0, contents.count() - extractAmount)));
-
-        swapFolder(cabinet, slot, folderStack, updatedFolder);
-
-        if (!player.getInventory().add(extractedStack)) {
-            player.drop(extractedStack, false);
-        }
-
         level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.0F);
-        cabinet.setChanged();
+    }
+
+    private int getMaxStackSizeForSlot(FilingCabinetBlockEntity cabinet, int slot) {
+        FilingFolderItem.FolderContents contents = cabinet.getStack(slot).get(FilingFolderItem.FOLDER_CONTENTS.value());
+        if (contents == null || contents.storedItemId().isEmpty()) return 1;
+        return new ItemStack(BuiltInRegistries.ITEM.getValue(contents.storedItemId().get())).getMaxStackSize();
+    }
+
+    private void openMenu(FilingCabinetBlockEntity cabinet, Player player, BlockPos pos, Level level) {
+        if (!(player instanceof ServerPlayer serverPlayer)) return;
+        serverPlayer.openMenu(new SimpleMenuProvider((id, inventory, playerEntity) -> new FilingCabinetMenu(id, inventory, cabinet),
+                Component.translatable("menu.realfilingreborn.menu_title")), pos);
+    }
+
+    private void playDepositSound(Level level, BlockPos pos) {
+        level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
     }
 
     private int getSlotFromHitResult(BlockHitResult hitResult, Direction facing) {
@@ -333,35 +319,10 @@ public class FilingCabinetBlock extends BaseEntityBlock {
 
         if (faceX < 0) return -1;
 
-        int col = faceX < 0.5 ? 0 : 1;
-        int row = relY >= 0.5 ? 0 : 1;
-
-        return row * 2 + col;
-    }
-
-    private int getMaxStackSizeForSlot(FilingCabinetBlockEntity cabinet, int slot) {
-        ItemStack folderStack = cabinet.getStack(slot);
-        if (!(folderStack.getItem() instanceof FilingFolderItem)) return 1;
-        FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());
-        if (contents == null || contents.storedItemId().isEmpty()) return 1;
-        Item item = BuiltInRegistries.ITEM.getValue(contents.storedItemId().get());
-        return item.getMaxStackSize(new ItemStack(item));
-    }
-
-    private void swapFolder(FilingCabinetBlockEntity cabinet, int slot, ItemStack oldFolder, ItemStack newFolder) {
-        try (var tx = Transaction.openRoot()) {
-            cabinet.inventory.extract(slot, ItemResource.of(oldFolder), 1, tx);
-            cabinet.inventory.insert(slot, ItemResource.of(newFolder), 1, tx);
-            tx.commit();
-        }
-    }
-
-    private void openMenu(FilingCabinetBlockEntity cabinet, ServerPlayer player, BlockPos pos, Level level) {
-        player.openMenu(new SimpleMenuProvider((id, inventory, playerEntity) -> new FilingCabinetMenu(id, inventory, cabinet), Component.translatable("menu.realfilingreborn.menu_title")), pos);
-        level.playSound(null, pos, SoundEvents.VILLAGER_WORK_CARTOGRAPHER, SoundSource.BLOCKS, 1.0F, 1.0F);
-    }
-
-    private void playDepositSound(Level level, BlockPos pos) {
-        level.playSound(null, pos, SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1.0F, 1.5F);
+        return switch (slotCount) {
+            case 1 -> 0;
+            case 2 -> relY >= 0.5 ? 0 : 1;
+            default -> (relY >= 0.5 ? 0 : 2) + (faceX < 0.5 ? 0 : 1);
+        };
     }
 }

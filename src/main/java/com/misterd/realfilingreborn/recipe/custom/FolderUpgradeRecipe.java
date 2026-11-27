@@ -9,13 +9,13 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.ItemStack;
+import org.jetbrains.annotations.Nullable;
 import net.minecraft.world.item.crafting.*;
 import net.minecraft.world.level.Level;
 
 import java.util.List;
 
 public class FolderUpgradeRecipe extends CustomRecipe {
-
     private final FilingFolderItem inputTier;
     private final FilingFolderItem outputTier;
     private final Ingredient material;
@@ -44,34 +44,38 @@ public class FolderUpgradeRecipe extends CustomRecipe {
 
     @Override
     public PlacementInfo placementInfo() {
-        return PlacementInfo.create(List.of(
-                Ingredient.of(inputTier),
-                material,
-                material,
-                material
-        ));
+        return PlacementInfo.create(List.of(Ingredient.of(inputTier), material));
     }
 
     @Override
     public boolean matches(CraftingInput input, Level level) {
-        if (input.width() != 2 || input.height() != 2) return false;
+        return findInput(input) != null;
+    }
 
-        ItemStack topLeft = input.getItem(0, 0);
-        ItemStack topRight = input.getItem(1, 0);
-        ItemStack bottomLeft = input.getItem(0, 1);
-        ItemStack bottomRight = input.getItem(1, 1);
+    @Nullable
+    private ItemStack findInput(CraftingInput input) {
+        if (input.ingredientCount() != 2) return null;
 
-        if (topLeft.getItem() != inputTier) return false;
+        ItemStack found = null;
+        boolean hasMaterial = false;
+        for (int i = 0; i < input.size(); i++) {
+            ItemStack stack = input.getItem(i);
+            if (stack.isEmpty()) continue;
+            if (found == null && stack.getItem() == inputTier) found = stack;
+            else if (!hasMaterial && material.test(stack)) hasMaterial = true;
+            else return null;
+        }
+        if (found == null || !hasMaterial) return null;
 
-        FilingFolderItem.FolderContents contents = topLeft.get(FilingFolderItem.FOLDER_CONTENTS.value());
-        if (contents == null || contents.storedItemId().isEmpty()) return false;
-
-        return material.test(topRight) && material.test(bottomLeft) && material.test(bottomRight);
+        FilingFolderItem.FolderContents contents = found.get(FilingFolderItem.FOLDER_CONTENTS.value());
+        if (contents == null || contents.storedItemId().isEmpty()) return null;
+        return found;
     }
 
     @Override
     public ItemStack assemble(CraftingInput input) {
-        ItemStack folderStack = input.getItem(0, 0);
+        ItemStack folderStack = findInput(input);
+        if (folderStack == null) return ItemStack.EMPTY;
         ItemStack result = new ItemStack(outputTier);
 
         FilingFolderItem.FolderContents contents = folderStack.get(FilingFolderItem.FOLDER_CONTENTS.value());

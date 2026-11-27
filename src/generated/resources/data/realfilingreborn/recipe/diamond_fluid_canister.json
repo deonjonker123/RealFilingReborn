@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "G": "#c:glass_blocks",
+    "I": "minecraft:diamond",
+    "P": "minecraft:bucket"
+  },
+  "pattern": [
+    "I I",
+    "PGP",
+    "IPI"
+  ],
+  "result": {
+    "count": 4,
+    "id": "realfilingreborn:diamond_fluid_canister"
+  }
+}

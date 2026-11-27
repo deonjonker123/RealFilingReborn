@@ -3,7 +3,23 @@
   "category": "misc",
   "key": {
     "B": "#c:chests",
-    "L": "#minecraft:planks"
+    "L": {
+      "neoforge:ingredient_type": "neoforge:difference",
+      "base": "#minecraft:planks",
+      "subtracted": [
+        "minecraft:acacia_planks",
+        "minecraft:birch_planks",
+        "minecraft:cherry_planks",
+        "minecraft:crimson_planks",
+        "minecraft:dark_oak_planks",
+        "minecraft:jungle_planks",
+        "minecraft:mangrove_planks",
+        "minecraft:oak_planks",
+        "minecraft:pale_oak_planks",
+        "minecraft:spruce_planks",
+        "minecraft:warped_planks"
+      ]
+    }
   },
   "pattern": [
     "LBL",

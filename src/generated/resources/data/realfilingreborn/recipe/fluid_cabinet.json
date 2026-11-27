@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "key": {
+    "B": "minecraft:bucket",
+    "L": "#c:stones",
+    "P": "minecraft:iron_ingot"
+  },
+  "pattern": [
+    "LPL",
+    "PBP",
+    "LPL"
+  ],
+  "result": {
+    "id": "realfilingreborn:fluid_cabinet"
+  }
+}
